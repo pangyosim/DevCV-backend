@@ -1,6 +1,7 @@
 package com.devcv.order.application;
 
 import com.devcv.member.Domain.Member;
+import com.devcv.order.domain.Order;
 import com.devcv.order.domain.dto.OrderSheet;
 import com.devcv.resume.Resume;
 import com.devcv.order.repository.OrderRepository;
@@ -11,10 +12,15 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class OrderService {
 
-//    private final OrderRepository orderRepository;
+    private final OrderRepository orderRepository;
 
     public OrderSheet getOrderSheet(Member member,
-                                       Resume resume) {
+                                    Resume resume) {
         return OrderSheet.of(member, resume);
+    }
+
+    public Order createOrder(Member member,
+                             Resume resume) {
+        return orderRepository.save(Order.of(member, resume));
     }
 }
