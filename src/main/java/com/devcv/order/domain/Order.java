@@ -5,7 +5,7 @@ import com.devcv.member.Domain.Member;
 import com.devcv.resume.Resume;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
-import lombok.Builder;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
@@ -13,11 +13,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseTimeEntity {
 
+    @Getter
     @Id
+    @Column(unique = true)
     private String id;
 
-    @Column(nullable = false)
-    private String name;
+    @ManyToOne
+    private Member member;
+
+    @OneToOne
+    private Resume orderItem;
+
+    @Column
+    private int totalAmount;
 
     @Column
     @Enumerated(value = EnumType.STRING)
@@ -27,30 +35,17 @@ public class Order extends BaseTimeEntity {
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
 
-    //    @Builder
-    public Order(String name, PayType payType) {
-        this.id = generateOrderId();
-        this.name = name;
-        this.payType = payType;
+    public Order(Member member, Resume orderItem) {
+        this.id = OrderNumberGenerator.generateOrderNumber();
+        this.member = member;
+        this.orderItem = orderItem;
+        this.totalAmount = orderItem.getPrice();
+        this.payType = PayType.Point;
         this.orderStatus = OrderStatus.CREATED;
     }
 
     public static Order of(Member member, Resume resume) {
-
-        // 검증
-
-        // 객체 생성
-        Order order = new Order(resume.getTitle(), PayType.Point);
-
-        return order;
-    }
-
-    private String generateOrderId() {
-        //생성로직
-        return "20240601000001";
-    }
-
-    public String getId() {
-        return id;
+        // 검증?
+        return new Order(member, resume);
     }
 }

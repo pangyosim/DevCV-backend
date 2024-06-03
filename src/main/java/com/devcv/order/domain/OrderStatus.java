@@ -1,5 +1,8 @@
 package com.devcv.order.domain;
 
+import lombok.Getter;
+
+@Getter
 public enum OrderStatus {
 
     CREATED("주문생성완료"),
@@ -10,9 +13,5 @@ public enum OrderStatus {
 
     OrderStatus(String status){
         this.status = status;
-    }
-
-    public String getStatus(){
-        return this.status;
     }
 }
