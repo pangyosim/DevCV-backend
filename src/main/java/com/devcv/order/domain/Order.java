@@ -9,11 +9,11 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
+@Getter
 @Table(name = "orders")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseTimeEntity {
 
-    @Getter
     @Id
     @Column(unique = true)
     private String id;
@@ -22,7 +22,7 @@ public class Order extends BaseTimeEntity {
     private Member member;
 
     @OneToOne
-    private Resume orderItem;
+    private Resume resume;
 
     @Column
     private int totalAmount;
@@ -35,12 +35,12 @@ public class Order extends BaseTimeEntity {
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
 
-    public Order(Member member, Resume orderItem) {
+    public Order(Member member, Resume resume) {
         this.id = OrderNumberGenerator.generateOrderNumber();
         this.member = member;
-        this.orderItem = orderItem;
-        this.totalAmount = orderItem.getPrice();
-        this.payType = PayType.Point;
+        this.resume = resume;
+        this.totalAmount = resume.getPrice();
+        this.payType = PayType.POINT;
         this.orderStatus = OrderStatus.CREATED;
     }
 

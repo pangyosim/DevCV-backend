@@ -5,15 +5,13 @@ import com.devcv.member.MemberRepository;
 import com.devcv.order.application.OrderService;
 import com.devcv.order.domain.Order;
 import com.devcv.order.domain.dto.OrderRequest;
+import com.devcv.order.domain.dto.OrderResponse;
 import com.devcv.order.domain.dto.OrderSheet;
 import com.devcv.resume.Resume;
 import com.devcv.resume.ResumeRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.net.URI;
 
@@ -46,6 +44,12 @@ public class OrderController {
         Order order = orderService.createOrder(member, resume);
 
         return ResponseEntity.created(URI.create(order.getId())).build();
+    }
+
+    @GetMapping("/orders/{order-id}")
+    public ResponseEntity<OrderResponse> getOrderResponse(@PathVariable("order-id") String orderId) {
+
+        return ResponseEntity.ok().body(OrderResponse.from(orderService.getOrderById(orderId)));
     }
 
     private Member mockMember() {

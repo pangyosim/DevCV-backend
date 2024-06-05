@@ -1,5 +1,7 @@
 package com.devcv.order.application;
 
+import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.TestErrorException;
 import com.devcv.member.Domain.Member;
 import com.devcv.order.domain.Order;
 import com.devcv.order.domain.dto.OrderSheet;
@@ -22,5 +24,10 @@ public class OrderService {
     public Order createOrder(Member member,
                              Resume resume) {
         return orderRepository.save(Order.of(member, resume));
+    }
+
+    public Order getOrderById(String orderId) {
+        return orderRepository.findById(orderId)
+                .orElseThrow(() -> new TestErrorException(ErrorCode.TEST_ERROR));
     }
 }
