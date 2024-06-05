@@ -19,6 +19,10 @@ public interface MemberRepository extends CrudRepository<Member, Long> {
     Member findMemberByUserNameAndPhone(@Param("username") String username,@Param("phone") String phone);
 
     @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE member SET password=:password  WHERE userid=:userid", nativeQuery = true)
+    @Query(value = "UPDATE member SET password=:password WHERE userid=:userid", nativeQuery = true)
     int updatePasswordByUserId(@Param("password") String password, @Param("userid") Long userid);
+
+//    @Modifying(clearAutomatically = true)
+//    @Query(value = "UPDATE member SET member WHERE userid=:userid", nativeQuery = true)
+//    int updateMemberByUserId(@Param("userid") Long userid);
 }

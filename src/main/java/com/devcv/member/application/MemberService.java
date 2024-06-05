@@ -21,5 +21,7 @@ public class MemberService {
     public Member findMemberByUserId(Long userid){ return memberRepository.findMemberByUserId(userid);}
     public Member findMemberByUserNameAndPhone(String username, String phone) { return memberRepository.findMemberByUserNameAndPhone(username,phone);}
 
-    public int updatePasswordByUserId(String password,Long userid) {return memberRepository.updatePasswordByUserId(password,userid);}
+    public int updatePasswordByUserId(String password,Long userid) { return memberRepository.updatePasswordByUserId(password,userid);}
+
+//    public int updateMemberByUserId(Long userid, Member member) { return memberRepository.updateMemberByUserId(userid,member);}
 }

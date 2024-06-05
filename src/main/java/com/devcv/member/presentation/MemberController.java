@@ -62,7 +62,7 @@ public class MemberController {
     }
 
     //----------- login start -----------
-    @PostMapping("/login")
+    @GetMapping("/login")
     public ResponseEntity<Map<String,Object>> memberLogin(@RequestBody Member member) {
 
             // 가입힌 아이디인지 체크
@@ -85,6 +85,7 @@ public class MemberController {
                     Map<String,Object> responseLogin = new HashMap<>(){{
                         put("isSocial", loginMember.getIsSocial());
                         put("userId", loginMember.getUserId());
+                        put("userRole", loginMember.getUserRole());
                     }};
                     return ResponseEntity.ok().headers(header).body(responseLogin); // 아이디, 소셜로그인여부 값 반환.
                 } else {
@@ -258,7 +259,7 @@ public class MemberController {
     //----------- find ID/PW end -----------
 
     //----------- modi member start -----------
-    @PostMapping("/modipw")
+    @PutMapping("/modipw")
     public ResponseEntity<String> modiPassword(@RequestBody Member member){
         // NULL CHECK
         try {
@@ -294,11 +295,45 @@ public class MemberController {
     }
 
     //*************** 작업중 ***************
-    @PostMapping("/modi")
+    @PutMapping("/modi")
     public ResponseEntity<?> modiMember(@RequestBody Member member) {
         // NULL CHECK
         nullCheckMemberAllProperties(member);
-
+        try {
+            // userid로 Member 찾기
+            Member findMemberByuserId = memberService.findMemberByUserId(member.getUserId());
+            if(findMemberByuserId != null){
+                Member newMember = Member.builder()
+                                    .userName(member.getUserName())
+                        .email(member.getEmail())
+                        .password(Jwts.builder()
+                                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                                .setIssuer("devcv")
+                                .claim("pw", member.getPassword())
+                                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8))) // JWT암호화
+                                .compact())
+                        .nickName(member.getNickName())
+                        .phone(member.getPhone())
+                        .address(member.getAddress())
+                        .userPoint(member.getUserPoint())
+                        .isSocial(member.getIsSocial())
+                        .userRole(member.getUserRole())
+                        .isCompany(member.getIsCompany())
+                        .isJob(member.getIsJob())
+                        .isStack(member.getIsStack()).build();
+//                int resultUpdateMember = memberService.updateMemberByUserId(member.getUserId(),newMember);
+//                if( resultUpdateMember == 1 ){ // 멤버 수정성공.
+//                    return ResponseEntity.ok().build();
+//                } else {
+//                    throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+//                }
+            } else {
+                throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+            }
+        } catch (Exception e) {
+            e.fillInStackTrace();
+            throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+        }
         return null;
     }
     //*************** 작업중 ***************
