@@ -10,10 +10,18 @@ public enum ErrorCode {
     INVALID_FILE_EXTENTION("유효하지 않은 파일 확장자입니다."),
 
     //401
+    UNAUTHORIZED_ERROR("인증에 실패하였습니다."),
+    LOGIN_ERROR("아이디 혹은 비밀번호가 틀립니다."),
+    LOGIN_ID_ERROR("가입된 아이디가 없습니다."),
+    DUPLICATE_ERROR("중복된 아이디입니다."),
 
     //403
 
     //404
+    NOT_FOUND_ERROR("페이지를 찾을 수 없습니다."),
+    NULL_ERROR("데이터 중 하나가 NULL값입니다."),
+    //409
+    CONFLICT_ERROR("요청 충돌 에러"),
 
     //500
     IO_EXCEPTION_ON_IMAGE_UPLOAD("이미지 업로드 중 IO 예외가 발생했습니다."),
