@@ -1,6 +1,7 @@
 package com.devcv.common.exception;
 
 import com.devcv.common.exception.dto.ErrorResponse;
+import com.devcv.common.util.exception.S3Exception;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -65,4 +66,29 @@ public class GlobalExceptionHandler {
     }
     // 404 end
 
+
+    @ExceptionHandler(S3Exception.class)
+    public ResponseEntity<ErrorResponse>handle(S3Exception e) {
+        System.out.println("s3 upload error");
+        log.error(e.getMessage());
+
+        ErrorCode errorCode = e.getErrorCode();
+        HttpStatus status;
+
+        switch (errorCode) {
+            case EMPTY_FILE_EXCEPTION:
+            case NO_FILE_EXTENTION:
+            case INVALID_FILE_EXTENTION:
+                status = HttpStatus.BAD_REQUEST;
+                break;
+            case IO_EXCEPTION_ON_IMAGE_UPLOAD:
+            case PUT_OBJECT_EXCEPTION:
+                status = HttpStatus.INTERNAL_SERVER_ERROR;
+                break;
+            default:
+                status = HttpStatus.INTERNAL_SERVER_ERROR;
+        }
+        return ResponseEntity.status(status)
+                .body(ErrorResponse.from(errorCode));
+    }
 }
