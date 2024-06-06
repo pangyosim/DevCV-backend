@@ -37,13 +37,19 @@ public class ResumeServiceImpl implements ResumeService {
         try {
             // Category 저장
             CategoryDTO categoryDTO = resumeDTO.getCategory();
-            Category category = categoryRepository.findByCompanyTypeAndStackType(
+            List<Category> categories = categoryRepository.findByCompanyTypeAndStackType(
                     categoryDTO.getCompanyType(),
                     categoryDTO.getStackType()
-            ).orElseGet(() -> {
-                Category newCategory = new Category(categoryDTO.getCompanyType(), categoryDTO.getStackType());
-                return categoryRepository.save(newCategory);
-            });
+            );
+            Category category;
+            if (categories.isEmpty()) {
+                // 리스트가 비어 있으면 새로운 Category 생성 및 저장
+                category = new Category(categoryDTO.getCompanyType(), categoryDTO.getStackType());
+                category = categoryRepository.save(category);
+            } else {
+                // 리스트가 비어 있지 않으면 첫 번째 요소 사용
+                category = categories.get(0);
+            }
 
 
             // PDF 파일 업로드
