@@ -12,7 +12,7 @@ public enum ErrorCode {
     //401
     UNAUTHORIZED_ERROR("인증에 실패하였습니다."),
     LOGIN_ERROR("아이디 혹은 비밀번호가 틀립니다."),
-    LOGIN_ID_ERROR("가입된 아이디가 없습니다."),
+    FIND_ID_ERROR("가입된 아이디가 없습니다."),
     DUPLICATE_ERROR("중복된 아이디입니다."),
 
     //403

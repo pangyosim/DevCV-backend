@@ -1,10 +1,16 @@
 package com.devcv.member.presentation;
 
-import com.devcv.common.exception.*;
+import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.InternalServerException;
+import com.devcv.common.exception.UnAuthorizedException;
 import com.devcv.member.application.MailService;
 import com.devcv.member.application.MemberService;
 import com.devcv.member.domain.Member;
 import com.devcv.member.domain.dto.*;
+import com.devcv.member.exception.AuthLoginException;
+import com.devcv.member.exception.DuplicationException;
+import com.devcv.member.exception.NotNullException;
+import com.devcv.member.exception.NotSignUpException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.jsonwebtoken.Claims;
@@ -68,11 +74,11 @@ public class MemberController {
             // 가입힌 아이디인지 체크
             try{
                 if(memberService.findMemberByEmail(member.getEmail()) == null){
-                    throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+                    throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
                 }
             } catch (Exception e) {
                 e.fillInStackTrace();
-                throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+                throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
             // 아이디 & 비밀번호 체크
             try {
@@ -83,7 +89,7 @@ public class MemberController {
                     HttpHeaders header = new HttpHeaders();
                     header.set("Authorization", "Bearer " + makeJwtToken(generateLoginToken()));
                     Map<String,Object> responseLogin = new HashMap<>(){{
-                        put("isSocial", loginMember.getIsSocial());
+                        put("social", loginMember.getSocial());
                         put("userId", loginMember.getUserId());
                         put("userRole", loginMember.getUserRole());
                     }};
@@ -123,21 +129,21 @@ public class MemberController {
         // 회원가입 로직
         try {
             // SOCIAL LOGIN CHECK
-            // 일반로그인
-            if (member.getIsSocial().toString().equals(SocialType.일반.name())) {
+            // 일반회원가입
+            if (member.getSocial().toString().equals(SocialType.일반.name())) {
                 // 만료시간 없는 jwt토큰 발행 후 DB PW에 저장.
                 Member normalMember = Member.builder()
                         .userName(member.getUserName())
-                        .userPoint(member.getUserPoint())
-                        .userRole(member.getUserRole())
+                        .userPoint(0)
+                        .userRole(RoleType.일반)
                         .email(member.getEmail())
-                        .isJob(member.getIsJob())
+                        .job(member.getJob())
                         .phone(member.getPhone())
                         .address(member.getAddress())
                         .nickName(member.getNickName())
-                        .isCompany(member.getIsCompany())
-                        .isStack(member.getIsStack())
-                        .isSocial(member.getIsSocial())
+                        .company(member.getCompany())
+                        .stack(member.getStack())
+                        .social(member.getSocial())
                         .password(Jwts.builder()
                                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
                                 .setIssuer("devcv")
@@ -146,19 +152,19 @@ public class MemberController {
                                 .compact())
                         .build();
                 memberService.signup(normalMember);
-            } else { // 소셜로그인
+            } else { // 소셜회원가입
                 Member socialMember = Member.builder()
                         .userName(member.getUserName())
-                        .userRole(member.getUserRole())
-                        .userPoint(member.getUserPoint())
+                        .userRole(RoleType.일반)
+                        .userPoint(0)
                         .email(member.getEmail())
-                        .isJob(member.getIsJob())
+                        .job(member.getJob())
                         .phone(member.getPhone())
                         .address(member.getAddress())
                         .nickName(member.getNickName())
-                        .isCompany(member.getIsCompany())
-                        .isStack(member.getIsStack())
-                        .isSocial(member.getIsSocial())
+                        .company(member.getCompany())
+                        .stack(member.getStack())
+                        .social(member.getSocial())
                         .password(Jwts.builder()
                                 .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
                                 .setIssuer("devcv")
@@ -169,14 +175,18 @@ public class MemberController {
                 memberService.signup(socialMember);
             }
             return ResponseEntity.ok().build();
-        } catch (NotNullException e) {
+        } catch (Exception e) {
             e.fillInStackTrace();
             throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
     //----------- mail start -----------
     @GetMapping("/certemail")
-    public int certMail(@RequestParam String email) throws UnsupportedEncodingException {return mailService.sendMail(email);}
+    public Map<String,Integer> certMail(@RequestParam String email) throws UnsupportedEncodingException {
+        return new HashMap<>(){{
+            put("certnumber", mailService.sendMail(email));
+        }};
+    }
     //----------- mail end -----------
     //----------- signup end -----------
 
@@ -202,16 +212,16 @@ public class MemberController {
                 }};
                 return ResponseEntity.ok(responseMap);
             } else { // 가입되어있지 않다면 Exception 발생.
-                throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+                throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
         } catch (Exception e) {
             e.fillInStackTrace();
-            throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+            throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
     }
 
     @PostMapping("/findpwemail")
-    public ResponseEntity<String> findPwEmail(@RequestBody Member member) {
+    public ResponseEntity<Map<String,Object>> findPwEmail(@RequestBody Member member) {
         // NULL CHECK
         try{
             if(member.getEmail() == null){
@@ -224,15 +234,21 @@ public class MemberController {
         try {
             Member findpwEmailMember = memberService.findMemberByEmail(member.getEmail());
             if(findpwEmailMember != null){
-                return ResponseEntity.ok().build();
+                System.out.println(findpwEmailMember.getEmail());
+                Map<String,Object> responseUserId = new HashMap<>(){{
+                    put("userId",findpwEmailMember.getUserId());
+                }};
+                return ResponseEntity.ok().body(responseUserId);
+            } else {
+                throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
         } catch (Exception e){
-            throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+            e.fillInStackTrace();
+            throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
-        return null;
     }
     @PostMapping("/findpwphone")
-    public ResponseEntity<String> findPwPhone(@RequestBody Member member) {
+    public ResponseEntity<Map<String,Object>> findPwPhone(@RequestBody Member member) {
         // NULL CHECK
         try{
             if(member.getUserName() == null || member.getPhone() == null){
@@ -247,18 +263,22 @@ public class MemberController {
             Member findIdMember = memberService.findMemberByUserNameAndPhone(member.getUserName(),member.getPhone());
             // 이름&핸드폰번호로 가입되어 있는 멤버가 있는지 확인.
             if(findIdMember!= null){
-                return ResponseEntity.ok().build();
+                Map<String,Object> responseUserId = new HashMap<>(){{
+                    put("userId",findIdMember.getUserId());
+                }};
+                return ResponseEntity.ok().body(responseUserId);
             } else { // 가입되어있지 않다면 Exception 발생.
-                throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+                throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
         } catch (Exception e) {
             e.fillInStackTrace();
-            throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+            throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
     }
     //----------- find ID/PW end -----------
 
     //----------- modi member start -----------
+    // 비밀번호 변경 modipw
     @PutMapping("/modipw")
     public ResponseEntity<String> modiPassword(@RequestBody Member member){
         // NULL CHECK
@@ -286,65 +306,93 @@ public class MemberController {
                     throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
                 }
             } else {
-                throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+                throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
         } catch (Exception e) {
             e.fillInStackTrace();
-            throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+            throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
     }
-
-    //*************** 작업중 ***************
-    @PutMapping("/modi")
-    public ResponseEntity<?> modiMember(@RequestBody Member member) {
+    // 회원정보수정 modiall
+    @PutMapping("/modiall")
+    public ResponseEntity<String> modiMember(@RequestBody Member member) {
         // NULL CHECK
-        nullCheckMemberAllProperties(member);
+        try {
+            if(member.getJob() == null || member.getAddress() == null || member.getStack() == null
+                    || member.getEmail() == null || member.getUserName() == null || member.getSocial() == null
+                    || member.getCompany() == null || member.getPhone() == null || member.getUserId() == null
+                    || member.getNickName() == null || member.getPassword() == null){
+                throw new NotNullException(ErrorCode.NULL_ERROR);
+            }
+        } catch (Exception e){
+            e.fillInStackTrace();
+            throw new NotNullException(ErrorCode.NULL_ERROR);
+        }
+
         try {
             // userid로 Member 찾기
             Member findMemberByuserId = memberService.findMemberByUserId(member.getUserId());
             if(findMemberByuserId != null){
-                Member newMember = Member.builder()
-                                    .userName(member.getUserName())
-                        .email(member.getEmail())
-                        .password(Jwts.builder()
-                                .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
-                                .setIssuer("devcv")
-                                .claim("pw", member.getPassword())
-                                .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8))) // JWT암호화
-                                .compact())
-                        .nickName(member.getNickName())
-                        .phone(member.getPhone())
-                        .address(member.getAddress())
-                        .userPoint(member.getUserPoint())
-                        .isSocial(member.getIsSocial())
-                        .userRole(member.getUserRole())
-                        .isCompany(member.getIsCompany())
-                        .isJob(member.getIsJob())
-                        .isStack(member.getIsStack()).build();
-//                int resultUpdateMember = memberService.updateMemberByUserId(member.getUserId(),newMember);
-//                if( resultUpdateMember == 1 ){ // 멤버 수정성공.
-//                    return ResponseEntity.ok().build();
-//                } else {
-//                    throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
-//                }
+                int resultUpdateMember = memberService.updateMemberByUserId(member.getUserName(), member.getEmail(),
+                        Jwts.builder()
+                        .setHeaderParam(Header.TYPE, Header.JWT_TYPE)
+                        .setIssuer("devcv")
+                        .claim("pw", member.getPassword())
+                        .signWith(Keys.hmacShaKeyFor(SECRET_KEY.getBytes(StandardCharsets.UTF_8))).compact(),
+                        member.getNickName(), member.getPhone(), member.getAddress(), member.getSocial().name(),
+                         member.getCompany().name(), member.getJob().name(), String.join(",", member.getStack()),member.getUserId());
+                if( resultUpdateMember == 1 ){ // 멤버 수정성공.
+                    return ResponseEntity.ok().build();
+                } else {
+                    throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+                }
             } else {
-                throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+                throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
         } catch (Exception e) {
             e.fillInStackTrace();
-            throw new NotSignUpException(ErrorCode.LOGIN_ID_ERROR);
+            throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
-        return null;
     }
-    //*************** 작업중 ***************
+
+    @PutMapping("/modipoint")
+    public ResponseEntity<String> modiPoint(@RequestBody Member member){
+        // NULL CHECK
+        try {
+            if(member.getUserId() == null || member.getUserPoint() == null){
+                throw new NotNullException(ErrorCode.NULL_ERROR);
+            }
+        } catch (Exception e){
+            e.fillInStackTrace();
+            throw new NotNullException(ErrorCode.NULL_ERROR);
+        }
+
+        try{
+            // userid로 Member 찾기
+            Member findMemberByuserId = memberService.findMemberByUserId(member.getUserId());
+            if( findMemberByuserId != null){
+                int resultUpdatePoint = memberService.updatePointByUserId(member.getUserPoint(),member.getUserId());
+                if(resultUpdatePoint == 1){
+                    return ResponseEntity.ok().build();
+                } else {
+                    throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+                }
+            } else {
+                throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
+            }
+        } catch (Exception e) {
+            e.fillInStackTrace();
+            throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
+        }
+    }
+    //----------- modi member end -----------
 
     // NULL CHECK Exception Handling
     private void nullCheckMemberAllProperties(@RequestBody Member member) {
         try {
-            if(member.getIsJob() == null || member.getAddress() == null || member.getIsStack() == null
-                    || member.getEmail() == null || member.getUserRole() == null || member.getUserName() == null
-                    || member.getIsSocial() == null || member.getIsCompany() == null || member.getPhone() == null
-                    || member.getUserPoint() == null || member.getNickName() == null || member.getPassword() == null){
+            if(member.getJob() == null || member.getAddress() == null || member.getStack() == null
+                    || member.getEmail() == null || member.getUserName() == null || member.getSocial() == null
+                    || member.getCompany() == null || member.getPhone() == null || member.getNickName() == null || member.getPassword() == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
         } catch (Exception e){
@@ -435,7 +483,7 @@ public class MemberController {
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
                 put("email", profile.getKakao_account().getEmail());
-                put("isSocial", 2);
+                put("social", 2);
             }};
             return ResponseEntity.ok().body(userInfo);
         }
@@ -490,12 +538,10 @@ public class MemberController {
         ResponseEntity<String> responseInfo = restTemplateInfo.exchange("https://www.googleapis.com/userinfo/v2/me", HttpMethod.GET,
                 googleProfileRequest, String.class
         );
-        System.out.println(responseInfo);
         ObjectMapper objectMapper = new ObjectMapper();
         GoogleProfile googleProfile;
         try {
             googleProfile = objectMapper.readValue(responseInfo.getBody(), GoogleProfile.class);
-            System.out.println(googleProfile);
         } catch (JsonProcessingException e) {
             e.fillInStackTrace();
             throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
@@ -509,7 +555,7 @@ public class MemberController {
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
                 put("email",googleProfile.getEmail());
-                put("isSocial",1);
+                put("social",1);
             }};
             return ResponseEntity.ok().body(userInfo);
         }
