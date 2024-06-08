@@ -2,8 +2,8 @@ package com.devcv.order.domain.dto;
 
 import com.devcv.member.domain.Member;
 import com.devcv.member.domain.dto.MemberResponse;
-import com.devcv.register.Resume;
-import com.devcv.register.ResumeResponse;
+import com.devcv.register.domain.Resume;
+import com.devcv.register.domain.dto.ResumeResponse;
 
 public record OrderSheet(MemberResponse memberResponse,
                          ResumeResponse resumeResponse) {

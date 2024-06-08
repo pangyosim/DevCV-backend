@@ -16,7 +16,7 @@ import java.util.List;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "member")
+@Table(name = "members")
 public class Member extends BaseTimeEntity {
 
     @Id
@@ -42,31 +42,28 @@ public class Member extends BaseTimeEntity {
     @Column(name = "address", nullable = false)
     private String address;
 
-    @Column(name = "userpoint", nullable = false)
-    private Integer userPoint;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "social", nullable = false)
+    private SocialType social; // 일반유저, 구글, 카카오
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "issocial", nullable = false)
-    private SocialType isSocial; // 일반유저, 구글, 카카오
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "userole", nullable = false)
+    @Column(name = "userrole", nullable = false)
     private RoleType userRole; // 일반유저: user 관리자: admin
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "iscompany", nullable = false)
-    private CompanyType isCompany;
+    @Column(name = "company", nullable = false)
+    private CompanyType company;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "isjob", nullable = false)
-    private JobType isJob;
+    @Column(name = "job", nullable = false)
+    private JobType job;
 
     @Convert(converter = ListStringConverter.class)
-    @Column(name = "isstack", nullable = false)
-    private List<String> isStack;
+    @Column(name = "stack", nullable = false)
+    private List<String> stack;
 
     @Builder
-    public Member(Long userId, String userName, String email, String password, String nickName, String phone, String address, Integer userPoint, SocialType isSocial, RoleType userRole, CompanyType isCompany, JobType isJob, List<String> isStack) {
+    public Member(Long userId, String userName, String email, String password, String nickName, String phone, String address, SocialType social, RoleType userRole, CompanyType company, JobType job, List<String> stack) {
         this.userId = userId;
         this.userName = userName;
         this.email = email;
@@ -74,12 +71,11 @@ public class Member extends BaseTimeEntity {
         this.nickName = nickName;
         this.phone = phone;
         this.address = address;
-        this.userPoint = userPoint;
-        this.isSocial = isSocial;
+        this.social = social;
         this.userRole = userRole;
-        this.isCompany = isCompany;
-        this.isJob = isJob;
-        this.isStack = isStack;
+        this.company = company;
+        this.job = job;
+        this.stack = stack;
     }
 }
 

@@ -16,7 +16,7 @@ import java.util.List;
 @Converter
 public class ListStringConverter implements AttributeConverter<List<String>, String> {
     @Override
-    public String convertToDatabaseColumn(List<String> attribute) {
+    public  String convertToDatabaseColumn(List<String> attribute) {
         if (attribute == null || attribute.isEmpty()) {
             return null; // 또는 적절한 기본값 반환
         }

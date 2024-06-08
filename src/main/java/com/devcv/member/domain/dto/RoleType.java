@@ -1,5 +1,5 @@
 package com.devcv.member.domain.dto;
 
 public enum RoleType {
-    admin, user
+    관리자, 일반
 }

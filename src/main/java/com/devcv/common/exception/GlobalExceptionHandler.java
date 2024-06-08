@@ -2,6 +2,10 @@ package com.devcv.common.exception;
 
 import com.devcv.common.exception.dto.ErrorResponse;
 import com.devcv.common.util.exception.S3Exception;
+import com.devcv.member.exception.AuthLoginException;
+import com.devcv.member.exception.DuplicationException;
+import com.devcv.member.exception.NotNullException;
+import com.devcv.member.exception.NotSignUpException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,7 +66,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(NotSignUpException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
-                .body(ErrorResponse.from(ErrorCode.LOGIN_ID_ERROR));
+                .body(ErrorResponse.from(ErrorCode.FIND_ID_ERROR));
     }
     // 404 end
 
