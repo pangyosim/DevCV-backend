@@ -8,9 +8,11 @@ import lombok.Getter;
 @AllArgsConstructor
 public class MemberResponse {
 
-    private Long userid;
+    private Long userId;
+    private String nickName;
+    private String userName;
+    private String email;
     public static MemberResponse from(Member member) {
-        return new MemberResponse(member.getUserId());
+        return new MemberResponse(member.getUserId(),member.getNickName(), member.getUserName(),member.getUserName());
     }
-
 }
