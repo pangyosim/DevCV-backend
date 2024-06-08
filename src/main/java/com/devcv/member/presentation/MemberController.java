@@ -134,7 +134,6 @@ public class MemberController {
                 // 만료시간 없는 jwt토큰 발행 후 DB PW에 저장.
                 Member normalMember = Member.builder()
                         .userName(member.getUserName())
-                        .userPoint(0)
                         .userRole(RoleType.일반)
                         .email(member.getEmail())
                         .job(member.getJob())
@@ -156,7 +155,6 @@ public class MemberController {
                 Member socialMember = Member.builder()
                         .userName(member.getUserName())
                         .userRole(RoleType.일반)
-                        .userPoint(0)
                         .email(member.getEmail())
                         .job(member.getJob())
                         .phone(member.getPhone())
@@ -355,36 +353,6 @@ public class MemberController {
         }
     }
 
-    @PutMapping("/modipoint")
-    public ResponseEntity<String> modiPoint(@RequestBody Member member){
-        // NULL CHECK
-        try {
-            if(member.getUserId() == null || member.getUserPoint() == null){
-                throw new NotNullException(ErrorCode.NULL_ERROR);
-            }
-        } catch (Exception e){
-            e.fillInStackTrace();
-            throw new NotNullException(ErrorCode.NULL_ERROR);
-        }
-
-        try{
-            // userid로 Member 찾기
-            Member findMemberByuserId = memberService.findMemberByUserId(member.getUserId());
-            if( findMemberByuserId != null){
-                int resultUpdatePoint = memberService.updatePointByUserId(member.getUserPoint(),member.getUserId());
-                if(resultUpdatePoint == 1){
-                    return ResponseEntity.ok().build();
-                } else {
-                    throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
-                }
-            } else {
-                throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
-            }
-        } catch (Exception e) {
-            e.fillInStackTrace();
-            throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
-        }
-    }
     //----------- modi member end -----------
 
     // NULL CHECK Exception Handling

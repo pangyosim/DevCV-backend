@@ -42,9 +42,6 @@ public class Member extends BaseTimeEntity {
     @Column(name = "address", nullable = false)
     private String address;
 
-    @Column(name = "userpoint", nullable = false)
-    private Integer userPoint;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "social", nullable = false)
     private SocialType social; // 일반유저, 구글, 카카오
@@ -66,7 +63,7 @@ public class Member extends BaseTimeEntity {
     private List<String> stack;
 
     @Builder
-    public Member(Long userId, String userName, String email, String password, String nickName, String phone, String address, Integer userPoint, SocialType social, RoleType userRole, CompanyType company, JobType job, List<String> stack) {
+    public Member(Long userId, String userName, String email, String password, String nickName, String phone, String address, SocialType social, RoleType userRole, CompanyType company, JobType job, List<String> stack) {
         this.userId = userId;
         this.userName = userName;
         this.email = email;
@@ -74,7 +71,6 @@ public class Member extends BaseTimeEntity {
         this.nickName = nickName;
         this.phone = phone;
         this.address = address;
-        this.userPoint = userPoint;
         this.social = social;
         this.userRole = userRole;
         this.company = company;

@@ -33,7 +33,4 @@ public interface MemberRepository extends CrudRepository<Member, Long> {
     @Query(value = "UPDATE members SET username=:username, email=:email, password=:password, nickname=:nickname, phone=:phone, address=:address, social=:social, company=:company, job=:job, stack=:stack WHERE userid=:userid", nativeQuery = true)
     int updateMemberByUserId(@Param("username") String username, @Param("email") String email, @Param("password") String password, @Param("nickname") String nickname, @Param("phone") String phone, @Param("address") String address, @Param("social") String  social, @Param("company") String company, @Param("job") String job, @Param("stack") String stack, @Param("userid") Long userid);
 
-    @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE members SET userpoint=userpoint+:userpoint WHERE userid=:userid", nativeQuery = true)
-    int updatePointByUserId(@Param("userpoint") Integer userpoint, @Param("userid") Long userid);
 }
