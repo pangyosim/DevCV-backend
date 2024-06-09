@@ -20,6 +20,8 @@ public enum ErrorCode {
     //404
     NOT_FOUND_ERROR("페이지를 찾을 수 없습니다."),
     NULL_ERROR("데이터 중 하나가 NULL값입니다."),
+    RESUME_NOT_FOUND("이력서를 찾을 수 없습니다."),
+    MEMBER_NOT_FOUND("회원 정보를 찾을 수 없습니다."),
     //409
     CONFLICT_ERROR("요청 충돌 에러"),
 
@@ -27,6 +29,7 @@ public enum ErrorCode {
     IO_EXCEPTION_ON_IMAGE_UPLOAD("이미지 업로드 중 IO 예외가 발생했습니다."),
     PUT_OBJECT_EXCEPTION("S3에 객체를 저장하는 중 예외가 발생했습니다."),
     INTERNAL_SERVER_ERROR("서버 내부에 문제가 발생했습니다."),
+    UNAUTHORIZED_TO_COMPLETE_REGISTRATION("이력서 등록 완료 권한이 없습니다."),
     TEST_ERROR("테스트용 에러입니다."),
     ;
 

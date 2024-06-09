@@ -1,4 +1,4 @@
-package com.devcv.common.util.exception;
+package com.devcv.register.exception;
 
 import com.devcv.common.exception.CustomException;
 import com.devcv.common.exception.ErrorCode;
