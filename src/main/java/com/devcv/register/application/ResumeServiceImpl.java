@@ -1,11 +1,15 @@
 package com.devcv.register.application;
 
+import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.InternalServerException;
 import com.devcv.member.domain.Member;
 import com.devcv.member.domain.dto.MemberResponse;
 import com.devcv.member.repository.MemberRepository;
 import com.devcv.register.domain.Resume;
 import com.devcv.register.domain.Category;
-import com.devcv.common.util.S3Uploader;
+import com.devcv.register.exception.MemberNotFoundException;
+import com.devcv.register.exception.ResumeNotFoundException;
+import com.devcv.register.infrastructure.S3Uploader;
 import com.devcv.register.domain.ResumeImage;
 import com.devcv.register.domain.dto.CategoryDTO;
 import com.devcv.register.domain.dto.ResumeRequest;
@@ -28,16 +32,29 @@ import java.util.List;
 @Transactional
 public class ResumeServiceImpl implements ResumeService {
 
-   private  final ResumeRepository resumeRepository;
-   private final CategoryRepository categoryRepository;
+    private final ResumeRepository resumeRepository;
+    private final CategoryRepository categoryRepository;
     private final MemberRepository memberRepository;
-   private final S3Uploader s3Uploader;
+    private final S3Uploader s3Uploader;
+
+    @Override
+    public MemberResponse getMemberResponse(Long userId) {
+        Member member = memberRepository.findMemberByUserId(userId);
+        if (member == null) {
+            throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+        return MemberResponse.from(member);
+    }
 
     @Override
     public Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest) {
         try {
 
+            // 회원 아이디 조회, 추후 security 설정 시 삭제
             Member member = memberRepository.findMemberByUserId(memberResponse.getUserId());
+            if (member == null) {
+                throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+            }
 
             // Category 저장
             CategoryDTO categoryDTO = resumeRequest.getCategory();
@@ -85,7 +102,6 @@ public class ResumeServiceImpl implements ResumeService {
                 }
             }
 
-
             // 상태 설정
             resume.setStatus(ResumeStatus.승인대기);
 
@@ -93,8 +109,42 @@ public class ResumeServiceImpl implements ResumeService {
 
 
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload file", e);
+            e.fillInStackTrace();
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Override
+    public Resume completeRegistration(MemberResponse memberResponse, Long resumeId) {
+
+        try {
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
+
+            Member member = memberRepository.findMemberByUserId(memberResponse.getUserId());
+            if (member == null) {
+                throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+            }
+
+            resume.setStatus(ResumeStatus.등록완료);
+            return resumeRepository.save(resume);
+        }catch(Exception e) {
+            e.fillInStackTrace();
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @Override
+    public Resume findRegisteredResumeByMember(Long memberId) {
+        Resume approvedResume = resumeRepository.findFirstApprovedByMemberIdOrderByCreatedAtAsc(memberId);
+        if (approvedResume != null) {
+            return approvedResume;
+        } else {
+            Resume pendingResume = resumeRepository.findFirstPendingByMemberIdOrderByCreatedAtAsc(memberId);
+            return pendingResume;
+        }
+    }
+
 
 }
