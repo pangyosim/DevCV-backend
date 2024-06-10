@@ -44,4 +44,13 @@ public class Point {
         this.description = description;
         this.transactionDate = LocalDateTime.now();
     }
+
+    public static Point save(Member member, Long amount, String description) {
+        return new Point(member, amount, TransactionType.SAVE, description);
+    }
+
+    public static Point use(Member member, Long amount, String description) {
+        Long negativeAmount = -amount;
+        return new Point(member, negativeAmount, TransactionType.USE, description);
+    }
 }
