@@ -1,6 +1,7 @@
 package com.devcv.register.domain;
 
 import com.devcv.common.domain.BaseTimeEntity;
+import com.devcv.member.domain.Member;
 import com.devcv.register.domain.enumtype.ResumeStatus;
 import com.devcv.register.infrastructure.ListStringConverter;
 import jakarta.persistence.*;
@@ -39,16 +40,21 @@ public class Resume extends BaseTimeEntity{
 
     // 기술스택
     @Convert(converter = ListStringConverter.class)
-    private List<String> isStack;
+    private List<String> stack;
 
     // 관련 이미지(썸네일, 상세이미지)
     @ElementCollection
     @Builder.Default
     private List<ResumeImage> imageList = new ArrayList<>();// ResumeImage와 일대다 관계
 
+    // 카테고리 연관관계
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "categoryId", nullable = false)
     private Category category;
+
+    // 회원 연관관계
+    @ManyToOne(fetch = FetchType.LAZY)
+    private Member member;
 
     public void addImage(ResumeImage image) {
         image.setOrd(this.imageList.size());

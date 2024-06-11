@@ -1,12 +1,18 @@
 package com.devcv.register.application;
 
+import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.InternalServerException;
+import com.devcv.member.domain.Member;
+import com.devcv.member.domain.dto.MemberResponse;
+import com.devcv.member.repository.MemberRepository;
 import com.devcv.register.domain.Resume;
 import com.devcv.register.domain.Category;
-import com.devcv.common.util.S3Uploader;
+import com.devcv.register.exception.MemberNotFoundException;
+import com.devcv.register.exception.ResumeNotFoundException;
+import com.devcv.register.infrastructure.S3Uploader;
 import com.devcv.register.domain.ResumeImage;
 import com.devcv.register.domain.dto.CategoryDTO;
-import com.devcv.register.domain.dto.ResumeDTO;
-import com.devcv.register.domain.dto.ResumeImageDTO;
+import com.devcv.register.domain.dto.ResumeRequest;
 import com.devcv.register.domain.enumtype.ResumeStatus;
 import com.devcv.register.repository.CategoryRepository;
 import com.devcv.register.repository.ResumeRepository;
@@ -16,11 +22,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.devcv.register.application.ResumeMapper.dtoToEntity;
+
 
 @Service
 @Slf4j
@@ -28,15 +32,32 @@ import static com.devcv.register.application.ResumeMapper.dtoToEntity;
 @Transactional
 public class ResumeServiceImpl implements ResumeService {
 
-   private  final ResumeRepository resumeRepository;
-   private final CategoryRepository categoryRepository;
-   private final S3Uploader s3Uploader;
+    private final ResumeRepository resumeRepository;
+    private final CategoryRepository categoryRepository;
+    private final MemberRepository memberRepository;
+    private final S3Uploader s3Uploader;
 
     @Override
-    public ResumeDTO register(ResumeDTO resumeDTO, MultipartFile resumeFile, List<MultipartFile> images) {
+    public MemberResponse getMemberResponse(Long userId) {
+        Member member = memberRepository.findMemberByUserId(userId);
+        if (member == null) {
+            throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+        return MemberResponse.from(member);
+    }
+
+    @Override
+    public Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest) {
         try {
+
+            // 회원 아이디 조회, 추후 security 설정 시 삭제
+            Member member = memberRepository.findMemberByUserId(memberResponse.getUserId());
+            if (member == null) {
+                throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+            }
+
             // Category 저장
-            CategoryDTO categoryDTO = resumeDTO.getCategory();
+            CategoryDTO categoryDTO = resumeRequest.getCategory();
             List<Category> categories = categoryRepository.findByCompanyTypeAndStackType(
                     categoryDTO.getCompanyType(),
                     categoryDTO.getStackType()
@@ -51,36 +72,79 @@ public class ResumeServiceImpl implements ResumeService {
                 category = categories.get(0);
             }
 
-
             // PDF 파일 업로드
-            String resumeFilePath = s3Uploader.upload(resumeFile);
-            log.debug(resumeFilePath);
-            resumeDTO.setResumeFilePath(resumeFilePath);
+            String resumeFilePath = null;
+            if (resumeRequest.getResumeFile() != null) {
+                resumeFilePath = s3Uploader.upload(resumeRequest.getResumeFile());
+                log.debug("Uploaded resume file path: {}", resumeFilePath);
+            }
 
-            Resume resume = dtoToEntity(resumeDTO, category);
+            Resume resume = Resume.builder()
+                    .member(member)
+                    .price(resumeRequest.getPrice())
+                    .title(resumeRequest.getTitle())
+                    .content(resumeRequest.getContent())
+                    .resumeFilePath(resumeFilePath)
+                    .stack(resumeRequest.getStack())
+                    .category(category)
+                    .build();
 
-            // 상세이미지 업로드
-            if (images != null && !images.isEmpty()) {
-                for (int i = 0; i < images.size(); i++) {
-                    MultipartFile image = images.get(i);
-                    String imagePath = s3Uploader.upload(image);
-                    ResumeImageDTO resumeImageDTO = ResumeImageDTO.builder()
+            // 이미지 파일 업로드
+            List<MultipartFile> imageFiles = resumeRequest.getImageFiles();
+            if (imageFiles != null && !imageFiles.isEmpty()) {
+                for (int i = 0; i < imageFiles.size(); i++) {
+                    String imagePath = s3Uploader.upload(imageFiles.get(i));
+                    ResumeImage resumeImage = ResumeImage.builder()
                             .resumeImgPath(imagePath)
                             .ord(i)
                             .build();
-                    resume.addImage(ResumeImageMapper.dtoToEntity(resumeImageDTO));
+                    resume.addImage(resumeImage);
                 }
             }
 
             // 상태 설정
             resume.setStatus(ResumeStatus.승인대기);
 
-            Resume savedResume = resumeRepository.save(resume);
-            log.info("Saved resume ID: " + savedResume.getResumeId());
-            return ResumeMapper.entityToDto(savedResume);
+            return resumeRepository.save(resume);
+
+
         } catch (Exception e) {
-            throw new RuntimeException("Failed to upload file", e);
+            e.fillInStackTrace();
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
+
+    @Override
+    public Resume completeRegistration(MemberResponse memberResponse, Long resumeId) {
+
+        try {
+            Resume resume = resumeRepository.findById(resumeId)
+                    .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
+
+            Member member = memberRepository.findMemberByUserId(memberResponse.getUserId());
+            if (member == null) {
+                throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+            }
+
+            resume.setStatus(ResumeStatus.등록완료);
+            return resumeRepository.save(resume);
+        }catch(Exception e) {
+            e.fillInStackTrace();
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    @Override
+    public Resume findRegisteredResumeByMember(Long memberId) {
+        Resume approvedResume = resumeRepository.findFirstApprovedByMemberIdOrderByCreatedAtAsc(memberId);
+        if (approvedResume != null) {
+            return approvedResume;
+        } else {
+            Resume pendingResume = resumeRepository.findFirstPendingByMemberIdOrderByCreatedAtAsc(memberId);
+            return pendingResume;
+        }
+    }
+
 
 }

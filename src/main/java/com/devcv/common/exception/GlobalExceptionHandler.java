@@ -1,7 +1,9 @@
 package com.devcv.common.exception;
 
 import com.devcv.common.exception.dto.ErrorResponse;
-import com.devcv.common.util.exception.S3Exception;
+import com.devcv.register.exception.MemberNotFoundException;
+import com.devcv.register.exception.ResumeNotFoundException;
+import com.devcv.register.exception.S3Exception;
 import com.devcv.member.exception.AuthLoginException;
 import com.devcv.member.exception.DuplicationException;
 import com.devcv.member.exception.NotNullException;
@@ -67,6 +69,19 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.from(ErrorCode.FIND_ID_ERROR));
+    }
+
+    @ExceptionHandler(ResumeNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(ResumeNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.from(ErrorCode.RESUME_NOT_FOUND));
+    }
+    @ExceptionHandler(MemberNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(MemberNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.from(ErrorCode.MEMBER_NOT_FOUND));
     }
     // 404 end
 
