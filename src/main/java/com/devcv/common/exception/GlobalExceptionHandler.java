@@ -1,9 +1,9 @@
 package com.devcv.common.exception;
 
 import com.devcv.common.exception.dto.ErrorResponse;
-import com.devcv.register.exception.MemberNotFoundException;
-import com.devcv.register.exception.ResumeNotFoundException;
-import com.devcv.register.exception.S3Exception;
+import com.devcv.resume.exception.MemberNotFoundException;
+import com.devcv.resume.exception.ResumeNotFoundException;
+import com.devcv.resume.exception.S3Exception;
 import com.devcv.member.exception.AuthLoginException;
 import com.devcv.member.exception.DuplicationException;
 import com.devcv.member.exception.NotNullException;

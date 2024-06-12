@@ -2,7 +2,7 @@ package com.devcv.order.domain;
 
 import com.devcv.common.domain.BaseTimeEntity;
 import com.devcv.member.domain.Member;
-import com.devcv.register.domain.Resume;
+import com.devcv.resume.domain.Resume;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
