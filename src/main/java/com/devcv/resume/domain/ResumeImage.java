@@ -1,4 +1,4 @@
-package com.devcv.register.domain;
+package com.devcv.resume.domain;
 
 import jakarta.persistence.Embeddable;
 import lombok.*;

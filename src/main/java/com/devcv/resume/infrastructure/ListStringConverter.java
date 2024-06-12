@@ -1,4 +1,4 @@
-package com.devcv.register.infrastructure;
+package com.devcv.resume.infrastructure;
 
 import jakarta.persistence.AttributeConverter;
 import jakarta.persistence.Converter;

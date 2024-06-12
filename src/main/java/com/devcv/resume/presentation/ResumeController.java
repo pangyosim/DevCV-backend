@@ -1,10 +1,10 @@
-package com.devcv.register.presentation;
+package com.devcv.resume.presentation;
 
 import com.devcv.member.domain.dto.MemberResponse;
-import com.devcv.register.application.ResumeService;
-import com.devcv.register.domain.Resume;
-import com.devcv.register.domain.dto.ResumeDTO;
-import com.devcv.register.domain.dto.ResumeRequest;
+import com.devcv.resume.application.ResumeService;
+import com.devcv.resume.domain.Resume;
+import com.devcv.resume.domain.dto.ResumeDto;
+import com.devcv.resume.domain.dto.ResumeRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -40,7 +40,7 @@ public class ResumeController {
 
         if (resume != null) {
             // 승인 대기 중인 이력서가 있는 경우 해당 이력서 반환
-            return ResponseEntity.ok(ResumeDTO.from(resume));
+            return ResponseEntity.ok(ResumeDto.from(resume));
         } else {
             // 승인 대기 중인 이력서가 없는 경우 새로운 이력서 페이지 반환
             return ResponseEntity.ok().body("새로운 이력서 페이지");
@@ -78,7 +78,7 @@ public class ResumeController {
             @RequestPart("resumeId") Long resumeId) {
 
         Resume completedResume = resumeService.completeRegistration(memberResponse, resumeId);
-        return ResponseEntity.ok(ResumeDTO.from(completedResume));
+        return ResponseEntity.ok(ResumeDto.from(completedResume));
     }
     //----------이력서 판매등록 요청 end----------------
 

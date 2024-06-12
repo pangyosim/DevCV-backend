@@ -6,7 +6,6 @@ import com.devcv.member.domain.enumtype.JobType;
 import com.devcv.member.domain.enumtype.RoleType;
 import com.devcv.member.domain.enumtype.SocialType;
 import com.devcv.member.infrastructure.ListStringConverter;
-import com.devcv.point.domain.Point;
 import jakarta.persistence.*;
 import lombok.*;
 

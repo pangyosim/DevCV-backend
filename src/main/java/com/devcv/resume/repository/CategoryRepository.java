@@ -1,8 +1,8 @@
-package com.devcv.register.repository;
+package com.devcv.resume.repository;
 
-import com.devcv.register.domain.Category;
-import com.devcv.register.domain.enumtype.CompanyType;
-import com.devcv.register.domain.enumtype.StackType;
+import com.devcv.resume.domain.Category;
+import com.devcv.resume.domain.enumtype.CompanyType;
+import com.devcv.resume.domain.enumtype.StackType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

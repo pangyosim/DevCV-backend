@@ -1,11 +1,11 @@
-package com.devcv.register.infrastructure;
+package com.devcv.resume.infrastructure;
 
 import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.util.IOUtils;
 import com.devcv.common.exception.ErrorCode;
-import com.devcv.register.exception.S3Exception;
+import com.devcv.resume.exception.S3Exception;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

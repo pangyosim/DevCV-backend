@@ -1,11 +1,9 @@
-package com.devcv.register.application;
+package com.devcv.resume.application;
 
 import com.devcv.member.domain.dto.MemberResponse;
-import com.devcv.register.domain.Resume;
-import com.devcv.register.domain.dto.ResumeRequest;
+import com.devcv.resume.domain.Resume;
+import com.devcv.resume.domain.dto.ResumeRequest;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
 
 
 @Transactional

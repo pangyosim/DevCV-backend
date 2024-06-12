@@ -5,7 +5,7 @@ import com.devcv.common.exception.TestErrorException;
 import com.devcv.member.domain.Member;
 import com.devcv.order.domain.Order;
 import com.devcv.order.domain.dto.OrderSheet;
-import com.devcv.register.domain.Resume;
+import com.devcv.resume.domain.Resume;
 import com.devcv.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;

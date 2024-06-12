@@ -1,4 +1,4 @@
-package com.devcv.register.domain.dto;
+package com.devcv.resume.domain.dto;
 
 
 import lombok.Getter;
@@ -16,6 +16,6 @@ public class ResumeRequest {
     private String content;
     private MultipartFile resumeFile;
     private List<String> stack;
-    private CategoryDTO category;
+    private CategoryDto category;
     private List<MultipartFile> imageFiles;
 }
