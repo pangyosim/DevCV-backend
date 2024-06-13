@@ -20,7 +20,7 @@ public class Point {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "member_userid")
+    @JoinColumn(name = "member_memberid")
     private Member member;
 
     @Column

@@ -9,6 +9,7 @@ import com.devcv.member.exception.DuplicationException;
 import com.devcv.member.exception.NotNullException;
 import com.devcv.member.exception.NotSignUpException;
 import lombok.extern.slf4j.Slf4j;
+import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -54,6 +55,12 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.from(ErrorCode.LOGIN_ERROR));
+    }
+    @ExceptionHandler(PropertyValueException.class)
+    public ResponseEntity<ErrorResponse> handle(PropertyValueException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.NULL_ERROR));
     }
     // 401 end
 

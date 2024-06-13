@@ -10,7 +10,7 @@ import java.util.List;
 
 @Transactional
 public interface ResumeService {
-    MemberResponse getMemberResponse(Long userId);
+    MemberResponse getMemberResponse(Long memberid);
     //이력서 판매승인 요청
     Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest);
     // 이력서 판매등록 요청

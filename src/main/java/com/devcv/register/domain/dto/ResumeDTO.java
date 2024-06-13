@@ -38,7 +38,7 @@ public class ResumeDTO {
                 resume.getStack(),
                 resume.getImageList(),
                 resume.getCategory().getCategoryId(),
-                resume.getMember().getUserId()
+                resume.getMember().getMemberId()
         );
     }
 }

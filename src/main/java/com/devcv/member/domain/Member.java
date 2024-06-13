@@ -1,32 +1,32 @@
 package com.devcv.member.domain;
 
 import com.devcv.common.domain.BaseTimeEntity;
-import com.devcv.member.domain.dto.CompanyType;
-import com.devcv.member.domain.dto.JobType;
-import com.devcv.member.domain.dto.RoleType;
-import com.devcv.member.domain.dto.SocialType;
+import com.devcv.member.domain.enumtype.CompanyType;
+import com.devcv.member.domain.enumtype.JobType;
+import com.devcv.member.domain.enumtype.RoleType;
+import com.devcv.member.domain.enumtype.SocialType;
 import com.devcv.member.infrastructure.ListStringConverter;
 import com.devcv.point.domain.Point;
 import jakarta.persistence.*;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.util.List;
 
 @Getter
 @Entity
-@NoArgsConstructor
-@Table(name = "members")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder(toBuilder = true)
+@Table(name = "tb_member")
 public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userid")
-    private Long userId;
+    @Column(name = "memberid")
+    private Long memberId;
 
-    @Column(name = "username", nullable = false)
-    private String userName;
+    @Column(name = "membername", nullable = false)
+    private String memberName;
 
     @Column(name = "email", nullable = false)
     private String email;
@@ -43,17 +43,13 @@ public class Member extends BaseTimeEntity {
     @Column(name = "address", nullable = false)
     private String address;
 
-    @Column
-    @OneToMany(mappedBy = "member")
-    private List<Point> points;
-
     @Enumerated(EnumType.STRING)
     @Column(name = "social", nullable = false)
-    private SocialType social; // 일반유저, 구글, 카카오
+    private SocialType social;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "userrole", nullable = false)
-    private RoleType userRole; // 일반유저: user 관리자: admin
+    @Column(name = "memberrole", nullable = false)
+    private RoleType memberRole;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "company", nullable = false)
@@ -67,22 +63,6 @@ public class Member extends BaseTimeEntity {
     @Column(name = "stack", nullable = false)
     private List<String> stack;
 
-    @Builder
-    public Member(Long userId, String userName, String email, String password, String nickName, String phone, String address, List<Point> points, SocialType social, RoleType userRole, CompanyType company, JobType job, List<String> stack) {
-        this.userId = userId;
-        this.userName = userName;
-        this.email = email;
-        this.password = password;
-        this.nickName = nickName;
-        this.phone = phone;
-        this.address = address;
-        this.points = points;
-        this.social = social;
-        this.userRole = userRole;
-        this.company = company;
-        this.job = job;
-        this.stack = stack;
-    }
 }
 
 

@@ -16,21 +16,21 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public interface MemberRepository extends CrudRepository<Member, Long> {
 
-    @Query(value = "SELECT * FROM members WHERE email=:email", nativeQuery = true)
+    @Query(value = "SELECT * FROM tb_member WHERE email=:email", nativeQuery = true)
     Member findMemberByEmail(@Param("email") String email);
 
-    @Query(value = "SELECT * FROM members WHERE userid=:userid", nativeQuery = true)
-    Member findMemberByUserId(@Param("userid") Long userid);
+    @Query(value = "SELECT * FROM tb_member WHERE memberid=:memberid", nativeQuery = true)
+    Member findMemberBymemberid(@Param("memberid") Long memberid);
 
-    @Query(value = "SELECT * FROM members WHERE username=:username AND phone=:phone", nativeQuery = true)
-    Member findMemberByUserNameAndPhone(@Param("username") String username,@Param("phone") String phone);
-
-    @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE members SET password=:password WHERE userid=:userid", nativeQuery = true)
-    int updatePasswordByUserId(@Param("password") String password, @Param("userid") Long userid);
+    @Query(value = "SELECT * FROM tb_member WHERE membername=:membername AND phone=:phone", nativeQuery = true)
+    Member findMemberByMemberNameAndPhone(@Param("membername") String membername,@Param("phone") String phone);
 
     @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE members SET username=:username, email=:email, password=:password, nickname=:nickname, phone=:phone, address=:address, social=:social, company=:company, job=:job, stack=:stack WHERE userid=:userid", nativeQuery = true)
-    int updateMemberByUserId(@Param("username") String username, @Param("email") String email, @Param("password") String password, @Param("nickname") String nickname, @Param("phone") String phone, @Param("address") String address, @Param("social") String  social, @Param("company") String company, @Param("job") String job, @Param("stack") String stack, @Param("userid") Long userid);
+    @Query(value = "UPDATE tb_member SET password=:password WHERE memberid=:memberid", nativeQuery = true)
+    int updatePasswordByMemberId(@Param("password") String password, @Param("memberid") Long memberid);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE tb_member SET membername=:membername, email=:email, password=:password, nickname=:nickname, phone=:phone, address=:address, social=:social, company=:company, job=:job, stack=:stack WHERE memberid=:memberid", nativeQuery = true)
+    int updateMemberByMemberId(@Param("membername") String membername, @Param("email") String email, @Param("password") String password, @Param("nickname") String nickname, @Param("phone") String phone, @Param("address") String address, @Param("social") String  social, @Param("company") String company, @Param("job") String job, @Param("stack") String stack, @Param("memberid") Long memberid);
 
 }
