@@ -172,6 +172,14 @@ public class ResumeServiceImpl implements ResumeService {
     }
 
     @Override
+    public ResumeDto getRegisterResumeDetail(Long resumeId) {
+        Resume resume = resumeRepository.findById(resumeId)
+                .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
+
+        return ResumeDto.from(resume);
+    }
+
+    @Override
     public Resume completeRegistration(MemberResponse memberResponse, Long resumeId) {
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
@@ -183,17 +191,6 @@ public class ResumeServiceImpl implements ResumeService {
 
         resume.setStatus(ResumeStatus.등록완료);
         return resumeRepository.save(resume);
-    }
-
-    @Override
-    public Resume findRegisteredResumeByMember(Long memberId) {
-        Resume approvedResume = resumeRepository.findFirstApprovedByMemberIdOrderByCreatedAtAsc(memberId);
-        if (approvedResume != null) {
-            return approvedResume;
-        } else {
-            Resume pendingResume = resumeRepository.findFirstPendingByMemberIdOrderByCreatedAtAsc(memberId);
-            return pendingResume;
-        }
     }
 
 }

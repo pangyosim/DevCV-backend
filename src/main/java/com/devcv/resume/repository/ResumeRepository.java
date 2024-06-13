@@ -15,17 +15,9 @@ import java.util.Optional;
 
 public interface ResumeRepository extends JpaRepository<Resume, Long> {
 
-    // 판매승인 된 이력서 조회
-    @Query(value = "SELECT * FROM tb_resume r WHERE r.member_userid = :memberId AND r.status = '판매승인' ORDER BY r.created_date ASC LIMIT 1", nativeQuery = true)
-    Resume findFirstApprovedByMemberIdOrderByCreatedAtAsc(@Param("memberId") Long memberId);
-
-    // 승인대기 중인 이력서 조회
-    @Query(value = "SELECT * FROM tb_resume r WHERE r.member_userid = :memberId AND r.status = '승인대기' ORDER BY r.created_date ASC LIMIT 1", nativeQuery = true)
-    Resume findFirstPendingByMemberIdOrderByCreatedAtAsc(@Param("memberId") Long memberId);
-
-    // 상세 이력서 조회
-    @Query("SELECT r FROM Resume r WHERE r.resumeId = :resumeId AND r.status = '등록완료'")
-    Optional<Resume> findByIdAndStatus(Long resumeId);
+    // 판매내역 이력서 상세 조회
+    @Query("SELECT r FROM Resume r WHERE r.resumeId = :resumeId")
+    Optional<Resume> findById(Long resumeId);
 
     // 기본 이력서 조회
     Page<Resume> findByStatus(ResumeStatus status, Pageable pageable);
@@ -38,6 +30,10 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
 
     // 회사별 이력서 조회
     Page<Resume> findByCategory_CompanyTypeAndStatus(CompanyType companyType, ResumeStatus status, Pageable pageable);
+
+    // 상세 이력서 조회
+    @Query("SELECT r FROM Resume r WHERE r.resumeId = :resumeId AND r.status = '등록완료'")
+    Optional<Resume> findByIdAndStatus(Long resumeId);
 
     //----------------등록완료 default인 메서드 start-----------------
     default Page<Resume> findApprovedResumes(Pageable pageable) {
