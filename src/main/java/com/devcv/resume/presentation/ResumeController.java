@@ -3,8 +3,11 @@ package com.devcv.resume.presentation;
 import com.devcv.member.domain.dto.MemberResponse;
 import com.devcv.resume.application.ResumeService;
 import com.devcv.resume.domain.Resume;
+import com.devcv.resume.domain.dto.PaginatedResumeResponse;
 import com.devcv.resume.domain.dto.ResumeDto;
 import com.devcv.resume.domain.dto.ResumeRequest;
+import com.devcv.resume.domain.enumtype.CompanyType;
+import com.devcv.resume.domain.enumtype.StackType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +30,28 @@ import java.util.List;
 public class ResumeController {
 
     private final ResumeService resumeService;
+
+    //------------이력서 목록 조회 요청 start---------------
+    @GetMapping()
+    public ResponseEntity<PaginatedResumeResponse> getResumesByConditions(
+            @RequestParam("page") int page, @RequestParam("size") int size,
+            @RequestParam(value = "stackType", required = false) StackType stackType,
+            @RequestParam(value = "companyType", required = false) CompanyType companyType) {
+        PaginatedResumeResponse response = resumeService.findResumes(stackType, companyType, page, size);
+        return ResponseEntity.ok(response);
+    }
+    //------------이력서 목록 조회 요청 end---------------
+
+
+    //------------이력서 상세 조회 요청 start--------------
+    @GetMapping("/{resumeId}")
+    public ResponseEntity<ResumeDto> getResumeDetail(@PathVariable Long resumeId) {
+        ResumeDto resumeDetail = resumeService.getResumeDetail(resumeId);
+        return ResponseEntity.ok(resumeDetail);
+    }
+    //------------이력서 상세 조회 요청 end---------------
+
+
 
     //------이력서 등록 페이지 호출 start --------
     @GetMapping("/new")
