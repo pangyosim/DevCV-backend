@@ -1,9 +1,9 @@
-package com.devcv.register.domain.dto;
+package com.devcv.resume.domain.dto;
 
 
-import com.devcv.register.domain.Resume;
-import com.devcv.register.domain.ResumeImage;
-import com.devcv.register.domain.enumtype.ResumeStatus;
+import com.devcv.resume.domain.Resume;
+import com.devcv.resume.domain.ResumeImage;
+import com.devcv.resume.domain.enumtype.ResumeStatus;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -15,7 +15,7 @@ import java.util.List;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class ResumeDTO {
+public class ResumeDto {
     private Long resumeId;
     private int price;
     private String title;
@@ -27,8 +27,8 @@ public class ResumeDTO {
     private Long categoryId;
     private Long memberId;
 
-    public static ResumeDTO from(Resume resume) {
-        return new ResumeDTO(
+    public static ResumeDto from(Resume resume) {
+        return new ResumeDto(
                 resume.getResumeId(),
                 resume.getPrice(),
                 resume.getTitle(),

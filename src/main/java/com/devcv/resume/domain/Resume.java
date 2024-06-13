@@ -1,9 +1,9 @@
-package com.devcv.register.domain;
+package com.devcv.resume.domain;
 
 import com.devcv.common.domain.BaseTimeEntity;
 import com.devcv.member.domain.Member;
-import com.devcv.register.domain.enumtype.ResumeStatus;
-import com.devcv.register.infrastructure.ListStringConverter;
+import com.devcv.resume.domain.enumtype.ResumeStatus;
+import com.devcv.resume.infrastructure.ListStringConverter;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -1,7 +1,7 @@
-package com.devcv.register.domain;
+package com.devcv.resume.domain;
 
-import com.devcv.register.domain.enumtype.CompanyType;
-import com.devcv.register.domain.enumtype.StackType;
+import com.devcv.resume.domain.enumtype.CompanyType;
+import com.devcv.resume.domain.enumtype.StackType;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;

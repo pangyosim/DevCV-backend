@@ -1,6 +1,6 @@
-package com.devcv.register.repository;
+package com.devcv.resume.repository;
 
-import com.devcv.register.domain.Resume;
+import com.devcv.resume.domain.Resume;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

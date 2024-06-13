@@ -1,4 +1,4 @@
-package com.devcv.register.domain.enumtype;
+package com.devcv.resume.domain.enumtype;
 
 public enum ResumeStatus {
     승인대기,

@@ -1,7 +1,7 @@
-package com.devcv.register.domain.dto;
+package com.devcv.resume.domain.dto;
 
-import com.devcv.register.domain.enumtype.CompanyType;
-import com.devcv.register.domain.enumtype.StackType;
+import com.devcv.resume.domain.enumtype.CompanyType;
+import com.devcv.resume.domain.enumtype.StackType;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class CategoryDTO {
+public class CategoryDto {
 
     private Long categoryId;
     private CompanyType companyType;

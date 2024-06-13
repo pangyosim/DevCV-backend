@@ -1,6 +1,6 @@
-package com.devcv.register.domain.dto;
+package com.devcv.resume.domain.dto;
 
-import com.devcv.register.domain.Resume;
+import com.devcv.resume.domain.Resume;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

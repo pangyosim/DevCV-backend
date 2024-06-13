@@ -1,21 +1,21 @@
-package com.devcv.register.application;
+package com.devcv.resume.application;
 
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.common.exception.InternalServerException;
 import com.devcv.member.domain.Member;
 import com.devcv.member.domain.dto.MemberResponse;
 import com.devcv.member.repository.MemberRepository;
-import com.devcv.register.domain.Resume;
-import com.devcv.register.domain.Category;
-import com.devcv.register.exception.MemberNotFoundException;
-import com.devcv.register.exception.ResumeNotFoundException;
-import com.devcv.register.infrastructure.S3Uploader;
-import com.devcv.register.domain.ResumeImage;
-import com.devcv.register.domain.dto.CategoryDTO;
-import com.devcv.register.domain.dto.ResumeRequest;
-import com.devcv.register.domain.enumtype.ResumeStatus;
-import com.devcv.register.repository.CategoryRepository;
-import com.devcv.register.repository.ResumeRepository;
+import com.devcv.resume.domain.Resume;
+import com.devcv.resume.domain.Category;
+import com.devcv.resume.exception.MemberNotFoundException;
+import com.devcv.resume.exception.ResumeNotFoundException;
+import com.devcv.resume.infrastructure.S3Uploader;
+import com.devcv.resume.domain.ResumeImage;
+import com.devcv.resume.domain.dto.CategoryDto;
+import com.devcv.resume.domain.dto.ResumeRequest;
+import com.devcv.resume.domain.enumtype.ResumeStatus;
+import com.devcv.resume.repository.CategoryRepository;
+import com.devcv.resume.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -57,7 +57,7 @@ public class ResumeServiceImpl implements ResumeService {
             }
 
             // Category 저장
-            CategoryDTO categoryDTO = resumeRequest.getCategory();
+            CategoryDto categoryDTO = resumeRequest.getCategory();
             List<Category> categories = categoryRepository.findByCompanyTypeAndStackType(
                     categoryDTO.getCompanyType(),
                     categoryDTO.getStackType()
