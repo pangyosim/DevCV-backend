@@ -26,6 +26,7 @@ public class ResumeDto {
     private List<ResumeImage> imageList;
     private Long categoryId;
     private Long memberId;
+    private String sellerNickname;
 
     public static ResumeDto from(Resume resume) {
         return new ResumeDto(
@@ -38,7 +39,8 @@ public class ResumeDto {
                 resume.getStack(),
                 resume.getImageList(),
                 resume.getCategory().getCategoryId(),
-                resume.getMember().getUserId()
+                resume.getMember().getUserId(),
+                resume.getMember().getNickName()
         );
     }
 }

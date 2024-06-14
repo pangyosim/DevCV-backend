@@ -13,6 +13,7 @@ public class ResumeResponse {
     private int price;
     private String resumeFilePath;
     private String thumbnail;
+    private String sellerNickname;
 
 
     public static ResumeResponse from(Resume resume) {
@@ -21,7 +22,8 @@ public class ResumeResponse {
                 resume.getTitle(),
                 resume.getPrice(),
                 resume.getResumeFilePath(),
-                getThumbnailFromResume(resume) // 썸네일 이미지를 직접 가져오는 메서드
+                getThumbnailFromResume(resume), // 썸네일 이미지 직접 가져오기
+                resume.getMember().getNickName()
         );
     }
     private static String getThumbnailFromResume(Resume resume) {
