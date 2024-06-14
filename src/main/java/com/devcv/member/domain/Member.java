@@ -1,13 +1,13 @@
 package com.devcv.member.domain;
 
 import com.devcv.common.domain.BaseTimeEntity;
-import com.devcv.member.domain.dto.CompanyType;
-import com.devcv.member.domain.dto.JobType;
-import com.devcv.member.domain.dto.RoleType;
-import com.devcv.member.domain.dto.SocialType;
+import com.devcv.member.domain.enumtype.CompanyType;
+import com.devcv.member.domain.enumtype.JobType;
+import com.devcv.member.domain.enumtype.RoleType;
+import com.devcv.member.domain.enumtype.SocialType;
 import com.devcv.member.infrastructure.ListStringConverter;
-import com.devcv.point.domain.Point;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -17,16 +17,18 @@ import java.util.List;
 @Getter
 @Entity
 @NoArgsConstructor
-@Table(name = "members")
+@AllArgsConstructor
+@Builder(toBuilder = true)
+@Table(name = "tb_member")
 public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "userid")
-    private Long userId;
+    @Column(name = "memberid")
+    private Long memberId;
 
-    @Column(name = "username", nullable = false)
-    private String userName;
+    @Column(name = "membername", nullable = false)
+    private String memberName;
 
     @Column(name = "email", nullable = false)
     private String email;
@@ -48,8 +50,8 @@ public class Member extends BaseTimeEntity {
     private SocialType social; // 일반유저, 구글, 카카오
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "userrole", nullable = false)
-    private RoleType userRole; // 일반유저: user 관리자: admin
+    @Column(name = "memberrole", nullable = false)
+    private RoleType memberRole; // 일반유저: user 관리자: admin
 
     @Enumerated(EnumType.STRING)
     @Column(name = "company", nullable = false)
@@ -63,21 +65,6 @@ public class Member extends BaseTimeEntity {
     @Column(name = "stack", nullable = false)
     private List<String> stack;
 
-    @Builder
-    public Member(Long userId, String userName, String email, String password, String nickName, String phone, String address, SocialType social, RoleType userRole, CompanyType company, JobType job, List<String> stack) {
-        this.userId = userId;
-        this.userName = userName;
-        this.email = email;
-        this.password = password;
-        this.nickName = nickName;
-        this.phone = phone;
-        this.address = address;
-        this.social = social;
-        this.userRole = userRole;
-        this.company = company;
-        this.job = job;
-        this.stack = stack;
-    }
 }
 
 
