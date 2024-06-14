@@ -28,7 +28,7 @@ public class PointController {
     @PostMapping("/point/save")
     public ResponseEntity<Long> savePoint(@RequestBody PointRequestDto pointRequestDto) {
 
-        Member member = memberService.findMemberByUserId(pointRequestDto.memberId());
+        Member member = memberService.findMemberByMemberId(pointRequestDto.memberId());
 
         Point point = pointService.savePoint(member, pointRequestDto.amount(), pointRequestDto.description());
 
@@ -39,7 +39,7 @@ public class PointController {
     @PostMapping("/point/use")
     public ResponseEntity<Long> usePoint(@RequestBody PointRequestDto pointRequestDto) {
 
-        Member member = memberService.findMemberByUserId(pointRequestDto.memberId());
+        Member member = memberService.findMemberByMemberId(pointRequestDto.memberId());
 
         Point point = pointService.usePoint(member, pointRequestDto.amount(), pointRequestDto.description());
 

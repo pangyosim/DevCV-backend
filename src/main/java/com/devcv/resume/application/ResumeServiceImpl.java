@@ -93,8 +93,8 @@ public class ResumeServiceImpl implements ResumeService {
 
 
     @Override
-    public MemberResponse getMemberResponse(Long userId) {
-        Member member = memberRepository.findMemberByUserId(userId);
+    public MemberResponse getMemberResponse(Long memberid) {
+        Member member = memberRepository.findMemberBymemberid(memberid);
         if (member == null) {
             throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }

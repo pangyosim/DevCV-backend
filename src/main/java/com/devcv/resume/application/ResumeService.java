@@ -23,5 +23,4 @@ public interface ResumeService {
     Resume completeRegistration(MemberResponse memberResponse, Long resumeId);
     // 이력서 조회(이력서 등록 기능 내 상태구분을 위함)
     Resume findRegisteredResumeByMember(Long memberId);
-
 }

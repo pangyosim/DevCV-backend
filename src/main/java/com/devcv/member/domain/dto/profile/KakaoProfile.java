@@ -1,4 +1,4 @@
-package com.devcv.member.domain.dto;
+package com.devcv.member.domain.dto.profile;
 
 import lombok.Getter;
 

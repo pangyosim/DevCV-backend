@@ -17,11 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 // security 설정 이후 공통 파라미터 변경, //2 삭제
-//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @AuthenticationPrincipal MemberDetails userDetails,
 
 // 인증된 사용자 정보 조회 통한 memberResponse get 로직 츠기
-//        Long userId = userDetails.getUserId();
-//        MemberResponse memberResponse = resumeService.getMemberResponse(userId);
+//        Long memberid = userDetails.getmemberid();
+//        MemberResponse memberResponse = resumeService.getMemberResponse(memberid);
 
 @RestController
 @RequiredArgsConstructor
@@ -56,12 +56,12 @@ public class ResumeController {
     //------이력서 등록 페이지 호출 start --------
     @GetMapping("/new")
     public ResponseEntity<?> newResumePage(
-            @RequestParam("userId") Long userId ) { //2
+            @RequestParam("memberid") Long memberid ) { //2
 
         // 회원정보 조회 후 에러 처리를 위한 임시 메서드->추후 security 설정 이후 변경
-        MemberResponse memberResponse = resumeService.getMemberResponse(userId);
+        MemberResponse memberResponse = resumeService.getMemberResponse(memberid);
 
-        Resume resume = resumeService.findRegisteredResumeByMember(userId);
+        Resume resume = resumeService.findRegisteredResumeByMember(memberid);
 
         if (resume != null) {
             // 승인 대기 중인 이력서가 있는 경우 해당 이력서 반환

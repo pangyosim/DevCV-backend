@@ -17,18 +17,18 @@ public class MailService {
 
     @Autowired
     private final JavaMailSender javamailSender;
-    private static final String senderEmail = "oy1666919@gmail.com";
-    private static int number;
+    private static final String senderEmail = "devcv0712@gmail.com";
+    private static Long number;
 
     public static void createNumber() {
-        number = (int)(Math.random() * (90000)) + 100000;
+        number = (long) (Math.random() * (90000)) + 100000;
     }
 
     public MimeMessage CreateMail(String mail) throws UnsupportedEncodingException{
         createNumber();
         MimeMessage message = javamailSender.createMimeMessage();
         try {
-            message.setFrom(new InternetAddress(senderEmail, "DevCV"));
+            message.setFrom(new InternetAddress(senderEmail, "DEVCV"));
             message.setRecipients(MimeMessage.RecipientType.TO, mail);
             message.setSubject("이메일 인증");
             String body = "";
@@ -43,7 +43,7 @@ public class MailService {
 
     }
 
-    public int sendMail(String mail) throws UnsupportedEncodingException {
+    public Long sendMail(String mail) throws UnsupportedEncodingException {
 
         MimeMessage message = CreateMail(mail);
 
