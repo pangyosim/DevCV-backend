@@ -8,6 +8,8 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 public interface AttendanceEventRepository extends JpaRepository<AttendanceEvent, Long> {
 
@@ -21,4 +23,16 @@ public interface AttendanceEventRepository extends JpaRepository<AttendanceEvent
             @Param("event") Event event,
             @Param("createdDate") LocalDate createdDate
     );
+
+    @Query("SELECT a.createdDate " +
+            "FROM AttendanceEvent a " +
+            "WHERE a.member = :member " +
+            "AND a.event = :event " +
+            "AND DATE(a.createdDate) BETWEEN :startDate AND :endDate")
+    List<LocalDateTime> findCreatedDateByMemberAndDateRange(@Param("member") Member member,
+                                                            @Param("event") Event event,
+                                                            @Param("startDate") LocalDate startDate,
+                                                            @Param("endDate") LocalDate endDate);
+
+//    List<AttendanceEvent> findAttendanceEventsByMemberAndEvent(Member member, Event event);
 }

@@ -2,6 +2,7 @@ package com.devcv.event.presentation;
 
 import com.devcv.event.application.AttendanceEventService;
 import com.devcv.event.domain.AttendanceEvent;
+import com.devcv.event.domain.dto.AttendanceListResponse;
 import com.devcv.event.domain.dto.AttendanceRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -16,9 +17,15 @@ public class AttendanceController {
 
     private final AttendanceEventService attendanceEventService;
 
-    @PostMapping("/")
+    @PostMapping
     public ResponseEntity<Object> checkAttendance(@RequestBody AttendanceRequest request) {
         AttendanceEvent attendanceEvent = attendanceEventService.checkAttendance(request);
         return ResponseEntity.created(URI.create(String.valueOf(attendanceEvent.getId()))).build();
+    }
+
+    @GetMapping
+    public ResponseEntity<Object> getAttendanceList(@RequestBody AttendanceRequest request) { //임시 dto
+        AttendanceListResponse response = attendanceEventService.getAttendanceListResponse(request);
+        return ResponseEntity.ok(response);
     }
 }

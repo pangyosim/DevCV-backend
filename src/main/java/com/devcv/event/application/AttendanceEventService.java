@@ -4,6 +4,7 @@ import com.devcv.common.exception.ErrorCode;
 import com.devcv.common.exception.TestErrorException;
 import com.devcv.event.domain.AttendanceEvent;
 import com.devcv.event.domain.Event;
+import com.devcv.event.domain.dto.AttendanceListResponse;
 import com.devcv.event.domain.dto.AttendanceRequest;
 import com.devcv.event.repository.AttendanceEventRepository;
 import com.devcv.member.application.MemberService;
@@ -14,6 +15,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -51,5 +54,19 @@ public class AttendanceEventService {
 
     private void savePoint(Member member, Event event) {
         pointService.savePoint(member, ATTENDANCE_POINT, event.getName());
+    }
+
+    @Transactional
+    public AttendanceListResponse getAttendanceListResponse(AttendanceRequest request) {
+        Member member = memberService.findMemberByUserId(request.memberId());
+        Event event = eventService.findByEventId(request.eventId());
+
+        LocalDate startDate = LocalDate.from(event.getStartDate());
+        LocalDate endDate = LocalDate.from(event.getEndDate());
+
+        List<LocalDateTime> attendanceDateList = attendanceEventRepository
+                .findCreatedDateByMemberAndDateRange(member, event, startDate, endDate);
+
+        return AttendanceListResponse.of(member.getUserId(), attendanceDateList);
     }
 }
