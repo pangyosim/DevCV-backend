@@ -17,11 +17,11 @@ import org.springframework.web.multipart.MultipartFile;
 import java.util.List;
 
 // security 설정 이후 공통 파라미터 변경, //2 삭제
-//            @AuthenticationPrincipal CustomUserDetails userDetails,
+//            @AuthenticationPrincipal MemberDetails userDetails,
 
 // 인증된 사용자 정보 조회 통한 memberResponse get 로직 츠기
-//        Long userId = userDetails.getUserId();
-//        MemberResponse memberResponse = resumeService.getMemberResponse(userId);
+//        Long memberid = userDetails.getmemberid();
+//        MemberResponse memberResponse = resumeService.getMemberResponse(memberid);
 
 @RestController
 @RequiredArgsConstructor
@@ -56,17 +56,17 @@ public class ResumeController {
     //------이력서 등록 페이지 호출 start --------
     @GetMapping("/add")
     public ResponseEntity<?> newResumePage(
-            @RequestPart("userId") Long userId ) { //2
+            @RequestParam("memberId") Long memberId ) { //2
 
         // 회원정보 조회 후 에러 처리를 위한 임시 메서드->추후 security 설정 이후 변경
-        MemberResponse memberResponse = resumeService.getMemberResponse(userId);
+        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
+
         // 새로운 이력서 페이지를 위한 기본 ResumeDto 생성
         ResumeDto newResume = new ResumeDto();
-        newResume.setMemberId(memberResponse.getUserId());
+        newResume.setMemberId(memberResponse.getMemberId());
         newResume.setSellerNickname(memberResponse.getNickName());
 
         return ResponseEntity.ok().body(newResume);
-
     }
     //-------이력서 등록 페이지 호출 end -----------
 
@@ -94,8 +94,8 @@ public class ResumeController {
 
     //----------이력서 판매 상세 내역 페이지 호출 start---------
     @GetMapping("/myresume/{resumeId}")
-    public ResponseEntity<ResumeDto> getResumeForEdit(@RequestParam("userId") Long userId, @PathVariable Long resumeId) {
-        MemberResponse memberResponse = resumeService.getMemberResponse(userId);
+    public ResponseEntity<ResumeDto> getResumeForEdit(@RequestParam("memberId") Long memberId, @PathVariable Long resumeId) {
+        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
         ResumeDto resumeDetail = resumeService.getRegisterResumeDetail(resumeId);
         return ResponseEntity.ok(resumeDetail);
     }

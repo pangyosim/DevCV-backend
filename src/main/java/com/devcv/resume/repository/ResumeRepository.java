@@ -54,5 +54,4 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     //----------------판매승인이 default인 메서드 end-----------------
 
 
-
 }
