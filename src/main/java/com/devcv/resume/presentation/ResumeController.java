@@ -54,22 +54,19 @@ public class ResumeController {
 
 
     //------이력서 등록 페이지 호출 start --------
-    @GetMapping("/new")
+    @GetMapping("/add")
     public ResponseEntity<?> newResumePage(
-            @RequestParam("memberid") Long memberid ) { //2
+            @RequestParam("memberId") Long memberId ) { //2
 
         // 회원정보 조회 후 에러 처리를 위한 임시 메서드->추후 security 설정 이후 변경
-        MemberResponse memberResponse = resumeService.getMemberResponse(memberid);
+        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
 
-        Resume resume = resumeService.findRegisteredResumeByMember(memberid);
+        // 새로운 이력서 페이지를 위한 기본 ResumeDto 생성
+        ResumeDto newResume = new ResumeDto();
+        newResume.setMemberId(memberResponse.getMemberId());
+        newResume.setSellerNickname(memberResponse.getNickName());
 
-        if (resume != null) {
-            // 승인 대기 중인 이력서가 있는 경우 해당 이력서 반환
-            return ResponseEntity.ok(ResumeDto.from(resume));
-        } else {
-            // 승인 대기 중인 이력서가 없는 경우 새로운 이력서 페이지 반환
-            return ResponseEntity.ok().body("새로운 이력서 페이지");
-        }
+        return ResponseEntity.ok().body(newResume);
     }
     //-------이력서 등록 페이지 호출 end -----------
 
@@ -95,8 +92,17 @@ public class ResumeController {
     //----------이력서 승인대기 요청 end---------------
 
 
+    //----------이력서 판매 상세 내역 페이지 호출 start---------
+    @GetMapping("/myresume/{resumeId}")
+    public ResponseEntity<ResumeDto> getResumeForEdit(@RequestParam("memberId") Long memberId, @PathVariable Long resumeId) {
+        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
+        ResumeDto resumeDetail = resumeService.getRegisterResumeDetail(resumeId);
+        return ResponseEntity.ok(resumeDetail);
+    }
+    //----------이력서 판매 상세 내역 페이지 페이지 호출 end-----------
 
-    //----------이력서 판매등록 요청 start----------------
+
+    //----------이력서 판매 등록 요청 start----------------
     @PostMapping("/complete")
     public ResponseEntity<?> completeResumeRegistration(
             @RequestPart("member") MemberResponse memberResponse, // 2
@@ -105,7 +111,7 @@ public class ResumeController {
         Resume completedResume = resumeService.completeRegistration(memberResponse, resumeId);
         return ResponseEntity.ok(ResumeDto.from(completedResume));
     }
-    //----------이력서 판매등록 요청 end----------------
+    //----------이력서 판매 등록 요청 end----------------
 
 
 

@@ -19,8 +19,8 @@ public interface ResumeService {
     MemberResponse getMemberResponse(Long memberId);
     //이력서 판매승인 요청
     Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest);
+    // 이력서 판매내역 상세 조회
+    ResumeDto getRegisterResumeDetail(Long resumeId);
     // 이력서 등록완료 요청
     Resume completeRegistration(MemberResponse memberResponse, Long resumeId);
-    // 이력서 조회(이력서 등록 기능 내 상태구분을 위함)
-    Resume findRegisteredResumeByMember(Long memberId);
 }
