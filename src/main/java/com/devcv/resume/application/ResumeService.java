@@ -16,7 +16,7 @@ public interface ResumeService {
     PaginatedResumeResponse findResumes(StackType stackType, CompanyType companyType, int page, int size);
     // 이력서 상세 조회
     ResumeDto getResumeDetail(Long resumeId);
-    MemberResponse getMemberResponse(Long userId);
+    MemberResponse getMemberResponse(Long memberId);
     //이력서 판매승인 요청
     Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest);
     // 이력서 등록완료 요청
