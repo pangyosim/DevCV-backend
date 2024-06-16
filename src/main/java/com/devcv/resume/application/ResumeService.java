@@ -20,7 +20,7 @@ public interface ResumeService {
     //이력서 판매승인 요청
     Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest);
     // 이력서 판매내역 상세 조회
-    ResumeDto getRegisterResumeDetail(Long resumeId);
+    ResumeDto getRegisterResumeDetail(Long memberId, Long resumeId);
     // 이력서 등록완료 요청
-    Resume completeRegistration(MemberResponse memberResponse, Long resumeId);
+    Resume completeRegistration(Long memberId, Long resumeId);
 }

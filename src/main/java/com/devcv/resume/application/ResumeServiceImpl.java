@@ -3,13 +3,13 @@ package com.devcv.resume.application;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.member.domain.Member;
 import com.devcv.member.domain.dto.MemberResponse;
-import com.devcv.member.exception.NotNullException;
 import com.devcv.member.repository.MemberRepository;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.Category;
 import com.devcv.resume.domain.dto.*;
 import com.devcv.resume.domain.enumtype.CompanyType;
 import com.devcv.resume.domain.enumtype.StackType;
+import com.devcv.resume.exception.HttpMessageNotReadableException;
 import com.devcv.resume.exception.MemberNotFoundException;
 import com.devcv.resume.exception.ResumeNotFoundException;
 import com.devcv.resume.infrastructure.S3Uploader;
@@ -27,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -104,12 +105,10 @@ public class ResumeServiceImpl implements ResumeService {
     @Override
     public Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest) {
 
-        // 회원 아이디 조회, 추후 security 설정 시 삭제
         Member member = memberRepository.findMemberBymemberid(memberResponse.getMemberId());
         if (member == null) {
             throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }
-
         // Category 저장
         CategoryDto categoryDTO = resumeRequest.getCategory();
         List<Category> categories = categoryRepository.findByCompanyTypeAndStackType(
@@ -133,10 +132,9 @@ public class ResumeServiceImpl implements ResumeService {
             log.debug("Uploaded resume file path: {}", resumeFilePath);
         }
 
-        // 필수 데이터 검증
-        if (resumeRequest.getPrice() < 0 || resumeRequest.getTitle() == null
-                || resumeRequest.getContent() == null || resumeRequest.getCategory() == null) {
-            throw new NotNullException(ErrorCode.NULL_ERROR);
+        if (resumeRequest.getPrice() == null || resumeRequest.getTitle() == null || resumeRequest.getContent() == null ||
+                resumeRequest.getStack() == null || resumeRequest.getCategory() == null) {
+            throw new HttpMessageNotReadableException(ErrorCode.EMPTY_VALUE_ERROR);
         }
 
         Resume resume = Resume.builder()
@@ -158,39 +156,43 @@ public class ResumeServiceImpl implements ResumeService {
                         .resumeImgPath(imagePath)
                         .ord(i)
                         .build();
+
                 resume.addImage(resumeImage);
             }
         }
 
-        // 일단 임의 판매승인, 추후 관리자 mvp 완성 시 변경
-        resume.setStatus(ResumeStatus.판매승인);
+         //일단 임의 판매승인, 추후 관리자 mvp 완성 시 변경
+         resume.setStatus(ResumeStatus.판매승인);
 
-//        // 상태 설정
-//        resume.setStatus(ResumeStatus.승인대기);
+        // 상태 설정
+        // resume.setStatus(ResumeStatus.승인대기);
+
 
         return resumeRepository.save(resume);
+
     }
 
     @Override
-    public ResumeDto getRegisterResumeDetail(Long resumeId) {
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
-
-        return ResumeDto.from(resume);
-    }
-
-    @Override
-    public Resume completeRegistration(MemberResponse memberResponse, Long resumeId) {
-        Resume resume = resumeRepository.findById(resumeId)
-                .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
-
-        Member member = memberRepository.findMemberBymemberid(memberResponse.getMemberId());
-        if (member == null) {
-            throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+    public ResumeDto getRegisterResumeDetail(Long memberId, Long resumeId) {
+        Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
+        if (resumeOpt.isPresent()) {
+            Resume resume = resumeOpt.get();
+            return ResumeDto.from(resume);
+        }else {
+            throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
         }
-
-        resume.setStatus(ResumeStatus.등록완료);
-        return resumeRepository.save(resume);
     }
 
+    @Override
+    public Resume completeRegistration( Long memberId, Long resumeId) {
+
+        Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
+        if (resumeOpt.isPresent()) {
+            Resume resume = resumeOpt.get();
+            resume.setStatus(ResumeStatus.등록완료);
+            return resumeRepository.save(resume);
+        } else {
+            throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
+        }
+    }
 }

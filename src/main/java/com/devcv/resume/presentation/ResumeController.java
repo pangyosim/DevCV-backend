@@ -1,5 +1,8 @@
 package com.devcv.resume.presentation;
 
+import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.InternalServerException;
+import com.devcv.common.exception.UnAuthorizedException;
 import com.devcv.member.domain.dto.MemberResponse;
 import com.devcv.resume.application.ResumeService;
 import com.devcv.resume.domain.Resume;
@@ -11,17 +14,13 @@ import com.devcv.resume.domain.enumtype.StackType;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
-// security 설정 이후 공통 파라미터 변경, //2 삭제
-//            @AuthenticationPrincipal MemberDetails userDetails,
-
-// 인증된 사용자 정보 조회 통한 memberResponse get 로직 츠기
-//        Long memberid = userDetails.getmemberid();
-//        MemberResponse memberResponse = resumeService.getMemberResponse(memberid);
 
 @RestController
 @RequiredArgsConstructor
@@ -37,8 +36,13 @@ public class ResumeController {
             @RequestParam("page") int page, @RequestParam("size") int size,
             @RequestParam(value = "stackType", required = false) StackType stackType,
             @RequestParam(value = "companyType", required = false) CompanyType companyType) {
-        PaginatedResumeResponse response = resumeService.findResumes(stackType, companyType, page, size);
-        return ResponseEntity.ok(response);
+
+        try {
+            PaginatedResumeResponse response = resumeService.findResumes(stackType, companyType, page, size);
+            return ResponseEntity.ok(response);
+        } catch (InternalServerException e) {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
     //------------이력서 목록 조회 요청 end---------------
 
@@ -46,8 +50,12 @@ public class ResumeController {
     //------------이력서 상세 조회 요청 start--------------
     @GetMapping("/{resumeId}")
     public ResponseEntity<ResumeDto> getResumeDetail(@PathVariable Long resumeId) {
-        ResumeDto resumeDetail = resumeService.getResumeDetail(resumeId);
-        return ResponseEntity.ok(resumeDetail);
+        try {
+            ResumeDto resumeDetail = resumeService.getResumeDetail(resumeId);
+            return ResponseEntity.ok(resumeDetail);
+        }catch(InternalServerException e) {
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+        }
     }
     //------------이력서 상세 조회 요청 end---------------
 
@@ -55,10 +63,13 @@ public class ResumeController {
 
     //------이력서 등록 페이지 호출 start --------
     @GetMapping("/add")
-    public ResponseEntity<?> newResumePage(
-            @RequestParam("memberId") Long memberId ) { //2
+    public ResponseEntity<?> newResumePage(@AuthenticationPrincipal UserDetails userDetails) {
 
-        // 회원정보 조회 후 에러 처리를 위한 임시 메서드->추후 security 설정 이후 변경
+        if(userDetails == null) {
+            throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+        Long memberId = Long.valueOf(userDetails.getUsername());
+
         MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
 
         // 새로운 이력서 페이지를 위한 기본 ResumeDto 생성
@@ -74,7 +85,7 @@ public class ResumeController {
     // -------이력서 승인대기 요청 start-------------
     @PostMapping("/add")
     public ResponseEntity<Resume> registerResume(
-            @RequestPart("member") MemberResponse memberResponse, // 2
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestPart("resume") ResumeRequest resumeRequest,
             @RequestPart("resumeFile") MultipartFile resumeFile,
             @RequestPart("images") List<MultipartFile> images) {
@@ -83,6 +94,12 @@ public class ResumeController {
         resumeRequest.setResumeFile(resumeFile);
         resumeRequest.setImageFiles(images);
 
+        if(userDetails == null) {
+            throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+
+        Long memberId = Long.valueOf(userDetails.getUsername());
+        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
 
         Resume createdResume = resumeService.register(memberResponse, resumeRequest);
 
@@ -94,10 +111,15 @@ public class ResumeController {
 
     //----------이력서 판매 상세 내역 페이지 호출 start---------
     @GetMapping("/myresume/{resumeId}")
-    public ResponseEntity<ResumeDto> getResumeForEdit(@RequestParam("memberId") Long memberId, @PathVariable Long resumeId) {
-        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
-        ResumeDto resumeDetail = resumeService.getRegisterResumeDetail(resumeId);
-        return ResponseEntity.ok(resumeDetail);
+    public ResponseEntity<?> getResumeForEdit(
+            @AuthenticationPrincipal UserDetails userDetails, @PathVariable Long resumeId) {
+        if(userDetails == null) {
+            throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+        Long memberId = Long.valueOf(userDetails.getUsername());
+        ResumeDto resumeDetail = resumeService.getRegisterResumeDetail(memberId, resumeId);
+
+        return ResponseEntity.ok().body(resumeDetail);
     }
     //----------이력서 판매 상세 내역 페이지 페이지 호출 end-----------
 
@@ -105,10 +127,14 @@ public class ResumeController {
     //----------이력서 판매 등록 요청 start----------------
     @PostMapping("/complete")
     public ResponseEntity<?> completeResumeRegistration(
-            @RequestPart("member") MemberResponse memberResponse, // 2
+            @AuthenticationPrincipal UserDetails userDetails,
             @RequestPart("resumeId") Long resumeId) {
+        if(userDetails == null) {
+            throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
+        }
+        Long memberId = Long.valueOf(userDetails.getUsername());
+        Resume completedResume = resumeService.completeRegistration(memberId, resumeId);
 
-        Resume completedResume = resumeService.completeRegistration(memberResponse, resumeId);
         return ResponseEntity.ok(ResumeDto.from(completedResume));
     }
     //----------이력서 판매 등록 요청 end----------------

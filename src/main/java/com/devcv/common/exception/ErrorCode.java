@@ -8,6 +8,7 @@ public enum ErrorCode {
     EMPTY_FILE_EXCEPTION("입력받은 이미지 파일이 빈 파일입니다."),
     NO_FILE_EXTENTION("파일 확장자가 없습니다."),
     INVALID_FILE_EXTENTION("유효하지 않은 파일 확장자입니다."),
+    EMPTY_VALUE_ERROR("필수 입력 값이 비어있습니다."),
 
     //401
     UNAUTHORIZED_ERROR("인증에 실패하였습니다."),
