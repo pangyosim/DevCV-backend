@@ -8,7 +8,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.Optional;
 
@@ -16,8 +15,8 @@ import java.util.Optional;
 public interface ResumeRepository extends JpaRepository<Resume, Long> {
 
     // 판매내역 이력서 상세 조회
-    @Query("SELECT r FROM Resume r WHERE r.resumeId = :resumeId")
-    Optional<Resume> findById(Long resumeId);
+    @Query("SELECT r FROM Resume r WHERE r.resumeId = :resumeId AND r.member.memberId = :memberId")
+    Optional<Resume> findByIdAndMemberId(Long resumeId, Long memberId);
 
     // 기본 이력서 조회
     Page<Resume> findByStatus(ResumeStatus status, Pageable pageable);

@@ -10,8 +10,7 @@ import java.util.List;
 @Getter
 @Setter
 public class ResumeRequest {
-    private Long memberid;  // 추후 @AuthenticationPrincipal을 사용할 때는 필요 없음, 삭제 예정
-    private int price;
+    private Integer price;
     private String title;
     private String content;
     private MultipartFile resumeFile;
