@@ -1,7 +1,10 @@
 package com.devcv.auth.jwt;
 
 
+import com.devcv.auth.exception.JwtExpiredException;
 import com.devcv.auth.exception.JwtIllegalArgumentException;
+import com.devcv.auth.exception.JwtInvalidSignException;
+import com.devcv.auth.exception.JwtUnsupportedException;
 import com.devcv.common.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
@@ -27,9 +30,11 @@ import java.util.stream.Collectors;
 public class JwtProvider {
     private static final String ROLE_TYPE = "role";
     private static final String PK_VALUE = "memberId";
+    private static final String MEMBER_NAME = "memberName";
+    private static final String MEMBER_EMAIL = "email";
     private static final String SOCIAL_TYPE = "social";
     private static final String BEARER_TYPE = "Bearer";
-    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;            // 30분
+    private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 60;            // 60분
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
 
     private final Key key;
@@ -51,9 +56,11 @@ public class JwtProvider {
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
-                .claim(PK_VALUE, authentication.getName())              // payload "memberId": "name"
-                .claim(ROLE_TYPE, authorities.split(" ")[0])      // payload "role": "일반"
+                .claim(PK_VALUE, authentication.getName())              // payload "memberId": "name" (ex)
+                .claim(ROLE_TYPE, authorities.split(" ")[0])      // payload "role": "일반" (ex)
                 .claim(SOCIAL_TYPE, authorities.split(" ")[1])    // payload "social": "일반" (ex)
+                .claim(MEMBER_NAME, authorities.split(" ")[2])    // payload "memberName": "홍길동" (ex)
+                .claim(MEMBER_EMAIL, authorities.split(" ")[3])    // payload "email": "testemail@test.com" (ex)
                 .setExpiration(accessTokenExpiresIn)                    // payload "exp": 151621022 (ex)
                 .signWith(key, SignatureAlgorithm.HS512)                // header "alg": "HS512"
                 .compact();
@@ -96,15 +103,18 @@ public class JwtProvider {
             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
             return true;
         } catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
-            log.info("잘못된 JWT 서명입니다.");
+            log.error("잘못된 JWT 서명입니다.");
+            throw new JwtInvalidSignException(ErrorCode.JWT_INVALID_SIGN_ERROR);
         } catch (ExpiredJwtException e) {
-            log.info("만료된 JWT 토큰입니다.");
+            log.error("만료된 JWT 토큰입니다.");
+            throw new JwtExpiredException(ErrorCode.JWT_EXPIRED_ERROR);
         } catch (UnsupportedJwtException e) {
-            log.info("지원되지 않는 JWT 토큰입니다.");
+            log.error("지원되지 않는 JWT 토큰입니다.");
+            throw new JwtUnsupportedException(ErrorCode.JWT_UNSUPPORTED_ERROR);
         } catch (IllegalArgumentException e) {
-            log.info("JWT 토큰이 잘못되었습니다.");
+            log.error("JWT 토큰이 잘못되었습니다.");
+            throw new JwtIllegalArgumentException(ErrorCode.JWT_ILLEGALARGUMENT_ERROR);
         }
-        return false;
     }
 
     private Claims parseClaims(String accessToken) {

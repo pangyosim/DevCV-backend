@@ -59,11 +59,11 @@ public class SpringSecurityConfig {
                 // 로그인, 회원가입 permitall
                 .and()
                 .authorizeHttpRequests()
-                .requestMatchers("/members/login","/members/signup","/members/findid","/members/certemail"
-                        ,"/members/findpwphone","/members/findpwemail","/members/modipw","/members/duplicationemail",
-                        "/members/auth/kakao","/members/auth/google").permitAll()
+                .requestMatchers("/members/login","/members/signup","/members/find-id","/members/cert-email","/members/duplication-email",
+                        "/members/find-pw/email","/members/find-pw","/members/{memberId}","/members/{memberid}/{password}",
+                         "/members/kakao-login","/members/google-login").permitAll()
                 .requestMatchers(PathRequest.toH2Console()).permitAll()
-                .requestMatchers("/admin").hasRole("ROLE_"+RoleType.관리자.name()) // 관리자 페이지
+                .requestMatchers("/admin").hasRole("ROLE_"+RoleType.admin.name()) // 관리자 페이지
                 .anyRequest().authenticated()   // 이외 인증필요 -> Header에 "Bearer {accessToken}" 형태로 요청
 
                 // JwtFilter 를 addFilterBefore 로 등록했던 JwtSecurityConfig 클래스를 적용

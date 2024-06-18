@@ -20,8 +20,8 @@ import java.util.List;
 //            @AuthenticationPrincipal MemberDetails userDetails,
 
 // 인증된 사용자 정보 조회 통한 memberResponse get 로직 츠기
-//        Long memberid = userDetails.getmemberid();
-//        MemberResponse memberResponse = resumeService.getMemberResponse(memberid);
+//        Long memberId = userDetails.getmemberId();
+//        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
 
 @RestController
 @RequiredArgsConstructor

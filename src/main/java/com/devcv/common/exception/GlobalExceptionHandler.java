@@ -1,6 +1,9 @@
 package com.devcv.common.exception;
 
+import com.devcv.auth.exception.JwtExpiredException;
 import com.devcv.auth.exception.JwtIllegalArgumentException;
+import com.devcv.auth.exception.JwtInvalidSignException;
+import com.devcv.auth.exception.JwtUnsupportedException;
 import com.devcv.common.exception.dto.ErrorResponse;
 import com.devcv.member.exception.*;
 import com.devcv.resume.exception.MemberNotFoundException;
@@ -66,11 +69,41 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.from(ErrorCode.SOCIAL_ERROR));
     }
+    @ExceptionHandler(JwtExpiredException.class)
+    public ResponseEntity<ErrorResponse> handle(JwtExpiredException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.JWT_EXPIRED_ERROR));
+    }
+    @ExceptionHandler(JwtUnsupportedException.class)
+    public ResponseEntity<ErrorResponse> handle(JwtUnsupportedException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.JWT_UNSUPPORTED_ERROR));
+    }
     @ExceptionHandler(JwtIllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handle(JwtIllegalArgumentException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                .body(ErrorResponse.from(ErrorCode.JWTILLEGALARG_ERROR));
+                .body(ErrorResponse.from(ErrorCode.JWT_ILLEGALARGUMENT_ERROR));
+    }
+    @ExceptionHandler(JwtInvalidSignException.class)
+    public ResponseEntity<ErrorResponse> handle(JwtInvalidSignException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.JWT_INVALID_SIGN_ERROR));
+    }
+    @ExceptionHandler(SocialMemberUpdateException.class)
+    public ResponseEntity<ErrorResponse> handle(SocialMemberUpdateException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.SOCIAL_UPDATE_ERROR));
+    }
+    @ExceptionHandler(SocialLoginException.class)
+    public ResponseEntity<ErrorResponse> handle(SocialLoginException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.SOCIAL_LOGIN_ERROR));
     }
     // 401 end
 

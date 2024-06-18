@@ -24,10 +24,10 @@ public class Member extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "memberid")
+    @Column(name = "memberId")
     private Long memberId;
 
-    @Column(name = "membername", nullable = false)
+    @Column(name = "memberName", nullable = false)
     private String memberName;
 
     @Column(name = "email", nullable = false)
@@ -50,7 +50,7 @@ public class Member extends BaseTimeEntity {
     private SocialType social; // 일반유저, 구글, 카카오
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "memberrole", nullable = false)
+    @Column(name = "memberRole", nullable = false)
     private RoleType memberRole; // 일반유저: user 관리자: admin
 
     @Enumerated(EnumType.STRING)
@@ -65,6 +65,8 @@ public class Member extends BaseTimeEntity {
     @Column(name = "stack", nullable = false)
     private List<String> stack;
 
+    @Column(name = "refreshToken")
+    private String refreshToken;
 }
 
 

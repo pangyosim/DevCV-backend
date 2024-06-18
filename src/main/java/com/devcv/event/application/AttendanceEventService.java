@@ -33,7 +33,7 @@ public class AttendanceEventService {
     public AttendanceEvent checkAttendance(AttendanceRequest request) {
 
         Event event = eventService.findByEventId(request.eventId());
-        Member member = memberService.findMemberByMemberId(request.memberId());
+        Member member = memberService.findMemberBymemberId(request.memberId());
 
         checkExist(member, event);
         savePoint(member, event);
@@ -58,7 +58,7 @@ public class AttendanceEventService {
 
     @Transactional
     public AttendanceListResponse getAttendanceListResponse(AttendanceRequest request) {
-        Member member = memberService.findMemberByMemberId(request.memberId());
+        Member member = memberService.findMemberBymemberId(request.memberId());
         Event event = eventService.findByEventId(request.eventId());
 
         LocalDate startDate = LocalDate.from(event.getStartDate());

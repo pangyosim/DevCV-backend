@@ -19,28 +19,32 @@ public interface MemberRepository extends CrudRepository<Member, Long> {
     @Query(value = "SELECT * FROM tb_member WHERE email=:email", nativeQuery = true)
     Member findMemberByEmail(@Param("email") String email);
 
-    @Query(value = "SELECT * FROM tb_member WHERE memberid=:memberid", nativeQuery = true)
-    Member findMemberBymemberid(@Param("memberid") Long memberid);
+    @Query(value = "SELECT * FROM tb_member WHERE member_id=:memberId", nativeQuery = true)
+    Member findMemberBymemberId(@Param("memberId") Long memberId);
 
-    @Query(value = "SELECT * FROM tb_member WHERE membername=:membername AND phone=:phone", nativeQuery = true)
-    Member findMemberByMemberNameAndPhone(@Param("membername") String membername,@Param("phone") String phone);
-
-    @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE tb_member SET password=:password WHERE memberid=:memberid", nativeQuery = true)
-    int updatePasswordByMemberId(@Param("password") String password, @Param("memberid") Long memberid);
+    @Query(value = "SELECT * FROM tb_member WHERE member_name=:memberName AND phone=:phone", nativeQuery = true)
+    Member findMemberBymemberNameAndPhone(@Param("memberName") String memberName,@Param("phone") String phone);
 
     @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE tb_member SET membername=:membername, email=:email, password=:password, nickname=:nickname," +
-            " phone=:phone, address=:address, company=:company, job=:job, stack=:stack WHERE memberid=:memberid", nativeQuery = true)
-    int updateMemberByMemberId(@Param("membername") String membername, @Param("email") String email, @Param("password") String password,
+    @Query(value = "UPDATE tb_member SET password=:password WHERE member_id=:memberId", nativeQuery = true)
+    int updatePasswordBymemberId(@Param("password") String password, @Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE tb_member SET refresh_token=:refreshToken WHERE member_id=:memberId", nativeQuery = true)
+    int updateRefreshTokenBymemberId(@Param("refreshToken") String refreshToken, @Param("memberId") Long memberId);
+
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE tb_member SET member_name=:memberName, email=:email, password=:password, nickname=:nickname," +
+            " phone=:phone, address=:address, company=:company, job=:job, stack=:stack WHERE member_id=:memberId", nativeQuery = true)
+    int updateMemberBymemberId(@Param("memberName") String memberName, @Param("email") String email, @Param("password") String password,
                                @Param("nickname") String nickname, @Param("phone") String phone, @Param("address") String address,
                                @Param("company") String company, @Param("job") String job, @Param("stack") String stack,
-                               @Param("memberid") Long memberid);
+                               @Param("memberId") Long memberId);
     @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE tb_member SET membername=:membername, nickname=:nickname," +
-            " phone=:phone, address=:address, company=:company, job=:job, stack=:stack WHERE memberid=:memberid", nativeQuery = true)
-    int updateSocialMemberByMemberId(@Param("membername") String membername, @Param("nickname") String nickname, @Param("phone") String phone,
+    @Query(value = "UPDATE tb_member SET member_name=:memberName, nickname=:nickname," +
+            " phone=:phone, address=:address, company=:company, job=:job, stack=:stack WHERE member_id=:memberId", nativeQuery = true)
+    int updateSocialMemberBymemberId(@Param("memberName") String memberName, @Param("nickname") String nickname, @Param("phone") String phone,
                                      @Param("address") String address, @Param("company") String company, @Param("job") String job,
-                                     @Param("stack") String stack, @Param("memberid") Long memberid);
+                                     @Param("stack") String stack, @Param("memberId") Long memberId);
 
 }

@@ -11,7 +11,6 @@ import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -22,7 +21,6 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class MemberDetailsService implements UserDetailsService {
     private final MemberRepository memberRepository;
-    private final PasswordEncoder passwordEncoder;
 
     @Override
     @Transactional
@@ -41,7 +39,10 @@ public class MemberDetailsService implements UserDetailsService {
     }
     // DB 에 User 값이 존재 -> UserDetails 리턴
     private UserDetails createMemberDetails(Member member) {
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getMemberRole().name()+ " " + member.getSocial().name());
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getMemberRole().name() + " " +
+                member.getSocial().name() + " " +
+                member.getMemberName() + " " +
+                member.getEmail());
         return new User(
                 String.valueOf(member.getMemberId()),
                 member.getPassword(),
