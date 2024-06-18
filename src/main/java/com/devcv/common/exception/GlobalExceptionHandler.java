@@ -1,13 +1,11 @@
 package com.devcv.common.exception;
 
+import com.devcv.auth.exception.JwtIllegalArgumentException;
 import com.devcv.common.exception.dto.ErrorResponse;
+import com.devcv.member.exception.*;
 import com.devcv.resume.exception.MemberNotFoundException;
 import com.devcv.resume.exception.ResumeNotFoundException;
 import com.devcv.resume.exception.S3Exception;
-import com.devcv.member.exception.AuthLoginException;
-import com.devcv.member.exception.DuplicationException;
-import com.devcv.member.exception.NotNullException;
-import com.devcv.member.exception.NotSignUpException;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
@@ -61,6 +59,18 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.from(ErrorCode.NULL_ERROR));
+    }
+    @ExceptionHandler(SocialDataException.class)
+    public ResponseEntity<ErrorResponse> handle(SocialDataException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.SOCIAL_ERROR));
+    }
+    @ExceptionHandler(JwtIllegalArgumentException.class)
+    public ResponseEntity<ErrorResponse> handle(JwtIllegalArgumentException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.JWTILLEGALARG_ERROR));
     }
     // 401 end
 

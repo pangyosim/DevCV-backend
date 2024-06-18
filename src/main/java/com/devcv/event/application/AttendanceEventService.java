@@ -33,7 +33,7 @@ public class AttendanceEventService {
     public AttendanceEvent checkAttendance(AttendanceRequest request) {
 
         Event event = eventService.findByEventId(request.eventId());
-        Member member = memberService.findMemberByUserId(request.memberId());
+        Member member = memberService.findMemberByMemberId(request.memberId());
 
         checkExist(member, event);
         savePoint(member, event);
@@ -58,7 +58,7 @@ public class AttendanceEventService {
 
     @Transactional
     public AttendanceListResponse getAttendanceListResponse(AttendanceRequest request) {
-        Member member = memberService.findMemberByUserId(request.memberId());
+        Member member = memberService.findMemberByMemberId(request.memberId());
         Event event = eventService.findByEventId(request.eventId());
 
         LocalDate startDate = LocalDate.from(event.getStartDate());
@@ -67,6 +67,6 @@ public class AttendanceEventService {
         List<LocalDateTime> attendanceDateList = attendanceEventRepository
                 .findCreatedDateByMemberAndDateRange(member, event, startDate, endDate);
 
-        return AttendanceListResponse.of(member.getUserId(), attendanceDateList);
+        return AttendanceListResponse.of(member.getMemberId(), attendanceDateList);
     }
 }

@@ -10,10 +10,12 @@ public enum ErrorCode {
     INVALID_FILE_EXTENTION("유효하지 않은 파일 확장자입니다."),
 
     //401
-    UNAUTHORIZED_ERROR("인증에 실패하였습니다."),
+    UNAUTHORIZED_ERROR("자격증명에 실패하였습니다."),
+    SOCIAL_ERROR("소셜 정보가 틀립니다."),
     LOGIN_ERROR("아이디 혹은 비밀번호가 틀립니다."),
     FIND_ID_ERROR("가입된 아이디가 없습니다."),
     DUPLICATE_ERROR("중복된 아이디입니다."),
+    JWTILLEGALARG_ERROR("JWT 토큰에 권한 정보가 없습니다."),
 
     //403
 

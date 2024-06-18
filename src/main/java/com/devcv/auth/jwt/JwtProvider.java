@@ -1,6 +1,8 @@
 package com.devcv.auth.jwt;
 
 
+import com.devcv.auth.exception.JwtIllegalArgumentException;
+import com.devcv.common.exception.ErrorCode;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -25,6 +27,7 @@ import java.util.stream.Collectors;
 public class JwtProvider {
     private static final String ROLE_TYPE = "role";
     private static final String PK_VALUE = "memberId";
+    private static final String SOCIAL_TYPE = "social";
     private static final String BEARER_TYPE = "Bearer";
     private static final long ACCESS_TOKEN_EXPIRE_TIME = 1000 * 60 * 30;            // 30분
     private static final long REFRESH_TOKEN_EXPIRE_TIME = 1000 * 60 * 60 * 24 * 7;  // 7일
@@ -45,14 +48,14 @@ public class JwtProvider {
                 .collect(Collectors.joining(","));
 
         long now = (new Date()).getTime();
-
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
-                .claim(PK_VALUE, authentication.getName())  // payload "memberId": "name"
-                .claim(ROLE_TYPE, authorities)              // payload "role": "일반"
-                .setExpiration(accessTokenExpiresIn)        // payload "exp": 151621022 (ex)
-                .signWith(key, SignatureAlgorithm.HS512)    // header "alg": "HS512"
+                .claim(PK_VALUE, authentication.getName())              // payload "memberId": "name"
+                .claim(ROLE_TYPE, authorities.split(" ")[0])      // payload "role": "일반"
+                .claim(SOCIAL_TYPE, authorities.split(" ")[1])    // payload "social": "일반" (ex)
+                .setExpiration(accessTokenExpiresIn)                    // payload "exp": 151621022 (ex)
+                .signWith(key, SignatureAlgorithm.HS512)                // header "alg": "HS512"
                 .compact();
 
         // Refresh Token 생성
@@ -82,7 +85,6 @@ public class JwtProvider {
                 Arrays.stream(claims.get(ROLE_TYPE).toString().split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
-
         // UserDetails 객체를 만들어서 Authentication 리턴
         UserDetails principal = new User(claims.get("memberId").toString(), "", authorities);
 

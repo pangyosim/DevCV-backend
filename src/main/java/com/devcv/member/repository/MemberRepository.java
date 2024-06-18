@@ -30,7 +30,17 @@ public interface MemberRepository extends CrudRepository<Member, Long> {
     int updatePasswordByMemberId(@Param("password") String password, @Param("memberid") Long memberid);
 
     @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE tb_member SET membername=:membername, email=:email, password=:password, nickname=:nickname, phone=:phone, address=:address, social=:social, company=:company, job=:job, stack=:stack WHERE memberid=:memberid", nativeQuery = true)
-    int updateMemberByMemberId(@Param("membername") String membername, @Param("email") String email, @Param("password") String password, @Param("nickname") String nickname, @Param("phone") String phone, @Param("address") String address, @Param("social") String  social, @Param("company") String company, @Param("job") String job, @Param("stack") String stack, @Param("memberid") Long memberid);
+    @Query(value = "UPDATE tb_member SET membername=:membername, email=:email, password=:password, nickname=:nickname," +
+            " phone=:phone, address=:address, company=:company, job=:job, stack=:stack WHERE memberid=:memberid", nativeQuery = true)
+    int updateMemberByMemberId(@Param("membername") String membername, @Param("email") String email, @Param("password") String password,
+                               @Param("nickname") String nickname, @Param("phone") String phone, @Param("address") String address,
+                               @Param("company") String company, @Param("job") String job, @Param("stack") String stack,
+                               @Param("memberid") Long memberid);
+    @Modifying(clearAutomatically = true)
+    @Query(value = "UPDATE tb_member SET membername=:membername, nickname=:nickname," +
+            " phone=:phone, address=:address, company=:company, job=:job, stack=:stack WHERE memberid=:memberid", nativeQuery = true)
+    int updateSocialMemberByMemberId(@Param("membername") String membername, @Param("nickname") String nickname, @Param("phone") String phone,
+                                     @Param("address") String address, @Param("company") String company, @Param("job") String job,
+                                     @Param("stack") String stack, @Param("memberid") Long memberid);
 
 }

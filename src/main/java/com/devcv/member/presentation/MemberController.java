@@ -10,13 +10,14 @@ import com.devcv.member.domain.Member;
 import com.devcv.member.domain.dto.*;
 import com.devcv.member.domain.dto.profile.GoogleProfile;
 import com.devcv.member.domain.dto.profile.KakaoProfile;
+import com.devcv.member.domain.enumtype.SocialType;
 import com.devcv.member.exception.DuplicationException;
 import com.devcv.member.exception.NotNullException;
 import com.devcv.member.exception.NotSignUpException;
+import com.devcv.member.exception.SocialDataException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -45,9 +46,11 @@ public class MemberController {
     //----------- login start -----------
     @GetMapping("/login")
     public ResponseEntity<MemberLoginResponse> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest) {
-        return ResponseEntity.ok(authService.login(memberLoginRequest));
+        MemberLoginResponse resultResponse = authService.login(memberLoginRequest);
+        HttpHeaders header = new HttpHeaders();
+        header.add("Authorization","Bearer " + resultResponse.getAccessToken());
+        return ResponseEntity.ok().headers(header).body(resultResponse);
     }
-
     //----------- login end -----------
 
     //----------- signup start -----------
@@ -199,7 +202,7 @@ public class MemberController {
                     || memberModiAllRequest.getNickName() == null || memberModiAllRequest.getPassword() == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
-        } catch (Exception e){
+        } catch (NotNullException e){
             e.fillInStackTrace();
             throw new NotNullException(ErrorCode.NULL_ERROR);
         }
@@ -208,21 +211,43 @@ public class MemberController {
             // memberid로 Member 찾기
             Member findMemberBymemberid = memberService.findMemberByMemberId(memberModiAllRequest.getMemberId());
             if(findMemberBymemberid != null){
-                int resultUpdateMember = memberService.updateMemberByMemberId(memberModiAllRequest.getMemberName(), memberModiAllRequest.getEmail(),
-                        passwordEncoder.encode(memberModiAllRequest.getPassword()),
-                        memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(), memberModiAllRequest.getSocial().name(),
-                        memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(), String.join(",", memberModiAllRequest.getStack()), memberModiAllRequest.getMemberId());
-                if( resultUpdateMember == 1 ){ // 멤버 수정성공.
-                    return ResponseEntity.ok().build();
+                if(!findMemberBymemberid.getSocial().name().equals(memberModiAllRequest.getSocial().name())){
+                    throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
+                }
+                if( memberModiAllRequest.getSocial().name().equals(SocialType.일반.name())) {
+                    int resultUpdateMember = memberService.updateMemberByMemberId(memberModiAllRequest.getMemberName(), memberModiAllRequest.getEmail(),
+                            passwordEncoder.encode(memberModiAllRequest.getPassword()),
+                            memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
+                            memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
+                            String.join(",", memberModiAllRequest.getStack()), memberModiAllRequest.getMemberId());
+                    if (resultUpdateMember == 1) { // 일반 멤버 수정성공.
+                        return ResponseEntity.ok().build();
+                    } else {
+                        throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+                    }
                 } else {
-                    throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+                    int resultUpdateSocialMember = memberService.updateSocialMemberByMemberId(memberModiAllRequest.getMemberName(),
+                            memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
+                            memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
+                            String.join(",", memberModiAllRequest.getStack()), memberModiAllRequest.getMemberId());
+                    if (resultUpdateSocialMember == 1) { // 소셜 멤버 수정성공.
+                        return ResponseEntity.ok().build();
+                    } else {
+                        throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+                    }
                 }
             } else {
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
-        } catch (Exception e) {
+        } catch (NotSignUpException e) {
             e.fillInStackTrace();
             throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
+        } catch (InternalServerException e){
+            e.fillInStackTrace();
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+        } catch (SocialDataException e) {
+            e.fillInStackTrace();
+            throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
         }
     }
 
@@ -232,8 +257,7 @@ public class MemberController {
     //----------- Social start -----------
     //----------- KaKao Auth start -----------
     @GetMapping("/auth/kakao")
-    public ResponseEntity<Map<String,Object>> memberAuthKakao(@RequestParam String token){
-
+    public ResponseEntity<Object> memberAuthKakao(@RequestParam String token){
         ObjectMapper objectMapper = new ObjectMapper();
         RestTemplate restTemplateInfo = new RestTemplate();
         HttpHeaders headersInfo = new HttpHeaders();
@@ -258,9 +282,11 @@ public class MemberController {
         // 이미 가입되어 있는 이메일이면 해당 이메일로 로그인
         Member findMember = memberService.findMemberByEmail(profile.getKakao_account().getEmail());
         if(findMember != null){
+            MemberLoginRequest memberLoginRequest =MemberLoginRequest.builder().email(profile.getKakao_account().getEmail()).password("12ff2535dsfsafs21fdsa21sfda11245").build();
+            MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
             HttpHeaders header = new HttpHeaders();
-            //header.set("Authorization", "Bearer " + createJwtToken(generateLoginToken(),findMember.getMemberId()));
-            return ResponseEntity.ok().headers(header).build();
+            header.add("Authorization","Bearer " + memberLoginResponse.getAccessToken());
+            return ResponseEntity.ok().headers(header).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
                 put("email", profile.getKakao_account().getEmail());
@@ -273,7 +299,7 @@ public class MemberController {
 
     //----------- Google Auth start -----------
     @GetMapping("/auth/google")
-    public ResponseEntity<Map<String,Object>> memberAuthGoogle(@RequestParam String token){
+    public ResponseEntity<Object> memberAuthGoogle(@RequestParam String token){
 
         RestTemplate restTemplateInfo = new RestTemplate();
         HttpHeaders headersInfo = new HttpHeaders();
@@ -297,9 +323,11 @@ public class MemberController {
         // 이미 가입되어 있는 이메일이면 해당 이메일로 로그인
         Member findMember = memberService.findMemberByEmail(googleProfile.getEmail());
         if(findMember != null){
+            MemberLoginRequest memberLoginRequest =MemberLoginRequest.builder().email(googleProfile.getEmail()).password("12ff2535dsfsafs21fdsa21sfda11245").build();
+            MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
             HttpHeaders header = new HttpHeaders();
-            //header.set("Authorization", "Bearer " + createJwtToken(generateLoginToken(),findMember.getMemberId()));
-            return ResponseEntity.ok().headers(header).build();
+            header.add("Authorization","Bearer " + memberLoginResponse.getAccessToken());
+            return ResponseEntity.ok().headers(header).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
                 put("email",googleProfile.getEmail());

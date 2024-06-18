@@ -30,10 +30,24 @@ import org.springframework.stereotype.Service;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    public void signup(Member member){memberRepository.save(member);}
-    public Member findMemberByEmail(String email){ return memberRepository.findMemberByEmail(email);}
-    public Member findMemberByMemberId(Long memberid){ return memberRepository.findMemberBymemberid(memberid);}
-    public Member findMemberByMemberNameAndPhone(String memberName, String phone) { return memberRepository.findMemberByMemberNameAndPhone(memberName,phone);}
-    public int updatePasswordByMemberId(String password,Long memberid) { return memberRepository.updatePasswordByMemberId(password,memberid);}
-    public int updateMemberByMemberId(String memberName, String email, String password, String nickname, String phone, String address, String issocial, String iscompany, String isjob, String isstack, Long memberid) { return memberRepository.updateMemberByMemberId(memberName,email,password,nickname,phone,address,issocial,iscompany,isjob,isstack,memberid);}
+    public Member findMemberByEmail(String email) {
+        return memberRepository.findMemberByEmail(email);
+    }
+    public Member findMemberByMemberId(Long memberid) {
+        return memberRepository.findMemberBymemberid(memberid);
+    }
+    public Member findMemberByMemberNameAndPhone(String memberName, String phone) {
+        return memberRepository.findMemberByMemberNameAndPhone(memberName,phone);
+    }
+    public int updatePasswordByMemberId(String password,Long memberid) {
+        return memberRepository.updatePasswordByMemberId(password,memberid);
+    }
+    public int updateMemberByMemberId(String memberName, String email, String password, String nickname, String phone, String address,
+                                      String company, String job, String stack, Long memberid) {
+        return memberRepository.updateMemberByMemberId(memberName,email,password,nickname,phone,address,company,job,stack,memberid);}
+
+    public int updateSocialMemberByMemberId(String memberName, String nickname, String phone, String address,
+                                            String company, String job, String stack, Long memberid){
+        return memberRepository.updateSocialMemberByMemberId(memberName,nickname,phone,address,company,job,stack,memberid);
+    }
 }
