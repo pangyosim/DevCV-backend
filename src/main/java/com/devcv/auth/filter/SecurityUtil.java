@@ -1,5 +1,6 @@
 package com.devcv.auth.filter;
 
+import com.devcv.member.domain.Member;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
@@ -18,6 +19,18 @@ public class SecurityUtil {
         }
 
         return Long.parseLong(authentication.getName());
+    }
+    public static Member getCurrentMember(){
+        final Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if (authentication == null || authentication.getName() == null) {
+            throw  new RuntimeException("Security Context 에 인증 정보가 없습니다.");
+        } else {
+            Object principal = authentication.getPrincipal();
+            if (principal instanceof Member) {
+                return (Member) principal;
+            }
+        }
+        return null;
     }
 
 }
