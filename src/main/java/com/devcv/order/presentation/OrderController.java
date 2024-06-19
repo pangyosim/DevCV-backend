@@ -52,6 +52,6 @@ public class OrderController {
 
     private Member extractMember(UserDetails userDetails) {
         Long memberId = Long.valueOf(userDetails.getUsername());
-        return memberService.findMemberByMemberId(memberId);
+        return memberService.findMemberBymemberId(memberId);
     }
 }

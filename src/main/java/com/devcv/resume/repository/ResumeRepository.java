@@ -24,8 +24,6 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     @EntityGraph(attributePaths = {"member", "category", "imageList"}, type = EntityGraph.EntityGraphType.FETCH)
     Optional<Resume> findByResumeId(Long resumeId);
 
-    // 기본 이력서 조회
-    Page<Resume> findByStatus(ResumeStatus status, Pageable pageable);
     // 전체 이력서 조회
     @Query("SELECT rm, AVG(COALESCE(rv.grade, 0)), COUNT(rv) " +
             "FROM Resume rm LEFT JOIN Review rv ON rv.resume = rm " +

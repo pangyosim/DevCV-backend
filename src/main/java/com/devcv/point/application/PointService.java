@@ -1,7 +1,5 @@
 package com.devcv.point.application;
 
-import com.devcv.common.exception.ErrorCode;
-import com.devcv.common.exception.TestErrorException;
 import com.devcv.member.domain.Member;
 import com.devcv.point.domain.Point;
 import com.devcv.point.repository.PointRepository;
@@ -17,7 +15,7 @@ public class PointService {
     private final PointRepository pointRepository;
 
     public Long getMyPoint(Long memberId) {
-        Long point = pointRepository.findTotalPointsByMemberId(memberId);
+        Long point = pointRepository.findTotalPointsBymemberId(memberId);
         return Objects.requireNonNullElse(point, 0L);
     }
 

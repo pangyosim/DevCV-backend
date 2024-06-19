@@ -28,7 +28,7 @@ public interface ReviewService {
                 .reviewId(resumeReviewDto.getReviewId())
                 .resume(Resume.builder().resumeId(resumeReviewDto.getResumeId()).build())
                 .member(Member.builder().memberId(resumeReviewDto.getMemberId()).build())
-                .order(Order.builder().id(resumeReviewDto.getOrderId()).build())
+                .order(Order.builder().orderId(resumeReviewDto.getOrderId()).build())
                 .grade(resumeReviewDto.getGrade())
                 .text(resumeReviewDto.getText())
                 .build();
@@ -37,7 +37,7 @@ public interface ReviewService {
     }
 
     default ReviewDto entityToDto(Review resumeReview) {
-        String orderId = (resumeReview.getOrder() != null) ? resumeReview.getOrder().getId() : null;
+        String orderId = (resumeReview.getOrder() != null) ? resumeReview.getOrder().getOrderId() : null;
 
         ReviewDto resumeReviewDto = ReviewDto.builder()
                 .reviewId(resumeReview.getReviewId())
