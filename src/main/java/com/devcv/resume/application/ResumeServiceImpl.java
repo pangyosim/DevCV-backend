@@ -22,6 +22,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -194,5 +195,11 @@ public class ResumeServiceImpl implements ResumeService {
         } else {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
         }
+    }
+
+    @Override
+    public Resume findByResumeId(Long resumeId) {
+        return resumeRepository.findByResumeId(resumeId)
+                .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
     }
 }

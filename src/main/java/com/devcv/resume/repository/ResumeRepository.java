@@ -6,6 +6,7 @@ import com.devcv.resume.domain.enumtype.ResumeStatus;
 import com.devcv.resume.domain.enumtype.StackType;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -17,6 +18,10 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     // 판매내역 이력서 상세 조회
     @Query("SELECT r FROM Resume r WHERE r.resumeId = :resumeId AND r.member.memberId = :memberId")
     Optional<Resume> findByIdAndMemberId(Long resumeId, Long memberId);
+
+    //이력서 조회
+    @EntityGraph(attributePaths = {"member", "category", "imageList"}, type = EntityGraph.EntityGraphType.FETCH)
+    Optional<Resume> findByResumeId(Long resumeId);
 
     // 기본 이력서 조회
     Page<Resume> findByStatus(ResumeStatus status, Pageable pageable);
