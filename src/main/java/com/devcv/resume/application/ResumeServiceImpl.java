@@ -187,7 +187,7 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public Resume completeRegistration( Long memberId, Long resumeId) {
-        Member member = memberRepository.findMemberBymemberId(memberResponse.getMemberId());
+        Member member = memberRepository.findMemberBymemberId(memberId);
         if (member == null) {
             throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }
