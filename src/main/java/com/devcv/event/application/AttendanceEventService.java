@@ -35,6 +35,7 @@ public class AttendanceEventService {
         Event event = eventService.findByEventId(request.eventId());
         Member member = memberService.findMemberBymemberId(request.memberId());
 
+
         checkExist(member, event);
         savePoint(member, event);
         return record(member, event);
@@ -59,6 +60,7 @@ public class AttendanceEventService {
     @Transactional
     public AttendanceListResponse getAttendanceListResponse(AttendanceRequest request) {
         Member member = memberService.findMemberBymemberId(request.memberId());
+
         Event event = eventService.findByEventId(request.eventId());
 
         LocalDate startDate = LocalDate.from(event.getStartDate());

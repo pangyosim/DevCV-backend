@@ -36,6 +36,7 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        log.debug("Configuring SecurityFilterChain");
         // CSRF 설정 Disable
         http.csrf().disable()
                 // CORS 설정
@@ -64,6 +65,7 @@ public class SpringSecurityConfig {
                          "/members/kakao-login","/members/google-login").permitAll()
                 .requestMatchers(PathRequest.toH2Console()).permitAll()
                 .requestMatchers("/admin").hasRole("ROLE_"+RoleType.admin.name()) // 관리자 페이지
+
                 .anyRequest().authenticated()   // 이외 인증필요 -> Header에 "Bearer {accessToken}" 형태로 요청
 
                 // JwtFilter 를 addFilterBefore 로 등록했던 JwtSecurityConfig 클래스를 적용

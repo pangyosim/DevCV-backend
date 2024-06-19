@@ -1,6 +1,8 @@
 package com.devcv.resume.domain.dto;
 
 import com.devcv.resume.domain.Resume;
+import com.devcv.resume.domain.enumtype.CompanyType;
+import com.devcv.resume.domain.enumtype.StackType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 
@@ -14,6 +16,8 @@ public class ResumeResponse {
     private String resumeFilePath;
     private String thumbnail;
     private String sellerNickname;
+    private StackType stackType;
+    private CompanyType companyType;
 
 
     public static ResumeResponse from(Resume resume) {
@@ -23,7 +27,9 @@ public class ResumeResponse {
                 resume.getPrice(),
                 resume.getResumeFilePath(),
                 getThumbnailFromResume(resume), // 썸네일 이미지 직접 가져오기
-                resume.getMember().getNickName()
+                resume.getMember().getNickName(),
+                resume.getCategory().getStackType(),
+                resume.getCategory().getCompanyType()
         );
     }
     private static String getThumbnailFromResume(Resume resume) {
