@@ -16,8 +16,7 @@ public class OrderService {
 
     private final OrderRepository orderRepository;
 
-    public OrderSheet getOrderSheet(Member member,
-                                    Resume resume) {
+    public OrderSheet createOrderSheet(Member member, Resume resume) {
         return OrderSheet.of(member, resume);
     }
 

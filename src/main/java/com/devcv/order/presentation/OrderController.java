@@ -24,13 +24,13 @@ public class OrderController {
     private final ResumeService resumeService;
     private final MemberService memberService;
 
-    @GetMapping("/resume/{resume-id}/checkout")
-    public ResponseEntity<OrderSheet> newOrderSheet(@AuthenticationPrincipal UserDetails userDetails,
-                                                    @PathVariable("resume-id") Long resumeId) {
+    @GetMapping("/resumes/{resume-id}/checkout")
+    public ResponseEntity<OrderSheet> checkoutResume(@AuthenticationPrincipal UserDetails userDetails,
+                                                     @PathVariable("resume-id") Long resumeId) {
         Long memberId = Long.valueOf(userDetails.getUsername());
         Member member = memberService.findMemberByMemberId(memberId);
         Resume resume = resumeService.findByResumeId(resumeId);
-        return ResponseEntity.ok().body(orderService.getOrderSheet(member, resume));
+        return ResponseEntity.ok().body(orderService.createOrderSheet(member, resume));
     }
 
     @PostMapping("/orders")
