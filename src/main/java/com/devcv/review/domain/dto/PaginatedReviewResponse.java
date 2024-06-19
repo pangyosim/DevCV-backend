@@ -1,5 +1,4 @@
-package com.devcv.resume.domain.dto;
-
+package com.devcv.review.domain.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,9 +11,9 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PaginatedResumeResponse {
+public class PaginatedReviewResponse {
 
-    private List<ResumeDto> content;
+    private List<ReviewDto> content;
     private Long totalElements;
     private int numberOfElements;
     private int currentPage;
@@ -24,4 +23,3 @@ public class PaginatedResumeResponse {
     private int endPage;
 
 }
-

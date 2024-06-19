@@ -4,7 +4,6 @@ import com.devcv.auth.filter.JwtAccessDeniedHandler;
 import com.devcv.auth.filter.JwtAuthenticationEntryPoint;
 import com.devcv.auth.jwt.JwtProvider;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,7 +18,6 @@ import org.springframework.web.filter.CorsFilter;
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
-@Slf4j
 public class SpringSecurityConfig {
     private final JwtProvider jwtProvider;
     private final CorsFilter corsFilter;
@@ -34,7 +32,6 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        log.debug("Configuring SecurityFilterChain");
         // CSRF 설정 Disable
         http.csrf().disable()
                 // CORS 설정
@@ -60,7 +57,7 @@ public class SpringSecurityConfig {
                 .authorizeHttpRequests()
                 .requestMatchers("/members/login","/members/signup","/members/findid","/members/certemail"
                         ,"/members/findpwphone","/members/findpwemail","/members/modipw","/members/duplicationemail",
-                        "/auth/kakao","/auth/google", "/api/resumes","/api/resumes/{resumeId}").permitAll()
+                        "/auth/kakao","/auth/google", "/resumes","/resumes/{resumeId}", "/resumes/{resumeId}/reviews").permitAll()
                 .anyRequest().authenticated()   // 이외 인증필요 -> Header에 "Bearer {accessToken}" 형태로 요청
 
                 // JwtFilter 를 addFilterBefore 로 등록했던 JwtSecurityConfig 클래스를 적용

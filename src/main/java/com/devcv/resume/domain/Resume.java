@@ -22,6 +22,7 @@ public class Resume extends BaseTimeEntity{
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "resumeid")
     private Long resumeId;
 
     @Column(nullable = false)

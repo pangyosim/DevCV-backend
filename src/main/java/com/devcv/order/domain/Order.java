@@ -4,13 +4,13 @@ import com.devcv.common.domain.BaseTimeEntity;
 import com.devcv.member.domain.Member;
 import com.devcv.resume.domain.Resume;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter
 @Table(name = "orders")
+@Builder(toBuilder = true)
+@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseTimeEntity {
 
