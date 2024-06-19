@@ -108,7 +108,7 @@ public class ResumeServiceImpl implements ResumeService {
     @Override
     public Resume register(ResumeRequest resumeRequest, MultipartFile resumeFile, List<MultipartFile> images, Long memberId) {
 
-        Member member = memberRepository.findMemberBymemberid(memberId);
+        Member member = memberRepository.findMemberBymemberId(memberId);
 
         if (member == null) {
             throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
