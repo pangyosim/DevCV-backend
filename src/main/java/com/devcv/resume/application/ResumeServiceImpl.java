@@ -2,7 +2,6 @@ package com.devcv.resume.application;
 
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.member.domain.Member;
-import com.devcv.member.domain.dto.MemberResponse;
 import com.devcv.member.repository.MemberRepository;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.Category;
@@ -30,6 +29,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import static com.devcv.resume.domain.dto.ResumeDto.entityToDto;
+
 
 @Service
 @Slf4j
@@ -43,10 +44,11 @@ public class ResumeServiceImpl implements ResumeService {
     private final S3Uploader s3Uploader;
 
 
+    // 이력서 목록 조회
     @Override
     public PaginatedResumeResponse findResumes(StackType stackType, CompanyType companyType, int page, int size) {
         Pageable pageable = PageRequest.of(page - 1, size);
-        Page<Resume> resumePage;
+        Page<Object[]> resumePage;
 
         if (stackType != null && companyType != null) {
             // 직무 & 회사별 목록 조회
@@ -62,9 +64,14 @@ public class ResumeServiceImpl implements ResumeService {
             resumePage = resumeRepository.findApprovedResumes(pageable);
         }
 
-        List<ResumeResponse> resumeDTOs = resumePage.getContent()
+        List<ResumeDto> resumeDTOs = resumePage.getContent()
                 .stream()
-                .map(ResumeResponse::from)
+                .map(objects -> {
+                    Resume resume = (Resume) objects[0];
+                    Double averageGrade = (Double) objects[1];
+                    Long reviewCount = (Long) objects[2];
+                    return ResumeDto.entityToDto(resume, averageGrade, reviewCount);
+                })
                 .collect(Collectors.toList());
 
         int currentPage = resumePage.getNumber() + 1;
@@ -84,33 +91,29 @@ public class ResumeServiceImpl implements ResumeService {
         );
     }
 
+    // 이력서 상세 조회
     @Override
     public ResumeDto getResumeDetail(Long resumeId) {
-        Resume resume = resumeRepository.findByIdAndStatus(resumeId)
-                .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
+        List<Object[]>result = resumeRepository.findByIdAndStatus(resumeId);
 
-        return ResumeDto.from(resume);
+        Resume resume = (Resume) result.get(0)[0];
+
+        Double averageGrade = (Double) result.get(0)[1];
+        Long reviewCount = (Long) result.get(0)[2];
+
+        return entityToDto(resume, averageGrade, reviewCount);
     }
 
-
+    // 이력서 등록(승인대기)
     @Override
-    public MemberResponse getMemberResponse(Long memberId) {
+    public Resume register(ResumeRequest resumeRequest, MultipartFile resumeFile, List<MultipartFile> images, Long memberId) {
+
         Member member = memberRepository.findMemberBymemberId(memberId);
-        if (member == null) {
-            throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
-        }
-        return MemberResponse.from(member);
-    }
-
-    @Override
-    public Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest) {
-
-        // 회원 아이디 조회, 추후 security 설정 시 삭제
-        Member member = memberRepository.findMemberBymemberId(memberResponse.getMemberId());
 
         if (member == null) {
             throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }
+
         // Category 저장
         CategoryDto categoryDTO = resumeRequest.getCategory();
         List<Category> categories = categoryRepository.findByCompanyTypeAndStackType(
@@ -129,8 +132,8 @@ public class ResumeServiceImpl implements ResumeService {
 
         // PDF 파일 업로드
         String resumeFilePath = null;
-        if (resumeRequest.getResumeFile() != null) {
-            resumeFilePath = s3Uploader.upload(resumeRequest.getResumeFile());
+        if (resumeFile != null) {
+            resumeFilePath = s3Uploader.upload(resumeFile);
             log.debug("Uploaded resume file path: {}", resumeFilePath);
         }
 
@@ -150,10 +153,9 @@ public class ResumeServiceImpl implements ResumeService {
                 .build();
 
         // 이미지 파일 업로드
-        List<MultipartFile> imageFiles = resumeRequest.getImageFiles();
-        if (imageFiles != null && !imageFiles.isEmpty()) {
-            for (int i = 0; i < imageFiles.size(); i++) {
-                String imagePath = s3Uploader.upload(imageFiles.get(i));
+        if (images != null && !images.isEmpty()) {
+            for (int i = 0; i < images.size(); i++) {
+                String imagePath = s3Uploader.upload(images.get(i));
                 ResumeImage resumeImage = ResumeImage.builder()
                         .resumeImgPath(imagePath)
                         .ord(i)
@@ -174,6 +176,7 @@ public class ResumeServiceImpl implements ResumeService {
 
     }
 
+    // 이력서 판매내역 상세조회
     @Override
     public ResumeDto getRegisterResumeDetail(Long memberId, Long resumeId) {
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
@@ -185,6 +188,7 @@ public class ResumeServiceImpl implements ResumeService {
         }
     }
 
+    // 이력서 최종 판매등록
     @Override
     public Resume completeRegistration( Long memberId, Long resumeId) {
         Member member = memberRepository.findMemberBymemberId(memberId);

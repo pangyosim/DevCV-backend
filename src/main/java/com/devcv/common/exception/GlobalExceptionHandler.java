@@ -9,6 +9,12 @@ import com.devcv.member.exception.*;
 import com.devcv.resume.exception.MemberNotFoundException;
 import com.devcv.resume.exception.ResumeNotFoundException;
 import com.devcv.resume.exception.S3Exception;
+import com.devcv.member.exception.AuthLoginException;
+import com.devcv.member.exception.DuplicationException;
+import com.devcv.member.exception.NotNullException;
+import com.devcv.member.exception.NotSignUpException;
+import com.devcv.review.exception.OrderNotFoundException;
+import com.devcv.review.exception.ReviewAlreadyExistsException;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
@@ -16,7 +22,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.support.DefaultHandlerExceptionResolver;
+
 
 @Slf4j
 @RestControllerAdvice
@@ -135,6 +141,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.from(ErrorCode.MEMBER_NOT_FOUND));
     }
+    @ExceptionHandler(OrderNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(OrderNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.from(ErrorCode.ORDER_NOT_FOUND));
+    }
     // 404 end
 
     // 400 start
@@ -145,6 +157,17 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.from(ErrorCode.EMPTY_VALUE_ERROR));
     }
     // 400 end
+
+
+    // 409 start
+    @ExceptionHandler(ReviewAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handle(ReviewAlreadyExistsException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.CONFLICT)
+                .body(ErrorResponse.from(ErrorCode.REVIEW_ALREADY_EXISTS));
+    }
+    // 409 end
+
 
     @ExceptionHandler(S3Exception.class)
     public ResponseEntity<ErrorResponse>handle(S3Exception e) {
