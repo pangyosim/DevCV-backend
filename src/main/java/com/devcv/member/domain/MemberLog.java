@@ -16,20 +16,21 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class MemberLog {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long logId;
+    @Column(name = "memberId",nullable = false)
     private Long memberId;
-    @Column(name = "logemail",nullable = false)
+    @Column(name = "logEmail",nullable = false)
     private String logEmail;
-    @Column(name = "logsignupdate")
+    @Column(name = "logSignUpDate")
     private LocalDateTime logSignUpDate;
-    @Column(name = "logupdatedate")
+    @Column(name = "logUpdateDate")
     private LocalDateTime logUpdateDate;
-    @Column(name = "loglogindate")
+    @Column(name = "logLoginDate")
     private LocalDateTime logLoginDate;
-    @Column(name = "logip",nullable = false)
-    private String logIP;
-    @Column(name = "logagent",nullable = false)
+    @Column(name = "logIp",nullable = false)
+    private String logIp;
+    @Column(name = "logAgent",nullable = false)
     private String logAgent;
 }

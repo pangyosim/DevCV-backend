@@ -1,5 +1,6 @@
 package com.devcv.auth.application;
 
+import com.devcv.auth.details.MemberDetails;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.member.domain.Member;
 import com.devcv.member.exception.NotSignUpException;
@@ -7,21 +8,20 @@ import com.devcv.member.repository.MemberRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Collections;
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Service
 @RequiredArgsConstructor
 public class MemberDetailsService implements UserDetailsService {
     private final MemberRepository memberRepository;
-
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
@@ -30,24 +30,15 @@ public class MemberDetailsService implements UserDetailsService {
             if (findMember == null){
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             } else {
-                return createMemberDetails(findMember);
+                List<GrantedAuthority> authorities = new ArrayList<>();
+                authorities.add(new SimpleGrantedAuthority(findMember.getMemberRole().name()+" "
+                        +findMember.getSocial().name()+" "+findMember.getMemberName()+" "+findMember.getMemberId()));
+                return new MemberDetails(findMember, authorities);
             }
         } catch (NotSignUpException e){
             e.fillInStackTrace();
             throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
     }
-    // DB 에 User 값이 존재 -> UserDetails 리턴
-    private UserDetails createMemberDetails(Member member) {
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getMemberRole().name() + " " +
-                member.getSocial().name() + " " +
-                member.getMemberName() + " " +
-                member.getEmail());
-        return new User(
-                String.valueOf(member.getMemberId()),
-                member.getPassword(),
-                Collections.singleton(grantedAuthority)
-        ) {
-        };
-    }
+
 }

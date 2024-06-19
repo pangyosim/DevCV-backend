@@ -1,34 +1,46 @@
 package com.devcv.auth.details;
 
 import com.devcv.member.domain.Member;
-import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.User;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 @Getter
-@AllArgsConstructor
-public class MemberDetails implements UserDetails {
+public class MemberDetails extends User {
 
     private final Member member;
+    private final Long memberId;
+    private final String email;
+    private final String password;
+
+    public MemberDetails(Member member, List<? extends GrantedAuthority> authorities) {
+        super(member.getEmail(), member.getPassword(), authorities);
+        this.memberId = member.getMemberId();
+        this.password = member.getPassword();
+        this.email = member.getEmail();
+        this.member = member;
+    }
+
     @Override
-    public Collection<? extends GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(member.getMemberRole().name() + " " + member.getSocial().name()));
+    public Collection<GrantedAuthority> getAuthorities() {
+        return Collections.singleton(new SimpleGrantedAuthority(member.getMemberRole().name()+" "
+                +member.getSocial().name()+" "+member.getMemberName()+" "+member.getMemberId()));
     }
 
     @Override
     public String getPassword() {
-        return member.getPassword();
+        return this.password;
     }
 
     @Override
     public String getUsername() {
-        return String.valueOf(member.getMemberId());
+        return this.email;
     }
 
     @Override
