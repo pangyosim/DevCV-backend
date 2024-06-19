@@ -36,7 +36,6 @@ public class SpringSecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        log.debug("Configuring SecurityFilterChain");
         // CSRF 설정 Disable
         http.csrf().disable()
                 // CORS 설정
