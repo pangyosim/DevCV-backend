@@ -3,17 +3,20 @@ package com.devcv.resume.application;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.member.domain.Member;
 import com.devcv.member.repository.MemberRepository;
-import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.Category;
-import com.devcv.resume.domain.dto.*;
+import com.devcv.resume.domain.Resume;
+import com.devcv.resume.domain.ResumeImage;
+import com.devcv.resume.domain.dto.CategoryDto;
+import com.devcv.resume.domain.dto.PaginatedResumeResponse;
+import com.devcv.resume.domain.dto.ResumeDto;
+import com.devcv.resume.domain.dto.ResumeRequest;
 import com.devcv.resume.domain.enumtype.CompanyType;
+import com.devcv.resume.domain.enumtype.ResumeStatus;
 import com.devcv.resume.domain.enumtype.StackType;
 import com.devcv.resume.exception.HttpMessageNotReadableException;
 import com.devcv.resume.exception.MemberNotFoundException;
 import com.devcv.resume.exception.ResumeNotFoundException;
 import com.devcv.resume.infrastructure.S3Uploader;
-import com.devcv.resume.domain.ResumeImage;
-import com.devcv.resume.domain.enumtype.ResumeStatus;
 import com.devcv.resume.repository.CategoryRepository;
 import com.devcv.resume.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
@@ -203,5 +206,11 @@ public class ResumeServiceImpl implements ResumeService {
         } else {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
         }
+    }
+
+    @Override
+    public Resume findByResumeId(Long resumeId) {
+        return resumeRepository.findByResumeId(resumeId)
+                .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
     }
 }

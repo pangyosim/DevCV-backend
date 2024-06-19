@@ -24,4 +24,7 @@ public interface ResumeService {
     ResumeDto getRegisterResumeDetail(Long memberId, Long resumeId);
     // 이력서 등록완료 요청
     Resume completeRegistration(Long memberId, Long resumeId);
+    // 이력서 엔티티 가져오기
+    Resume findByResumeId(Long resumeId);
+
 }

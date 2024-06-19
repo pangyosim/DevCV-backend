@@ -8,7 +8,7 @@ import lombok.*;
 
 @Entity
 @Getter
-@Table(name = "orders")
+@Table(name = "tb_order")
 @Builder(toBuilder = true)
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -16,7 +16,7 @@ public class Order extends BaseTimeEntity {
 
     @Id
     @Column(unique = true)
-    private String id;
+    private String orderId;
 
     @ManyToOne
     private Member member;
@@ -36,7 +36,7 @@ public class Order extends BaseTimeEntity {
     private OrderStatus orderStatus;
 
     public Order(Member member, Resume resume) {
-        this.id = OrderNumberGenerator.generateOrderNumber();
+        this.orderId = OrderNumberGenerator.generateOrderNumber();
         this.member = member;
         this.resume = resume;
         this.totalAmount = resume.getPrice();

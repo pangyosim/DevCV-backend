@@ -7,7 +7,7 @@ import com.devcv.order.domain.PayType;
 import java.time.LocalDateTime;
 
 
-public record OrderResponse(String id,
+public record OrderResponse(String orderId,
                             String resumeTitle,
 //                            String thumbnail,
                             int totalAmount,
@@ -17,7 +17,7 @@ public record OrderResponse(String id,
 
     public static OrderResponse from(Order order) {
         return new OrderResponse(
-                order.getId(),
+                order.getOrderId(),
                 order.getResume().getTitle(),
                 order.getTotalAmount(),
                 order.getOrderStatus(),

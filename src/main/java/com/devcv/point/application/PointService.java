@@ -6,6 +6,8 @@ import com.devcv.point.repository.PointRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
+import java.util.Objects;
+
 @Service
 @RequiredArgsConstructor
 public class PointService {
@@ -13,7 +15,8 @@ public class PointService {
     private final PointRepository pointRepository;
 
     public Long getMyPoint(Long memberId) {
-        return pointRepository.findTotalPointsBymemberId(memberId);
+        Long point = pointRepository.findTotalPointsBymemberId(memberId);
+        return Objects.requireNonNullElse(point, 0L);
     }
 
     public Point savePoint(Member member, Long amount, String description) {
