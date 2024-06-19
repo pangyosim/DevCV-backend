@@ -3,7 +3,6 @@ package com.devcv.resume.presentation;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.common.exception.InternalServerException;
 import com.devcv.common.exception.UnAuthorizedException;
-import com.devcv.member.domain.dto.MemberResponse;
 import com.devcv.resume.application.ResumeService;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.dto.PaginatedResumeResponse;
@@ -25,7 +24,7 @@ import java.util.List;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/api/resumes")
+@RequestMapping("/resumes")
 public class ResumeController {
 
     private final ResumeService resumeService;
@@ -48,8 +47,8 @@ public class ResumeController {
 
 
     //------------이력서 상세 조회 요청 start--------------
-    @GetMapping("/{resumeId}")
-    public ResponseEntity<ResumeDto> getResumeDetail(@PathVariable Long resumeId) {
+    @GetMapping("/{resume-id}")
+    public ResponseEntity<ResumeDto> getResumeDetail(@PathVariable("resume-id") Long resumeId) {
         try {
             ResumeDto resumeDetail = resumeService.getResumeDetail(resumeId);
             return ResponseEntity.ok(resumeDetail);
@@ -61,58 +60,31 @@ public class ResumeController {
 
 
 
-    //------이력서 등록 페이지 호출 start --------
-    @GetMapping("/add")
-    public ResponseEntity<?> newResumePage(@AuthenticationPrincipal UserDetails userDetails) {
-
-        if(userDetails == null) {
-            throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
-        }
-        Long memberId = Long.valueOf(userDetails.getUsername());
-
-        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
-
-        // 새로운 이력서 페이지를 위한 기본 ResumeDto 생성
-        ResumeDto newResume = new ResumeDto();
-        newResume.setMemberId(memberResponse.getMemberId());
-        newResume.setSellerNickname(memberResponse.getNickName());
-
-        return ResponseEntity.ok().body(newResume);
-    }
-    //-------이력서 등록 페이지 호출 end -----------
-
-
     // -------이력서 승인대기 요청 start-------------
-    @PostMapping("/add")
-    public ResponseEntity<Resume> registerResume(
+    @PostMapping()
+    public ResponseEntity<ResumeDto> registerResume(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestPart("resume") ResumeRequest resumeRequest,
             @RequestPart("resumeFile") MultipartFile resumeFile,
             @RequestPart("images") List<MultipartFile> images) {
 
-        // 파일들 DTO 설정
-        resumeRequest.setResumeFile(resumeFile);
-        resumeRequest.setImageFiles(images);
-
         if(userDetails == null) {
             throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
         }
 
         Long memberId = Long.valueOf(userDetails.getUsername());
-        MemberResponse memberResponse = resumeService.getMemberResponse(memberId);
-
-        Resume createdResume = resumeService.register(memberResponse, resumeRequest);
-
-        return ResponseEntity.ok(createdResume);
+        Resume createdResume = resumeService.register(resumeRequest, resumeFile, images, memberId);
+        ResumeDto resumeDto = ResumeDto.from(createdResume);
+        return ResponseEntity.ok(resumeDto);
     }
 
     //----------이력서 승인대기 요청 end---------------
 
 
     //----------이력서 판매 상세 내역 페이지 호출 start---------
-    @GetMapping("/myresume/{resumeId}")
+    @GetMapping("/myresume/{resume-id}")
     public ResponseEntity<?> getResumeForEdit(
-            @AuthenticationPrincipal UserDetails userDetails, @PathVariable Long resumeId) {
+            @AuthenticationPrincipal UserDetails userDetails, @PathVariable("resume-id") Long resumeId) {
         if(userDetails == null) {
             throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
         }
@@ -125,10 +97,10 @@ public class ResumeController {
 
 
     //----------이력서 판매 등록 요청 start----------------
-    @PostMapping("/complete")
+    @PutMapping("/myresume/{resume-id}/status")
     public ResponseEntity<?> completeResumeRegistration(
             @AuthenticationPrincipal UserDetails userDetails,
-            @RequestPart("resumeId") Long resumeId) {
+            @PathVariable("resume-id") Long resumeId) {
         if(userDetails == null) {
             throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
         }
