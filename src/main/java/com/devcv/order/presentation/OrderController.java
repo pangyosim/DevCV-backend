@@ -44,12 +44,13 @@ public class OrderController {
     }
 
     @GetMapping("/orders/{order-id}")
-    public ResponseEntity<OrderResponse> getOrderResponse(@PathVariable("order-id") String orderId) {
-
-        return ResponseEntity.ok().body(OrderResponse.from(orderService.getOrderById(orderId)));
+    public ResponseEntity<OrderResponse> getOrderResponse(@AuthenticationPrincipal UserDetails userDetails,
+                                                          @PathVariable("order-id") String orderId) {
+        Member member = extractMember(userDetails);
+        return ResponseEntity.ok().body(OrderResponse.from(orderService.getOrderByIdAndMember(orderId, member)));
     }
 
-    public Member extractMember(UserDetails userDetails) {
+    private Member extractMember(UserDetails userDetails) {
         Long memberId = Long.valueOf(userDetails.getUsername());
         return memberService.findMemberByMemberId(memberId);
     }

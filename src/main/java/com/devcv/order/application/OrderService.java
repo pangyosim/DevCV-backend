@@ -28,7 +28,7 @@ public class OrderService {
 
     @Transactional
     public Order createOrder(Member member, Resume resume, OrderRequest orderRequest) {
-        compareMemberId(member, orderRequest);
+        compareMemberId(member, orderRequest.memberId());
         compareResumeInfo(resume, orderRequest);
         checkPoint(member, resume);
 
@@ -37,13 +37,15 @@ public class OrderService {
         return order;
     }
 
-    public Order getOrderById(String orderId) {
-        return orderRepository.findById(orderId)
+    public Order getOrderByIdAndMember(String orderId, Member member) {
+        Order order = orderRepository.findOrderByOrderIdAndMember(orderId, member)
                 .orElseThrow(() -> new TestErrorException(ErrorCode.TEST_ERROR));
+        compareMemberId(member, order.getMember().getMemberId());
+        return order;
     }
 
-    private void compareMemberId(Member member, OrderRequest request) {
-        if (!member.getMemberId().equals(request.memberId())) {
+    private void compareMemberId(Member member, Long requestMemberId) {
+        if (!member.getMemberId().equals(requestMemberId)) {
             throw new TestErrorException(ErrorCode.TEST_ERROR);
         }
     }
