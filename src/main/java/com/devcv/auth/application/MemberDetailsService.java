@@ -25,25 +25,29 @@ public class MemberDetailsService implements UserDetailsService {
     @Override
     @Transactional
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
-        try{
+        try {
             Member findMember =  memberRepository.findMemberByEmail(username);
-            if(findMember == null){
+            if (findMember == null){
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             } else {
-                return createUserDetails(findMember);
+                return createMemberDetails(findMember);
             }
-        } catch (NotSignUpException ne){
+        } catch (NotSignUpException e){
+            e.fillInStackTrace();
             throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
     }
     // DB 에 User 값이 존재 -> UserDetails 리턴
-    private UserDetails createUserDetails(Member member) {
-        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getMemberRole().name());
-
+    private UserDetails createMemberDetails(Member member) {
+        GrantedAuthority grantedAuthority = new SimpleGrantedAuthority(member.getMemberRole().name() + " " +
+                member.getSocial().name() + " " +
+                member.getMemberName() + " " +
+                member.getEmail());
         return new User(
                 String.valueOf(member.getMemberId()),
                 member.getPassword(),
                 Collections.singleton(grantedAuthority)
-        );
+        ) {
+        };
     }
 }

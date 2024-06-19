@@ -1,6 +1,5 @@
 package com.devcv.resume.application;
 
-import com.devcv.member.domain.dto.MemberResponse;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.dto.PaginatedResumeResponse;
 import com.devcv.resume.domain.dto.ResumeDto;
@@ -8,6 +7,9 @@ import com.devcv.resume.domain.dto.ResumeRequest;
 import com.devcv.resume.domain.enumtype.CompanyType;
 import com.devcv.resume.domain.enumtype.StackType;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.List;
 
 
 @Transactional
@@ -16,9 +18,8 @@ public interface ResumeService {
     PaginatedResumeResponse findResumes(StackType stackType, CompanyType companyType, int page, int size);
     // 이력서 상세 조회
     ResumeDto getResumeDetail(Long resumeId);
-    MemberResponse getMemberResponse(Long memberId);
     //이력서 판매승인 요청
-    Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest);
+    Resume register(ResumeRequest resumeRequest, MultipartFile resumeFile, List<MultipartFile> images, Long memberId);
     // 이력서 판매내역 상세 조회
     ResumeDto getRegisterResumeDetail(Long memberId, Long resumeId);
     // 이력서 등록완료 요청

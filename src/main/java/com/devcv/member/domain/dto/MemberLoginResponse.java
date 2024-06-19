@@ -3,15 +3,25 @@ package com.devcv.member.domain.dto;
 import com.devcv.auth.jwt.JwtTokenDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+
+import java.util.stream.Collectors;
 
 @Getter
 @AllArgsConstructor
 public class MemberLoginResponse {
-    private String grantType;
+    private String memberName;
+    private String email;
     private String accessToken;
-    private String refreshToken;
 
-    public static MemberLoginResponse from(JwtTokenDto jwtTokenDto){
-        return new MemberLoginResponse(jwtTokenDto.getGrantType(),jwtTokenDto.getAccessToken(),jwtTokenDto.getRefreshToken());
+    public static MemberLoginResponse from(JwtTokenDto jwtTokenDto, Authentication authentication){
+        String[] memberRoleSocial = authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(",")).split(" ");
+        return new MemberLoginResponse(
+                memberRoleSocial[2], // memberName
+                memberRoleSocial[3] // email
+                ,jwtTokenDto.getAccessToken());
     }
 }

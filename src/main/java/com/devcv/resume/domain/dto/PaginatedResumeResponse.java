@@ -14,7 +14,7 @@ import java.util.List;
 @AllArgsConstructor
 public class PaginatedResumeResponse {
 
-    private List<ResumeResponse> content;
+    private List<ResumeDto> content;
     private Long totalElements;
     private int numberOfElements;
     private int currentPage;

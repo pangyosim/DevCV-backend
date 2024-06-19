@@ -10,8 +10,8 @@ import org.springframework.stereotype.Service;
 *
 *       ************************************ SELECT ************************************
 *       findMemberByEmail : email로 해당 회원정보 SELECT.
-*       findMemberByMemberid : memberid로 해당 회원정보 SELECT.
-*       findMemberByMemberNameAndPhone: 이름&전화번호 정보로 해당 회원정보 SELECT.
+*       findMemberBymemberId : memberId로 해당 회원정보 SELECT.
+*       findMemberBymemberNameAndPhone: 이름&전화번호 정보로 해당 회원정보 SELECT.
 *       ************************************ SELECT ************************************
 *
 *       ************************************ INSERT ************************************
@@ -19,8 +19,8 @@ import org.springframework.stereotype.Service;
 *       ************************************ INSERT ************************************
 *
 *       ************************************ UPDATE ************************************
-*       updatePasswordByMemberId: memberid로 해당 회원 비밀번호 UPDATE.
-*       updateMemberByMemberId: memberid로 해당 회원정보 UPDATE.
+*       updatePasswordBymemberId: memberId로 해당 회원 비밀번호 UPDATE.
+*       updateMemberBymemberId: memberId로 해당 회원정보 UPDATE.
 *       ************************************ UPDATE ************************************
 *
 *   ********************************* MemberService 하위 메서드 기능 정리 *********************************
@@ -30,10 +30,24 @@ import org.springframework.stereotype.Service;
 public class MemberService {
 
     private final MemberRepository memberRepository;
-    public void signup(Member member){memberRepository.save(member);}
-    public Member findMemberByEmail(String email){ return memberRepository.findMemberByEmail(email);}
-    public Member findMemberByMemberId(Long memberid){ return memberRepository.findMemberBymemberid(memberid);}
-    public Member findMemberByMemberNameAndPhone(String memberName, String phone) { return memberRepository.findMemberByMemberNameAndPhone(memberName,phone);}
-    public int updatePasswordByMemberId(String password,Long memberid) { return memberRepository.updatePasswordByMemberId(password,memberid);}
-    public int updateMemberByMemberId(String memberName, String email, String password, String nickname, String phone, String address, String issocial, String iscompany, String isjob, String isstack, Long memberid) { return memberRepository.updateMemberByMemberId(memberName,email,password,nickname,phone,address,issocial,iscompany,isjob,isstack,memberid);}
+    public Member findMemberByEmail(String email) {
+        return memberRepository.findMemberByEmail(email);
+    }
+    public Member findMemberBymemberId(Long memberId) {
+        return memberRepository.findMemberBymemberId(memberId);
+    }
+    public Member findMemberBymemberNameAndPhone(String memberName, String phone) {
+        return memberRepository.findMemberBymemberNameAndPhone(memberName,phone);
+    }
+    public int updatePasswordBymemberId(String password,Long memberId) {
+        return memberRepository.updatePasswordBymemberId(password,memberId);
+    }
+    public int updateMemberBymemberId(String memberName, String email, String password, String nickname, String phone, String address,
+                                      String company, String job, String stack, Long memberId) {
+        return memberRepository.updateMemberBymemberId(memberName,email,password,nickname,phone,address,company,job,stack,memberId);}
+
+    public int updateSocialMemberBymemberId(String memberName, String nickname, String phone, String address,
+                                            String company, String job, String stack, Long memberId){
+        return memberRepository.updateSocialMemberBymemberId(memberName,nickname,phone,address,company,job,stack,memberId);
+    }
 }

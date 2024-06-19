@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.List;
 import java.util.Optional;
 
 
@@ -25,33 +26,54 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
 
     // 기본 이력서 조회
     Page<Resume> findByStatus(ResumeStatus status, Pageable pageable);
+    // 전체 이력서 조회
+    @Query("SELECT rm, AVG(COALESCE(rv.grade, 0)), COUNT(rv) " +
+            "FROM Resume rm LEFT JOIN Review rv ON rv.resume = rm " +
+            "WHERE rm.status = :status " +
+            "GROUP BY rm")
+    Page<Object[]> findByStatus(ResumeStatus status, Pageable pageable);
 
     // 직무 & 회사별 이력서 조회
-    Page<Resume> findByCategory_StackTypeAndCategory_CompanyTypeAndStatus(StackType stackType, CompanyType companyType, ResumeStatus status, Pageable pageable);
+    @Query("SELECT rm, AVG(COALESCE(rv.grade, 0)), COUNT(rv) " +
+            "FROM Resume rm LEFT JOIN Review rv ON rv.resume = rm " +
+            "WHERE rm.category.stackType = :stackType AND rm.category.companyType = :companyType AND rm.status = :status " +
+            "GROUP BY rm")
+    Page<Object[]> findByCategory_StackTypeAndCategory_CompanyTypeAndStatus(StackType stackType, CompanyType companyType, ResumeStatus status, Pageable pageable);
 
     // 직무별 이력서 조회
-    Page<Resume> findByCategory_StackTypeAndStatus(StackType stackType, ResumeStatus status, Pageable pageable);
+    @Query("SELECT rm, AVG(COALESCE(rv.grade, 0)), COUNT(rv) " +
+            "FROM Resume rm LEFT JOIN Review rv ON rv.resume = rm " +
+            "WHERE rm.category.stackType = :stackType AND rm.status = :status " +
+            "GROUP BY rm")
+    Page<Object[]> findByCategory_StackTypeAndStatus(StackType stackType, ResumeStatus status, Pageable pageable);
 
     // 회사별 이력서 조회
-    Page<Resume> findByCategory_CompanyTypeAndStatus(CompanyType companyType, ResumeStatus status, Pageable pageable);
+    @Query("SELECT rm, AVG(COALESCE(rv.grade, 0)), COUNT(rv) " +
+            "FROM Resume rm LEFT JOIN Review rv ON rv.resume = rm " +
+            "WHERE rm.category.companyType = :companyType AND rm.status = :status " +
+            "GROUP BY rm")
+    Page<Object[]> findByCategory_CompanyTypeAndStatus(CompanyType companyType, ResumeStatus status, Pageable pageable);
 
     // 상세 이력서 조회
-    @Query("SELECT r FROM Resume r WHERE r.resumeId = :resumeId AND r.status = '등록완료'")
-    Optional<Resume> findByIdAndStatus(Long resumeId);
+    @Query("SELECT r, AVG(COALESCE(rv.grade, 0)), COUNT(rv) " +
+            "FROM Resume r LEFT JOIN Review rv ON rv.resume = r " +
+            "WHERE r.resumeId = :resumeId AND r.status = '등록완료' " +
+            "GROUP BY r")
+    List<Object[]> findByIdAndStatus(Long resumeId);
 
     //----------------등록완료 default인 메서드 start-----------------
-    default Page<Resume> findApprovedResumes(Pageable pageable) {
+    default Page<Object[]> findApprovedResumes(Pageable pageable) {
         return findByStatus(ResumeStatus.등록완료, pageable);
     }
-    default Page<Resume> findApprovedResumesByStackTypeAndCompanyType(StackType stackType, CompanyType companyType, Pageable pageable) {
+    default Page<Object[]> findApprovedResumesByStackTypeAndCompanyType(StackType stackType, CompanyType companyType, Pageable pageable) {
         return findByCategory_StackTypeAndCategory_CompanyTypeAndStatus(stackType, companyType, ResumeStatus.등록완료, pageable);
     }
 
-    default Page<Resume> findApprovedResumesByStackType(StackType stackType, Pageable pageable) {
+    default Page<Object[]> findApprovedResumesByStackType(StackType stackType, Pageable pageable) {
         return findByCategory_StackTypeAndStatus(stackType, ResumeStatus.등록완료, pageable);
     }
 
-    default Page<Resume> findApprovedResumesByCompanyType(CompanyType companyType, Pageable pageable) {
+    default Page<Object[]> findApprovedResumesByCompanyType(CompanyType companyType, Pageable pageable) {
         return findByCategory_CompanyTypeAndStatus(companyType, ResumeStatus.등록완료, pageable);
     }
 
