@@ -13,7 +13,7 @@ public class PointService {
     private final PointRepository pointRepository;
 
     public Long getMyPoint(Long memberId) {
-        return pointRepository.findTotalPointsByMemberId(memberId);
+        return pointRepository.findTotalPointsBymemberId(memberId);
     }
 
     public Point savePoint(Member member, Long amount, String description) {

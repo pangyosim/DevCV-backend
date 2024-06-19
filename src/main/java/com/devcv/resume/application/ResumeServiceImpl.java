@@ -102,7 +102,6 @@ public class ResumeServiceImpl implements ResumeService {
         Long reviewCount = (Long) result.get(0)[2];
 
         return entityToDto(resume, averageGrade, reviewCount);
-
     }
 
     // 이력서 등록(승인대기)
@@ -110,6 +109,7 @@ public class ResumeServiceImpl implements ResumeService {
     public Resume register(ResumeRequest resumeRequest, MultipartFile resumeFile, List<MultipartFile> images, Long memberId) {
 
         Member member = memberRepository.findMemberBymemberid(memberId);
+
         if (member == null) {
             throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }
@@ -191,7 +191,10 @@ public class ResumeServiceImpl implements ResumeService {
     // 이력서 최종 판매등록
     @Override
     public Resume completeRegistration( Long memberId, Long resumeId) {
-
+        Member member = memberRepository.findMemberBymemberId(memberId);
+        if (member == null) {
+            throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
