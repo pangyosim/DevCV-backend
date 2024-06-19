@@ -7,13 +7,16 @@ import com.devcv.common.exception.UnAuthorizedException;
 import com.devcv.member.application.MailService;
 import com.devcv.member.application.MemberService;
 import com.devcv.member.domain.Member;
+import com.devcv.member.domain.MemberLog;
 import com.devcv.member.domain.dto.*;
 import com.devcv.member.domain.dto.profile.GoogleProfile;
 import com.devcv.member.domain.dto.profile.KakaoProfile;
 import com.devcv.member.domain.enumtype.SocialType;
 import com.devcv.member.exception.*;
+import com.devcv.member.repository.MemberLogRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -25,8 +28,11 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,6 +45,7 @@ public class MemberController {
     private final MemberService memberService;
     private final MailService mailService;
     private final AuthService authService;
+    private final MemberLogRepository memberLogRepository;
     @Value("${keys.social_password}")
     private String socialPassword;
 
@@ -178,8 +185,11 @@ public class MemberController {
                 if(!findMemberBymemberId.getSocial().name().equals(SocialType.normal.name())){
                     throw new SocialMemberUpdateException(ErrorCode.SOCIAL_UPDATE_ERROR);
                 }
+                HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
                 int resultUpdatePassword = memberService.updatePasswordBymemberId(passwordEncoder.encode(password)
                         ,memberId);
+                memberLogRepository.save(MemberLog.builder().memberId(findMemberBymemberId.getMemberId()).logIp(getIp(request))
+                        .logEmail(findMemberBymemberId.getEmail()).logAgent(request.getHeader("user-agent")).logUpdateDate(LocalDateTime.now()).build());
                 if( resultUpdatePassword == 1 ){ // 비밀번호 수정성공.
                   return ResponseEntity.ok().build();
                 } else {
@@ -220,11 +230,14 @@ public class MemberController {
                     throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
                 }
                 if( memberModiAllRequest.getSocial().name().equals(SocialType.normal.name())) {
+                    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
                     int resultUpdateMember = memberService.updateMemberBymemberId(memberModiAllRequest.getMemberName(), memberModiAllRequest.getEmail(),
                             passwordEncoder.encode(memberModiAllRequest.getPassword()),
                             memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
                             memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
                             String.join(",", memberModiAllRequest.getStack()), memberId);
+                    memberLogRepository.save(MemberLog.builder().memberId(findMemberBymemberId.getMemberId()).logIp(getIp(request))
+                            .logEmail(findMemberBymemberId.getEmail()).logAgent(request.getHeader("user-agent")).logUpdateDate(LocalDateTime.now()).build());
                     if (resultUpdateMember == 1) { // 일반 멤버 수정성공.
                         return ResponseEntity.ok().build();
                     } else {
@@ -255,7 +268,6 @@ public class MemberController {
             throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
         }
     }
-
     //----------- modi member end -----------
 
 
@@ -355,7 +367,25 @@ public class MemberController {
     //----------- Google Auth end -----------
     //----------- Social end -----------
 
-
-
-
+    //----------- GetClientIP start -----------
+    public static String getIp(HttpServletRequest request) {
+        String ip = request.getHeader("X-Forwarded-For");
+        if (ip == null) {
+            ip = request.getHeader("Proxy-Client-IP");
+        }
+        if (ip == null) {
+            ip = request.getHeader("WL-Proxy-Client-IP");
+        }
+        if (ip == null) {
+            ip = request.getHeader("HTTP_CLIENT_IP");
+        }
+        if (ip == null) {
+            ip = request.getHeader("HTTP_X_FORWARDED_FOR");
+        }
+        if (ip == null) {
+            ip = request.getRemoteAddr();
+        }
+        return ip;
+    }
+    //----------- GetClientIP end -----------
 }
