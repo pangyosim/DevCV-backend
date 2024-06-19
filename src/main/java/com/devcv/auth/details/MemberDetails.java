@@ -2,25 +2,23 @@ package com.devcv.auth.details;
 
 import com.devcv.member.domain.Member;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Objects;
 
-@Data
+@Getter
 @AllArgsConstructor
 public class MemberDetails implements UserDetails {
 
     private final Member member;
-
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        Collection<GrantedAuthority> authorities = new ArrayList<>();
-        authorities.add(() -> ("ROLE_" + member.getMemberRole().name()));
-        return authorities;
+        return Collections.singleton(new SimpleGrantedAuthority(member.getMemberRole().name() + " " + member.getSocial().name()));
     }
 
     @Override
@@ -30,7 +28,7 @@ public class MemberDetails implements UserDetails {
 
     @Override
     public String getUsername() {
-        return member.getEmail();
+        return String.valueOf(member.getMemberId());
     }
 
     @Override

@@ -10,9 +10,8 @@ import com.devcv.member.domain.Member;
 import com.devcv.member.domain.dto.*;
 import com.devcv.member.domain.dto.profile.GoogleProfile;
 import com.devcv.member.domain.dto.profile.KakaoProfile;
-import com.devcv.member.exception.DuplicationException;
-import com.devcv.member.exception.NotNullException;
-import com.devcv.member.exception.NotSignUpException;
+import com.devcv.member.domain.enumtype.SocialType;
+import com.devcv.member.exception.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
@@ -32,22 +31,25 @@ import java.util.HashMap;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/members")
+@RequestMapping("/members/*")
 @PropertySource("classpath:application.yml")
 @RequiredArgsConstructor
 public class MemberController {
     private final PasswordEncoder passwordEncoder;
-
     private final MemberService memberService;
     private final MailService mailService;
     private final AuthService authService;
+    @Value("${keys.social_password}")
+    private String socialPassword;
 
     //----------- login start -----------
-    @GetMapping("/login")
+    @PostMapping("/login")
     public ResponseEntity<MemberLoginResponse> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest) {
-        return ResponseEntity.ok(authService.login(memberLoginRequest));
+        MemberLoginResponse resultResponse = authService.login(memberLoginRequest);
+        HttpHeaders header = new HttpHeaders();
+        header.add("Authorization","Bearer " + resultResponse.getAccessToken());
+        return ResponseEntity.ok().headers(header).body(resultResponse);
     }
-
     //----------- login end -----------
 
     //----------- signup start -----------
@@ -57,8 +59,8 @@ public class MemberController {
         return ResponseEntity.ok().build();
     }
     //----------- mail start -----------
-    @GetMapping("/certemail")
-    public ResponseEntity<CertificationMailResponse> certMail(@RequestParam String email) {
+    @GetMapping("/cert-email")
+    public ResponseEntity<CertificationMailResponse> certEmail(@RequestParam String email) {
         try{
             Long certNumber = mailService.sendMail(email);
             if(certNumber == 0){ // 메일 인증 실패
@@ -70,8 +72,8 @@ public class MemberController {
         }
     }
 
-    @GetMapping("/duplicationemail")
-    public ResponseEntity<?> duplicationMail(@RequestParam String email) {
+    @GetMapping("/duplication-email")
+    public ResponseEntity<Object> duplicationEmail(@RequestParam String email) {
         try {
             Member findMember = memberService.findMemberByEmail(email);
             if(findMember!= null){
@@ -89,11 +91,11 @@ public class MemberController {
     //----------- signup end -----------
 
     //----------- find ID/PW start -----------
-    @PostMapping("/findid")
+    @PostMapping("/find-id")
     public ResponseEntity<MemberFindIdReponse> findId(@RequestBody MemberFindIdRequest memberFindIdRequest) {
         // 아이디 찾기
         try{
-            Member findIdMember = memberService.findMemberByMemberNameAndPhone(memberFindIdRequest.getMemberName(),memberFindIdRequest.getPhone());
+            Member findIdMember = memberService.findMemberBymemberNameAndPhone(memberFindIdRequest.getMemberName(),memberFindIdRequest.getPhone());
             // 이름&핸드폰번호로 가입되어 있는 멤버가 있는지 확인.
             if(findIdMember!= null){
                 return ResponseEntity.ok().body(MemberFindIdReponse.from(findIdMember));
@@ -106,11 +108,11 @@ public class MemberController {
         }
     }
 
-    @PostMapping("/findpwemail")
-    public ResponseEntity<MemberFindPwResponse> findPwEmail(@RequestBody MemberFindPwEmailRequest memberFindPwEmailRequest) {
+    @PostMapping("/find-pw/email")
+    public ResponseEntity<MemberFindPwResponse> findPwEmail(@RequestParam String email) {
         // NULL CHECK
         try{
-            if(memberFindPwEmailRequest.getEmail() == null){
+            if(email == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
         } catch (Exception e){
@@ -118,7 +120,7 @@ public class MemberController {
         }
         // 이메일로 가입되어있는 아이디 찾기
         try {
-            Member findpwEmailMember = memberService.findMemberByEmail(memberFindPwEmailRequest.getEmail());
+            Member findpwEmailMember = memberService.findMemberByEmail(email);
             if(findpwEmailMember != null){
                 return ResponseEntity.ok().body(new MemberFindPwResponse(findpwEmailMember.getMemberId()));
             } else {
@@ -129,7 +131,7 @@ public class MemberController {
             throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
     }
-    @PostMapping("/findpwphone")
+    @PostMapping("/find-pw")
     public ResponseEntity<MemberFindPwResponse> findPwPhone(@RequestBody MemberFindPwPhoneRequest memberFindPwPhoneRequest) {
         // NULL CHECK
         try{
@@ -142,7 +144,7 @@ public class MemberController {
 
         // 아이디 찾기
         try{
-            Member findIdMember = memberService.findMemberByMemberNameAndPhone(memberFindPwPhoneRequest.getMemberName(),memberFindPwPhoneRequest.getPhone());
+            Member findIdMember = memberService.findMemberBymemberNameAndPhone(memberFindPwPhoneRequest.getMemberName(),memberFindPwPhoneRequest.getPhone());
             // 이름&핸드폰번호로 가입되어 있는 멤버가 있는지 확인.
             if(findIdMember!= null){
                 return ResponseEntity.ok().body(new MemberFindPwResponse(findIdMember.getMemberId()));
@@ -158,23 +160,26 @@ public class MemberController {
 
     //----------- modi member start -----------
     // 비밀번호 변경 modipw
-    @PutMapping("/modipw")
-    public ResponseEntity<String> modiPassword(@RequestBody MemberModifyPwRequest memberModifyPwRequest){
+    @PutMapping("/{memberId}/{password}")
+    public ResponseEntity<String> modiPassword(@PathVariable Long memberId, @PathVariable String password){
         // NULL CHECK
         try {
-            if(memberModifyPwRequest.getPassword() == null || memberModifyPwRequest.getMemberId() == null){
+            if(password == null || memberId == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
         } catch (Exception e) {
             e.fillInStackTrace();
             throw new NotNullException(ErrorCode.NULL_ERROR);
         }
-        // memberid로 찾은 멤버 패스워드 수정.
+        // memberId로 찾은 멤버 패스워드 수정.
         try {
-            Member findMemberBymemberid = memberService.findMemberByMemberId(memberModifyPwRequest.getMemberId());
-            if(findMemberBymemberid != null){
-                int resultUpdatePassword = memberService.updatePasswordByMemberId(passwordEncoder.encode(memberModifyPwRequest.getPassword())
-                        ,memberModifyPwRequest.getMemberId());
+            Member findMemberBymemberId = memberService.findMemberBymemberId(memberId);
+            if(findMemberBymemberId != null){
+                if(!findMemberBymemberId.getSocial().name().equals(SocialType.normal.name())){
+                    throw new SocialMemberUpdateException(ErrorCode.SOCIAL_UPDATE_ERROR);
+                }
+                int resultUpdatePassword = memberService.updatePasswordBymemberId(passwordEncoder.encode(password)
+                        ,memberId);
                 if( resultUpdatePassword == 1 ){ // 비밀번호 수정성공.
                   return ResponseEntity.ok().build();
                 } else {
@@ -183,46 +188,71 @@ public class MemberController {
             } else {
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
-        } catch (Exception e) {
+        } catch (NotSignUpException e) {
             e.fillInStackTrace();
             throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
+        } catch (SocialMemberUpdateException e){
+            e.fillInStackTrace();
+            throw new SocialMemberUpdateException(ErrorCode.SOCIAL_UPDATE_ERROR);
         }
     }
     // 회원정보수정 modiall
-    @PutMapping("/modiall")
-    public ResponseEntity<String> modiMember(@RequestBody MemberModiAllRequest memberModiAllRequest) {
+    @PutMapping("/{memberId}")
+    public ResponseEntity<String> modiMember(@RequestBody MemberModiAllRequest memberModiAllRequest, @PathVariable Long memberId) {
         // NULL CHECK
         try {
             if(memberModiAllRequest.getJob() == null || memberModiAllRequest.getAddress() == null || memberModiAllRequest.getStack() == null
                     || memberModiAllRequest.getEmail() == null || memberModiAllRequest.getMemberName() == null || memberModiAllRequest.getSocial() == null
-                    || memberModiAllRequest.getCompany() == null || memberModiAllRequest.getPhone() == null || memberModiAllRequest.getMemberId() == null
+                    || memberModiAllRequest.getCompany() == null || memberModiAllRequest.getPhone() == null || memberId == null
                     || memberModiAllRequest.getNickName() == null || memberModiAllRequest.getPassword() == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
-        } catch (Exception e){
+        } catch (NotNullException e){
             e.fillInStackTrace();
             throw new NotNullException(ErrorCode.NULL_ERROR);
         }
 
         try {
-            // memberid로 Member 찾기
-            Member findMemberBymemberid = memberService.findMemberByMemberId(memberModiAllRequest.getMemberId());
-            if(findMemberBymemberid != null){
-                int resultUpdateMember = memberService.updateMemberByMemberId(memberModiAllRequest.getMemberName(), memberModiAllRequest.getEmail(),
-                        passwordEncoder.encode(memberModiAllRequest.getPassword()),
-                        memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(), memberModiAllRequest.getSocial().name(),
-                        memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(), String.join(",", memberModiAllRequest.getStack()), memberModiAllRequest.getMemberId());
-                if( resultUpdateMember == 1 ){ // 멤버 수정성공.
-                    return ResponseEntity.ok().build();
+            // memberId로 Member 찾기
+            Member findMemberBymemberId = memberService.findMemberBymemberId(memberId);
+            if(findMemberBymemberId != null){
+                if(!findMemberBymemberId.getSocial().name().equals(memberModiAllRequest.getSocial().name())){
+                    throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
+                }
+                if( memberModiAllRequest.getSocial().name().equals(SocialType.normal.name())) {
+                    int resultUpdateMember = memberService.updateMemberBymemberId(memberModiAllRequest.getMemberName(), memberModiAllRequest.getEmail(),
+                            passwordEncoder.encode(memberModiAllRequest.getPassword()),
+                            memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
+                            memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
+                            String.join(",", memberModiAllRequest.getStack()), memberId);
+                    if (resultUpdateMember == 1) { // 일반 멤버 수정성공.
+                        return ResponseEntity.ok().build();
+                    } else {
+                        throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+                    }
                 } else {
-                    throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+                    int resultUpdateSocialMember = memberService.updateSocialMemberBymemberId(memberModiAllRequest.getMemberName(),
+                            memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
+                            memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
+                            String.join(",", memberModiAllRequest.getStack()), memberId);
+                    if (resultUpdateSocialMember == 1) { // 소셜 멤버 수정성공.
+                        return ResponseEntity.ok().build();
+                    } else {
+                        throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+                    }
                 }
             } else {
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
-        } catch (Exception e) {
+        } catch (NotSignUpException e) {
             e.fillInStackTrace();
             throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
+        } catch (InternalServerException e){
+            e.fillInStackTrace();
+            throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
+        } catch (SocialDataException e) {
+            e.fillInStackTrace();
+            throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
         }
     }
 
@@ -231,9 +261,8 @@ public class MemberController {
 
     //----------- Social start -----------
     //----------- KaKao Auth start -----------
-    @GetMapping("/auth/kakao")
-    public ResponseEntity<Map<String,Object>> memberAuthKakao(@RequestParam String token){
-
+    @GetMapping("/kakao-login")
+    public ResponseEntity<Object> memberAuthKakao(@RequestParam String token){
         ObjectMapper objectMapper = new ObjectMapper();
         RestTemplate restTemplateInfo = new RestTemplate();
         HttpHeaders headersInfo = new HttpHeaders();
@@ -255,16 +284,24 @@ public class MemberController {
             e.fillInStackTrace();
             throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
         }
+
         // 이미 가입되어 있는 이메일이면 해당 이메일로 로그인
         Member findMember = memberService.findMemberByEmail(profile.getKakao_account().getEmail());
         if(findMember != null){
+            // 해당 소셜 이메일이 이미 일반계정으로 가입되어 있는 경우
+            if(!passwordEncoder.matches(socialPassword, findMember.getPassword())){
+                throw new SocialLoginException(ErrorCode.SOCIAL_LOGIN_ERROR);
+            }
+            // 로그인 진행
+            MemberLoginRequest memberLoginRequest =MemberLoginRequest.builder().email(profile.getKakao_account().getEmail()).password(socialPassword).build();
+            MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
             HttpHeaders header = new HttpHeaders();
-            //header.set("Authorization", "Bearer " + createJwtToken(generateLoginToken(),findMember.getMemberId()));
-            return ResponseEntity.ok().headers(header).build();
+            header.add("Authorization","Bearer " + memberLoginResponse.getAccessToken());
+            return ResponseEntity.ok().headers(header).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
                 put("email", profile.getKakao_account().getEmail());
-                put("social", 2);
+                put("social", SocialType.kakao.name());
             }};
             return ResponseEntity.ok().body(userInfo);
         }
@@ -272,8 +309,8 @@ public class MemberController {
     //----------- KaKao Auth end -----------
 
     //----------- Google Auth start -----------
-    @GetMapping("/auth/google")
-    public ResponseEntity<Map<String,Object>> memberAuthGoogle(@RequestParam String token){
+    @GetMapping("/google-login")
+    public ResponseEntity<Object> memberAuthGoogle(@RequestParam String token){
 
         RestTemplate restTemplateInfo = new RestTemplate();
         HttpHeaders headersInfo = new HttpHeaders();
@@ -297,13 +334,20 @@ public class MemberController {
         // 이미 가입되어 있는 이메일이면 해당 이메일로 로그인
         Member findMember = memberService.findMemberByEmail(googleProfile.getEmail());
         if(findMember != null){
+            // 해당 소셜 이메일이 이미 일반계정으로 가입되어 있는 경우
+            if(!passwordEncoder.matches(socialPassword, findMember.getPassword())){
+                throw new SocialLoginException(ErrorCode.SOCIAL_LOGIN_ERROR);
+            }
+            // 로그인 진행.
+            MemberLoginRequest memberLoginRequest = MemberLoginRequest.builder().email(googleProfile.getEmail()).password(socialPassword).build();
+            MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
             HttpHeaders header = new HttpHeaders();
-            //header.set("Authorization", "Bearer " + createJwtToken(generateLoginToken(),findMember.getMemberId()));
-            return ResponseEntity.ok().headers(header).build();
+            header.add("Authorization","Bearer " + memberLoginResponse.getAccessToken());
+            return ResponseEntity.ok().headers(header).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
                 put("email",googleProfile.getEmail());
-                put("social",1);
+                put("social",SocialType.google.name());
             }};
             return ResponseEntity.ok().body(userInfo);
         }

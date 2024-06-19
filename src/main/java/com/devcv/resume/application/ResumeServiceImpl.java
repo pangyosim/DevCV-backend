@@ -94,8 +94,8 @@ public class ResumeServiceImpl implements ResumeService {
 
 
     @Override
-    public MemberResponse getMemberResponse(Long memberid) {
-        Member member = memberRepository.findMemberBymemberid(memberid);
+    public MemberResponse getMemberResponse(Long memberId) {
+        Member member = memberRepository.findMemberBymemberId(memberId);
         if (member == null) {
             throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }
@@ -105,7 +105,9 @@ public class ResumeServiceImpl implements ResumeService {
     @Override
     public Resume register(MemberResponse memberResponse, ResumeRequest resumeRequest) {
 
-        Member member = memberRepository.findMemberBymemberid(memberResponse.getMemberId());
+        // 회원 아이디 조회, 추후 security 설정 시 삭제
+        Member member = memberRepository.findMemberBymemberId(memberResponse.getMemberId());
+
         if (member == null) {
             throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
         }
@@ -185,7 +187,10 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public Resume completeRegistration( Long memberId, Long resumeId) {
-
+        Member member = memberRepository.findMemberBymemberId(memberResponse.getMemberId());
+        if (member == null) {
+            throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();

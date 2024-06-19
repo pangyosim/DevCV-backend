@@ -24,7 +24,7 @@ public class MemberSignUpRequest {
 
     public Member toMember(PasswordEncoder passwordEncoder) {
         // 소셜회원가입 비밀번호 지정.
-        if(this.social != SocialType.일반){
+        if(this.social != SocialType.normal){
             this.password = "12ff2535dsfsafs21fdsa21sfda11245";
         }
         return Member.builder().memberName(this.memberName).email(this.email).password(passwordEncoder.encode(this.password))
