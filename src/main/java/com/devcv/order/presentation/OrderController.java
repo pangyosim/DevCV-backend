@@ -3,6 +3,7 @@ package com.devcv.order.presentation;
 import com.devcv.member.application.MemberService;
 import com.devcv.member.domain.Member;
 import com.devcv.order.application.OrderService;
+import com.devcv.order.domain.Order;
 import com.devcv.order.domain.dto.OrderRequest;
 import com.devcv.order.domain.dto.OrderResponse;
 import com.devcv.order.domain.dto.OrderSheet;
@@ -27,27 +28,29 @@ public class OrderController {
     @GetMapping("/resumes/{resume-id}/checkout")
     public ResponseEntity<OrderSheet> checkoutResume(@AuthenticationPrincipal UserDetails userDetails,
                                                      @PathVariable("resume-id") Long resumeId) {
-        Long memberId = Long.valueOf(userDetails.getUsername());
-        Member member = memberService.findMemberByMemberId(memberId);
+        Member member = extractMember(userDetails);
         Resume resume = resumeService.findByResumeId(resumeId);
         return ResponseEntity.ok().body(orderService.createOrderSheet(member, resume));
     }
 
     @PostMapping("/orders")
-    public ResponseEntity<Void> createOrder(@RequestBody OrderRequest orderRequest) {
+    public ResponseEntity<Void> createOrder(@AuthenticationPrincipal UserDetails userDetails,
+                                            @RequestBody OrderRequest orderRequest) {
+        Member member = extractMember(userDetails);
+        Resume resume = resumeService.findByResumeId(orderRequest.resumeId());
 
-        //member, resume 객체 가져오는 메서드
-
-        //주문 생성
-//        Order order = orderService.createOrder(member, resume);
-
-//        return ResponseEntity.created(URI.create(order.getId())).build();
-        return ResponseEntity.created(URI.create("test")).build();
+        Order order = orderService.createOrder(member, resume, orderRequest);
+        return ResponseEntity.created(URI.create(order.getOrderId())).build();
     }
 
     @GetMapping("/orders/{order-id}")
     public ResponseEntity<OrderResponse> getOrderResponse(@PathVariable("order-id") String orderId) {
 
         return ResponseEntity.ok().body(OrderResponse.from(orderService.getOrderById(orderId)));
+    }
+
+    public Member extractMember(UserDetails userDetails) {
+        Long memberId = Long.valueOf(userDetails.getUsername());
+        return memberService.findMemberByMemberId(memberId);
     }
 }
