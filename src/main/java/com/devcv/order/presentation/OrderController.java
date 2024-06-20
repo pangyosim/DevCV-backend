@@ -1,9 +1,12 @@
 package com.devcv.order.presentation;
 
+import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.TestErrorException;
 import com.devcv.member.application.MemberService;
 import com.devcv.member.domain.Member;
 import com.devcv.order.application.OrderService;
 import com.devcv.order.domain.Order;
+import com.devcv.order.domain.dto.OrderListResponse;
 import com.devcv.order.domain.dto.OrderRequest;
 import com.devcv.order.domain.dto.OrderResponse;
 import com.devcv.order.domain.dto.OrderSheet;
@@ -50,8 +53,23 @@ public class OrderController {
         return ResponseEntity.ok().body(OrderResponse.from(orderService.getOrderByIdAndMember(orderId, member)));
     }
 
+    @GetMapping("/members/{member-id}/orders")
+    public ResponseEntity<OrderListResponse> getOrderListResponse(@AuthenticationPrincipal UserDetails userDetails,
+                                                                  @PathVariable("member-id") Long memberId) {
+        Member member = extractMember(userDetails, memberId);
+        return ResponseEntity.ok().body(orderService.getOrderListByMember(member));
+    }
+
     private Member extractMember(UserDetails userDetails) {
         Long memberId = Long.valueOf(userDetails.getUsername());
+        return memberService.findMemberBymemberId(memberId);
+    }
+
+    private Member extractMember(UserDetails userDetails, Long requestId) {
+        Long memberId = Long.valueOf(userDetails.getUsername());
+        if (!memberId.equals(requestId)) {
+            throw new TestErrorException(ErrorCode.TEST_ERROR, "OrderController.extractMember");
+        }
         return memberService.findMemberBymemberId(memberId);
     }
 }
