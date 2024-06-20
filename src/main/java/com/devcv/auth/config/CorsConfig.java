@@ -13,11 +13,15 @@ public class CorsConfig {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         config.setAllowCredentials(true);
-        config.addAllowedOriginPattern("*");
+        config.addAllowedOrigin("*");
         config.addAllowedHeader("*");
         config.addAllowedMethod("*");
 
         source.registerCorsConfiguration("/members/**", config);
+        source.registerCorsConfiguration("/resumes/**", config);
+        source.registerCorsConfiguration("/orders/**", config);
+        source.registerCorsConfiguration("/events/**", config);
+        source.registerCorsConfiguration("/admin/**", config);
         return new CorsFilter(source);
     }
 }
