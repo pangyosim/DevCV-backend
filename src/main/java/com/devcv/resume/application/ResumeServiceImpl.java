@@ -101,6 +101,10 @@ public class ResumeServiceImpl implements ResumeService {
     public ResumeDto getResumeDetail(Long resumeId) {
         List<Object[]>result = resumeRepository.findByIdAndStatus(resumeId);
 
+        if (result.isEmpty() || result.get(0) == null || result.get(0)[0] == null) {
+            throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
+        }
+
         Resume resume = (Resume) result.get(0)[0];
 
         Double averageGrade = (Double) result.get(0)[1];
