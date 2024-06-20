@@ -4,12 +4,10 @@ import com.devcv.common.exception.ErrorCode;
 import com.devcv.common.exception.InternalServerException;
 import com.devcv.common.exception.UnAuthorizedException;
 import com.devcv.order.application.OrderService;
-import com.devcv.resume.domain.dto.PaginatedResumeResponse;
 import com.devcv.review.application.ReviewService;
 import com.devcv.review.domain.Review;
 import com.devcv.review.domain.dto.PaginatedReviewResponse;
 import com.devcv.review.domain.dto.ReviewDto;
-import com.devcv.review.exception.OrderNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -17,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/resumes")
