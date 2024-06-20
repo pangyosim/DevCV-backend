@@ -1,7 +1,7 @@
 package com.devcv.order.presentation;
 
 import com.devcv.common.exception.ErrorCode;
-import com.devcv.common.exception.TestErrorException;
+import com.devcv.common.exception.ForbiddenException;
 import com.devcv.member.application.MemberService;
 import com.devcv.member.domain.Member;
 import com.devcv.order.application.OrderService;
@@ -68,7 +68,7 @@ public class OrderController {
     private Member extractMember(UserDetails userDetails, Long requestId) {
         Long memberId = Long.valueOf(userDetails.getUsername());
         if (!memberId.equals(requestId)) {
-            throw new TestErrorException(ErrorCode.TEST_ERROR, "OrderController.extractMember");
+            throw new ForbiddenException(ErrorCode.MEMBER_MISMATCH_EXCEPTION);
         }
         return memberService.findMemberBymemberId(memberId);
     }
