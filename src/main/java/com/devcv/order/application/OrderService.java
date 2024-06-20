@@ -27,8 +27,9 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final PointService pointService;
 
-    public OrderSheet createOrderSheet(Member member, Resume resume) {
-        return OrderSheet.of(member, resume);
+    public OrderSheet getOrderSheet(Member member, Resume resume) {
+        Long myPoint = pointService.getMyPoint(member.getMemberId());
+        return OrderSheet.of(member, resume, myPoint);
     }
 
     @Transactional

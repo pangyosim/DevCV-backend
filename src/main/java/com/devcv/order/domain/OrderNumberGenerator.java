@@ -6,12 +6,13 @@ import java.util.Random;
 
 public class OrderNumberGenerator {
     private static final String DATETIME_FORMAT = "YYMMdd";
+    private static final String DASH = "-";
     private static final int RANDOM_NUMBER_LENGTH = 6;
 
     public static String generateOrderNumber() {
         String datetime = LocalDateTime.now().format(DateTimeFormatter.ofPattern(DATETIME_FORMAT));
         String randomNumber = generateRandomNumber();
-        return datetime + "-" + randomNumber;
+        return datetime + DASH + randomNumber;
     }
 
     private static String generateRandomNumber() {

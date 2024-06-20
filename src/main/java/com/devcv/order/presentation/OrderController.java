@@ -33,7 +33,7 @@ public class OrderController {
                                                      @PathVariable("resume-id") Long resumeId) {
         Member member = extractMember(userDetails);
         Resume resume = resumeService.findByResumeId(resumeId);
-        return ResponseEntity.ok().body(orderService.createOrderSheet(member, resume));
+        return ResponseEntity.ok().body(orderService.getOrderSheet(member, resume));
     }
 
     @PostMapping("/orders")
