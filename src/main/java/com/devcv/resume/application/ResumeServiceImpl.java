@@ -1,6 +1,7 @@
 package com.devcv.resume.application;
 
 import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.UnAuthorizedException;
 import com.devcv.member.domain.Member;
 import com.devcv.member.repository.MemberRepository;
 import com.devcv.resume.domain.Category;
@@ -15,6 +16,7 @@ import com.devcv.resume.domain.enumtype.ResumeStatus;
 import com.devcv.resume.domain.enumtype.StackType;
 import com.devcv.resume.exception.HttpMessageNotReadableException;
 import com.devcv.resume.exception.MemberNotFoundException;
+import com.devcv.resume.exception.ResumeNotExistException;
 import com.devcv.resume.exception.ResumeNotFoundException;
 import com.devcv.resume.infrastructure.S3Uploader;
 import com.devcv.resume.repository.CategoryRepository;
@@ -168,11 +170,8 @@ public class ResumeServiceImpl implements ResumeService {
             }
         }
 
-         //일단 임의 판매승인, 추후 관리자 mvp 완성 시 변경
-         resume.setStatus(ResumeStatus.판매승인);
-
-        // 상태 설정
-        // resume.setStatus(ResumeStatus.승인대기);
+         //상태 설정
+         resume.setStatus(ResumeStatus.승인대기);
 
 
         return resumeRepository.save(resume);
@@ -201,6 +200,9 @@ public class ResumeServiceImpl implements ResumeService {
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
+            if (resume.getStatus() == ResumeStatus.삭제) {
+                throw new ResumeNotExistException(ErrorCode.RESUME_NOT_EXIST);
+            }
             resume.setStatus(ResumeStatus.등록완료);
             return resumeRepository.save(resume);
         } else {
@@ -212,5 +214,123 @@ public class ResumeServiceImpl implements ResumeService {
     public Resume findByResumeId(Long resumeId) {
         return resumeRepository.findByResumeId(resumeId)
                 .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
+    }
+
+
+    // 이력서 등록 수정 요청
+    @Override
+    public ResumeDto modify(Long resumeId, Long memberId,
+                            ResumeDto resumeDto, MultipartFile resumeFile, List<MultipartFile> images) {
+
+        Member member = memberRepository.findMemberBymemberId(memberId);
+        if (member == null) {
+            throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+        // 조회
+        Optional<Resume> resumeOpt = resumeRepository.findByResumeId(resumeId);
+
+        if (resumeOpt.isPresent()) {
+            Resume resume = resumeOpt.get();
+
+            if (resume.getStatus() == ResumeStatus.삭제) {
+                throw new ResumeNotExistException(ErrorCode.RESUME_NOT_EXIST);
+            }
+
+            if (resumeDto.getPrice() < 0 || resumeDto.getTitle() == null || resumeDto.getContent() == null ||
+                    resumeDto.getStack() == null || resumeDto.getCategory() == null) {
+                throw new HttpMessageNotReadableException(ErrorCode.EMPTY_VALUE_ERROR);
+            }
+
+            resume.changeTitle(resumeDto.getTitle());
+            resume.changeContent(resumeDto.getContent());
+            resume.changePrice(resumeDto.getPrice());
+            resume.changeStack(resumeDto.getStack());
+            resume.setStatus(ResumeStatus.승인대기);
+
+
+            // Category 저장
+            CategoryDto categoryDto = resumeDto.getCategory();
+            List<Category> categories = categoryRepository.findByCompanyTypeAndStackType(
+                    categoryDto.getCompanyType(),
+                    categoryDto.getStackType()
+            );
+
+            Category category;
+            if (categories.isEmpty()) {
+                // 리스트가 비어 있으면 새로운 Category 생성 및 저장
+                category = new Category( categoryDto.getCompanyType(),categoryDto.getStackType());
+                category = categoryRepository.save(category);
+            } else {
+                // 리스트가 비어 있지 않으면 첫 번째 요소 사용
+                category = categories.get(0);
+            }
+            resume.changeCategory(category);
+
+
+            // 새로운 PDF 파일 업로드 및 기존 파일 경로 변경
+            if (resumeFile != null && !resumeFile.isEmpty()) {
+                String resumeFilePath = s3Uploader.upload(resumeFile);
+                resume.changeResumeFilePath(resumeFilePath);
+            }
+
+            // 기존 이미지 리스트 초기화 및 새로운 이미지 업로드
+            resume.clearList();
+            if (images != null && !images.isEmpty()) {
+                for (int i = 0; i < images.size(); i++) {
+                    String imagePath = s3Uploader.upload(images.get(i));
+                    ResumeImage resumeImage = ResumeImage.builder()
+                            .resumeImgPath(imagePath)
+                            .ord(i)
+                            .build();
+                    resume.addImage(resumeImage);
+                }
+            }
+
+            // 기존 이미지 리스트 초기화 및 새로운 이미지 업로드
+            resume.clearList();
+            if (images != null && !images.isEmpty()) {
+                for (int i = 0; i < images.size(); i++) {
+                    String imagePath = s3Uploader.upload(images.get(i));
+                    ResumeImage resumeImage = ResumeImage.builder()
+                            .resumeImgPath(imagePath)
+                            .ord(i)
+                            .build();
+                    resume.addImage(resumeImage);
+                }
+            }
+            // 이력서 저장
+            resumeRepository.save(resume);
+            // 수정된 이력서를 ResumeDto로 변환하여 반환
+            return ResumeDto.from(resume);
+        } else {
+            throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
+        }
+
+    }
+
+    // 이력서 삭제 요청
+    @Override
+    public Resume remove(Long resumeId,Long memberId) {
+
+        Member member = memberRepository.findMemberBymemberId(memberId);
+        if (member == null) {
+            throw new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+
+        Optional<Resume> resumeOpt = resumeRepository.findById(resumeId);
+
+        if (resumeOpt.isPresent()) {
+            Resume resume = resumeOpt.get();
+            resume.setStatus(ResumeStatus.삭제);
+            if (!resume.getMember().getMemberId().equals(memberId)) {
+                log.info("MemberId: " + resume.getMember().getMemberId());
+                throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
+            }
+             //추후 관리자 쪽에서 delFlag 수정
+            resumeRepository.updateToDelete(resumeId, true);
+            return resumeRepository.save(resume);
+        } else {
+            throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
+        }
     }
 }

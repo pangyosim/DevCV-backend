@@ -3,9 +3,7 @@ package com.devcv.resume.domain.dto;
 
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.ResumeImage;
-import com.devcv.resume.domain.enumtype.CompanyType;
 import com.devcv.resume.domain.enumtype.ResumeStatus;
-import com.devcv.resume.domain.enumtype.StackType;
 import lombok.*;
 
 import java.util.List;
@@ -25,8 +23,7 @@ public class ResumeDto {
     private ResumeStatus status;
     private List<String> stack;
     private List<ResumeImage> imageList;
-    private StackType stackType;
-    private CompanyType companyType;
+    private CategoryDto category;
     private Long memberId;
     private String sellerNickname;
 
@@ -44,8 +41,7 @@ public class ResumeDto {
                 resume.getStatus(),
                 resume.getStack(),
                 resume.getImageList(),
-                resume.getCategory().getStackType(),
-                resume.getCategory().getCompanyType(),
+                CategoryDto.from(resume.getCategory()),
                 resume.getMember().getMemberId(),
                 resume.getMember().getNickName(),
                 null,
@@ -65,8 +61,7 @@ public class ResumeDto {
                 .memberId(resume.getMember().getMemberId())
                 .sellerNickname(resume.getMember().getNickName())
                 .imageList(resume.getImageList())
-                .companyType(resume.getCategory().getCompanyType())
-                .stackType(resume.getCategory().getStackType())
+                .category(CategoryDto.from(resume.getCategory()))
                 .build();
 
         resumeDto.setAverageGrade(averageGrade);
@@ -75,4 +70,5 @@ public class ResumeDto {
         return resumeDto;
 
     }
+
 }
