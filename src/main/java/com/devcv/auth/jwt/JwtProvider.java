@@ -56,11 +56,11 @@ public class JwtProvider {
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
-                .claim(PK_VALUE, authentication.getName())              // payload "memberId": "name" (ex)
+                .claim(PK_VALUE, authorities.split(" ")[3])              // payload "memberId": "name" (ex)
                 .claim(ROLE_TYPE, authorities.split(" ")[0])      // payload "role": "일반" (ex)
                 .claim(SOCIAL_TYPE, authorities.split(" ")[1])    // payload "social": "일반" (ex)
                 .claim(MEMBER_NAME, authorities.split(" ")[2])    // payload "memberName": "홍길동" (ex)
-                .claim(MEMBER_EMAIL, authorities.split(" ")[3])    // payload "email": "testemail@test.com" (ex)
+                .claim(MEMBER_EMAIL, authentication.getName())    // payload "email": "testemail@test.com" (ex)
                 .setExpiration(accessTokenExpiresIn)                    // payload "exp": 151621022 (ex)
                 .signWith(key, SignatureAlgorithm.HS512)                // header "alg": "HS512"
                 .compact();

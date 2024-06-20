@@ -21,7 +21,7 @@ public class MemberLoginResponse {
                 .collect(Collectors.joining(",")).split(" ");
         return new MemberLoginResponse(
                 memberRoleSocial[2], // memberName
-                memberRoleSocial[3] // email
-                ,jwtTokenDto.getAccessToken());
+                authentication.getName(), // email
+                jwtTokenDto.getAccessToken());
     }
 }
