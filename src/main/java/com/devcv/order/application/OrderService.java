@@ -5,13 +5,18 @@ import com.devcv.common.exception.TestErrorException;
 import com.devcv.member.domain.Member;
 import com.devcv.order.domain.Order;
 import com.devcv.order.domain.dto.OrderRequest;
+import com.devcv.order.domain.dto.OrderResponse;
 import com.devcv.order.domain.dto.OrderSheet;
+import com.devcv.order.domain.dto.OrderListResponse;
 import com.devcv.point.application.PointService;
 import com.devcv.resume.domain.Resume;
 import com.devcv.order.repository.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -65,5 +70,14 @@ public class OrderService {
         if (memberPoint < resumePrice) {
             throw new TestErrorException(ErrorCode.TEST_ERROR);
         }
+    }
+
+    public OrderListResponse getOrderListByMember(Member member) {
+        List<OrderResponse> orderList = orderRepository.findOrderListByMember(member)
+                .stream()
+                .map(OrderResponse::from)
+                .collect(Collectors.toList());
+        int count = orderList.size();
+        return OrderListResponse.of(member.getMemberId(), count, orderList);
     }
 }
