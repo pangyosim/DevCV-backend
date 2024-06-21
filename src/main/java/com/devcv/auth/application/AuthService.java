@@ -84,7 +84,7 @@ public class AuthService {
                     .value(tokenDto.getRefreshToken())
                     .build();
             // member RefreshToken 갱신.
-            memberRepository.updateRefreshTokenBymemberId(refreshToken.getValue(),memberDetails.getMemberId());
+            memberRepository.updateRefreshTokenBymemberId(refreshToken.getValue(),memberDetails.getMember().getMemberId());
             // memberLoginLog save
             memberLogRepository.save(MemberLog.builder().logLoginDate(LocalDateTime.now())
                     .logEmail(memberLoginRequest.getEmail())

@@ -1,6 +1,7 @@
 package com.devcv.member.repository;
 
 import com.devcv.member.domain.Member;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 *   @Modifying( clearAutomatically= true) : 영속성 컨텍스트 자동 clear.
 */
 @Transactional
-public interface MemberRepository extends CrudRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Query(value = "SELECT * FROM tb_member WHERE email=:email", nativeQuery = true)
     Member findMemberByEmail(@Param("email") String email);

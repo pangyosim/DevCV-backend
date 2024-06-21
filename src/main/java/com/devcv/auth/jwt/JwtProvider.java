@@ -1,11 +1,15 @@
 package com.devcv.auth.jwt;
 
 
+import com.devcv.auth.details.MemberDetails;
 import com.devcv.auth.exception.JwtExpiredException;
 import com.devcv.auth.exception.JwtIllegalArgumentException;
 import com.devcv.auth.exception.JwtInvalidSignException;
 import com.devcv.auth.exception.JwtUnsupportedException;
 import com.devcv.common.exception.ErrorCode;
+import com.devcv.member.domain.Member;
+import com.devcv.member.domain.enumtype.RoleType;
+import com.devcv.member.domain.enumtype.SocialType;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -15,14 +19,12 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
 import java.security.Key;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -51,16 +53,16 @@ public class JwtProvider {
         String authorities = authentication.getAuthorities().stream()
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.joining(","));
-
+        MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
         long now = (new Date()).getTime();
         // Access Token 생성
         Date accessTokenExpiresIn = new Date(now + ACCESS_TOKEN_EXPIRE_TIME);
         String accessToken = Jwts.builder()
-                .claim(PK_VALUE, authorities.split(" ")[3])              // payload "memberId": "name" (ex)
-                .claim(ROLE_TYPE, authorities.split(" ")[0])      // payload "role": "일반" (ex)
-                .claim(SOCIAL_TYPE, authorities.split(" ")[1])    // payload "social": "일반" (ex)
-                .claim(MEMBER_NAME, authorities.split(" ")[2])    // payload "memberName": "홍길동" (ex)
-                .claim(MEMBER_EMAIL, authentication.getName())    // payload "email": "testemail@test.com" (ex)
+                .claim(PK_VALUE, memberDetails.getMember().getMemberId())              // payload "memberId": "name" (ex)
+                .claim(ROLE_TYPE, authorities.split("_")[1])      // payload "role": "일반" (ex)
+                .claim(SOCIAL_TYPE, memberDetails.getMember().getSocial().name())    // payload "social": "일반" (ex)
+                .claim(MEMBER_NAME, memberDetails.getMember().getMemberName())    // payload "memberName": "홍길동" (ex)
+                .claim(MEMBER_EMAIL, memberDetails.getMember().getEmail())    // payload "email": "testemail@test.com" (ex)
                 .setExpiration(accessTokenExpiresIn)                    // payload "exp": 151621022 (ex)
                 .signWith(key, SignatureAlgorithm.HS512)                // header "alg": "HS512"
                 .compact();
@@ -86,14 +88,20 @@ public class JwtProvider {
         if (claims.get(ROLE_TYPE) == null) {
             throw new RuntimeException("권한 정보가 없는 토큰입니다.");
         }
-
+        String memberRole = "ROLE_" + claims.get(ROLE_TYPE).toString();
         // 클레임에서 권한 정보 가져오기
-        Collection<? extends GrantedAuthority> authorities =
-                Arrays.stream(claims.get(ROLE_TYPE).toString().split(","))
+        List<? extends GrantedAuthority> authorities =
+                Arrays.stream(memberRole.split(","))
                         .map(SimpleGrantedAuthority::new)
                         .collect(Collectors.toList());
-        // UserDetails 객체를 만들어서 Authentication 리턴
-        UserDetails principal = new User(claims.get("memberId").toString(), "", authorities);
+        // MemberDetails 객체를 만들어서 Authentication 리턴
+        MemberDetails principal = new MemberDetails(Member.builder().memberRole(RoleType.valueOf(claims.get(ROLE_TYPE).toString()))
+                .social(SocialType.valueOf(claims.get(SOCIAL_TYPE).toString()))
+                .memberName(claims.get(MEMBER_NAME).toString())
+                .email(claims.get(MEMBER_EMAIL).toString())
+                .memberId(Long.parseLong(claims.get(PK_VALUE).toString()))
+                .password("Principalpassword")
+                .build(), authorities);
 
         return new UsernamePasswordAuthenticationToken(principal, "", authorities);
     }

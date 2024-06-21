@@ -15,32 +15,25 @@ import java.util.Objects;
 public class MemberDetails extends User {
 
     private final Member member;
-    private final Long memberId;
-    private final String email;
-    private final String password;
 
     public MemberDetails(Member member, List<? extends GrantedAuthority> authorities) {
         super(member.getEmail(), member.getPassword(), authorities);
-        this.memberId = member.getMemberId();
-        this.password = member.getPassword();
-        this.email = member.getEmail();
         this.member = member;
     }
 
     @Override
     public Collection<GrantedAuthority> getAuthorities() {
-        return Collections.singleton(new SimpleGrantedAuthority(member.getMemberRole().name()+" "
-                +member.getSocial().name()+" "+member.getMemberName()+" "+member.getMemberId()));
+        return Collections.singleton(new SimpleGrantedAuthority("ROLE_"+(member.getMemberRole().name())));
     }
 
     @Override
     public String getPassword() {
-        return this.password;
+        return member.getPassword();
     }
 
     @Override
     public String getUsername() {
-        return this.email;
+        return String.valueOf(member.getMemberId());
     }
 
     @Override

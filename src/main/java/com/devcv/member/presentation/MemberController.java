@@ -145,7 +145,7 @@ public class MemberController {
             if(memberFindPwPhoneRequest.getMemberName() == null || memberFindPwPhoneRequest.getPhone() == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
-        } catch (Exception e){
+        } catch (NotNullException e){
             throw new NotNullException(ErrorCode.NULL_ERROR);
         }
 
@@ -158,7 +158,7 @@ public class MemberController {
             } else { // 가입되어있지 않다면 Exception 발생.
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
-        } catch (Exception e) {
+        } catch (NotSignUpException e) {
             e.fillInStackTrace();
             throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
         }
@@ -206,7 +206,16 @@ public class MemberController {
             throw new SocialMemberUpdateException(ErrorCode.SOCIAL_UPDATE_ERROR);
         }
     }
-    // 회원정보수정 modiall
+    // 회원정보 단건 조회/수정
+    @PostMapping("{memberId}")
+    public ResponseEntity<MemberMypageResponse> getMember(@PathVariable Long memberId) {
+        try {
+            return ResponseEntity.ok().body(MemberMypageResponse.from(memberService.findMemberBymemberId(memberId)));
+        } catch (NotSignUpException e){
+            e.fillInStackTrace();
+            throw new NotSignUpException(ErrorCode.MEMBER_NOT_FOUND);
+        }
+    }
     @PutMapping("/{memberId}")
     public ResponseEntity<String> modiMember(@RequestBody MemberModiAllRequest memberModiAllRequest, @PathVariable Long memberId) {
         // NULL CHECK
@@ -388,4 +397,5 @@ public class MemberController {
         return ip;
     }
     //----------- GetClientIP end -----------
+
 }

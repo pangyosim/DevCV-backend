@@ -3,6 +3,7 @@ package com.devcv.resume.application;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.dto.PaginatedResumeResponse;
 import com.devcv.resume.domain.dto.ResumeDto;
+import com.devcv.resume.domain.dto.ResumeListResponse;
 import com.devcv.resume.domain.dto.ResumeRequest;
 import com.devcv.resume.domain.enumtype.CompanyType;
 import com.devcv.resume.domain.enumtype.StackType;
@@ -18,6 +19,8 @@ public interface ResumeService {
     PaginatedResumeResponse findResumes(StackType stackType, CompanyType companyType, int page, int size);
     // 이력서 상세 조회
     ResumeDto getResumeDetail(Long resumeId);
+    // 회원별 이력서 조회
+    ResumeListResponse findResumesByMemberId(Long memberId);
     //이력서 판매승인 요청
     Resume register(ResumeRequest resumeRequest, MultipartFile resumeFile, List<MultipartFile> images, Long memberId);
     // 이력서 판매내역 상세 조회
