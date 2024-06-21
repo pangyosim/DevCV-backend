@@ -1,10 +1,14 @@
 package com.devcv.point.presentation;
 
+import com.devcv.auth.filter.SecurityUtil;
+import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.ForbiddenException;
 import com.devcv.member.application.MemberService;
 import com.devcv.member.domain.Member;
 import com.devcv.point.application.PointService;
 import com.devcv.point.domain.Point;
 import com.devcv.point.dto.PointRequestDto;
+import com.devcv.point.dto.PointResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -16,12 +20,13 @@ public class PointController {
     private final PointService pointService;
     private final MemberService memberService;
 
-    @GetMapping("/point/{member-id}")
-    public ResponseEntity<Long> getPointBymemberId(@PathVariable("member-id") Long memberId) {
-
-        Long myPoint = pointService.getMyPoint(memberId);
-
-        return ResponseEntity.ok().body(myPoint);
+    @GetMapping("/members/{member-id}/points")
+    public ResponseEntity<PointResponse> getPointByMemberId(@PathVariable("member-id") Long memberId) {
+        if (!memberId.equals(SecurityUtil.getCurrentmemberId())) {
+            throw new ForbiddenException(ErrorCode.MEMBER_MISMATCH_EXCEPTION);
+        }
+        PointResponse pointResponse = pointService.getPointResponse(memberId);
+        return ResponseEntity.ok().body(pointResponse);
     }
 
     //작동 테스트용 임시 메서드
