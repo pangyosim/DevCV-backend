@@ -9,7 +9,9 @@ import com.devcv.member.domain.dto.MemberLoginResponse;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -36,7 +38,23 @@ public class AdminController {
     @GetMapping("/main")
     public ResponseEntity<?> adminMain() {
         MemberDetails memberDetails = (MemberDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println(memberDetails.getMember().getMemberRole());
+        System.out.println("/admin/main API RESPONSE");
+        return null;
+    }
+
+    @GetMapping("/resumes/{resumeId}")
+    public ResponseEntity<?> adminGetResume(@PathVariable Long resumeId, @AuthenticationPrincipal MemberDetails memberDetails) {
+        System.out.println("/admin/resumes/{resumeId} MemberDetails : " + memberDetails.getMember().getMemberId());
+        System.out.println("/admin/resumes/{resumeId} API RESPONSE");
+        System.out.println("/admin/resumes/{resumeId} resumeId : " + resumeId);
+        return null;
+    }
+
+    @PutMapping("/resumes/{resumeId}/status")
+    public ResponseEntity<?> adminResumeStatusUpdate(@PathVariable Long resumeId, @AuthenticationPrincipal UserDetails userDetails) {
+        System.out.println("/admin/{resumeId}/status UserDetails : " + userDetails.getUsername());
+        System.out.println("/admin/{resumeId}/status API RESPONSE");
+        System.out.println("/admin/{resumeId}/status resumeId : " + resumeId);
         return null;
     }
 }
