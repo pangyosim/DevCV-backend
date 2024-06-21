@@ -8,6 +8,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.List;
@@ -76,6 +77,11 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     }
 
     //----------------판매승인이 default인 메서드 end-----------------
+
+    // 이력서 삭제
+    @Modifying
+    @Query("UPDATE Resume r set r.delFlag = :flag where r.resumeId = :resumeId")
+    void updateToDelete(Long resumeId, boolean flag);
 
 
 }

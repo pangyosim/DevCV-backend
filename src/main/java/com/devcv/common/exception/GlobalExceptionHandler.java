@@ -7,6 +7,7 @@ import com.devcv.auth.exception.JwtUnsupportedException;
 import com.devcv.common.exception.dto.ErrorResponse;
 import com.devcv.member.exception.*;
 import com.devcv.resume.exception.MemberNotFoundException;
+import com.devcv.resume.exception.ResumeNotExistException;
 import com.devcv.resume.exception.ResumeNotFoundException;
 import com.devcv.resume.exception.S3Exception;
 import com.devcv.member.exception.AuthLoginException;
@@ -146,6 +147,13 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.from(ErrorCode.ORDER_NOT_FOUND));
+    }
+
+    @ExceptionHandler(ResumeNotExistException.class)
+    public ResponseEntity<ErrorResponse> handle(ResumeNotExistException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.from(ErrorCode.RESUME_NOT_EXIST));
     }
     // 404 end
 

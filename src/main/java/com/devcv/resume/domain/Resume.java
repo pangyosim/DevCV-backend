@@ -33,6 +33,8 @@ public class Resume extends BaseTimeEntity{
     private String content;
     @Column(nullable = false)
     private String resumeFilePath;
+    @Column(nullable = false)
+    private boolean delFlag;
 
     // 관리자 승인 상태 = 승인대기 default
     @Builder.Default
@@ -61,6 +63,36 @@ public class Resume extends BaseTimeEntity{
         image.setOrd(this.imageList.size());
         imageList.add(image);
     }
+
+    // 수정 관련 메서드
+    public void changePrice(Integer price) {
+        this.price = price;
+    }
+
+    public void changeTitle(String title) {
+        this.title = title;
+    }
+
+    public void changeContent(String content) {
+        this.content = content;
+    }
+
+    public void changeResumeFilePath(String resumeFilePath) {
+        this.resumeFilePath = resumeFilePath;
+    }
+
+
+    public void changeStack(List<String> stack) {
+        this.stack = stack;
+    }
+    public void changeCategory(Category category) {
+        this.category = category;
+    }
+
+    public void clearList() {
+        this.imageList.clear();
+    }
+
 
     public void addImageString(String resumeImgPath) {
         ResumeImage resumeImage = ResumeImage.builder()

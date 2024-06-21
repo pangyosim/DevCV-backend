@@ -32,6 +32,7 @@ public enum ErrorCode {
     RESUME_NOT_FOUND("이력서를 찾을 수 없습니다."),
     MEMBER_NOT_FOUND("회원 정보를 찾을 수 없습니다."),
     ORDER_NOT_FOUND("주문 정보를 찾을 수 없습니다"),
+    RESUME_NOT_EXIST("삭제된 이력서입니다"),
     //409
     CONFLICT_ERROR("요청 충돌 에러"),
     REVIEW_ALREADY_EXISTS("이미 이력서에 대한 구매후기를 작성했습니다."),
