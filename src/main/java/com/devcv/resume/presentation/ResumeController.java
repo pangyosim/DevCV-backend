@@ -3,7 +3,6 @@ package com.devcv.resume.presentation;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.common.exception.InternalServerException;
 import com.devcv.common.exception.UnAuthorizedException;
-import com.devcv.member.application.MemberService;
 import com.devcv.resume.application.ResumeService;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.dto.PaginatedResumeResponse;

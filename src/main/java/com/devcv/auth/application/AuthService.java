@@ -11,6 +11,7 @@ import com.devcv.member.domain.dto.MemberLoginRequest;
 import com.devcv.member.domain.dto.MemberLoginResponse;
 import com.devcv.member.domain.dto.MemberSignUpRequest;
 import com.devcv.member.domain.enumtype.RoleType;
+import com.devcv.member.domain.enumtype.SocialType;
 import com.devcv.member.exception.AuthLoginException;
 import com.devcv.member.exception.DuplicationException;
 import com.devcv.member.exception.NotNullException;
@@ -19,6 +20,7 @@ import com.devcv.member.repository.MemberRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -41,6 +43,9 @@ public class AuthService {
     private final MemberLogRepository memberLogRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtProvider jwtProvider;
+    @Value("${keys.social_password}")
+    private String socialPassword;
+
     @Transactional
     public void signup(MemberSignUpRequest memberSignUpRequest) {
         if (memberRepository.findMemberByEmail(memberSignUpRequest.getEmail()) != null) {
@@ -48,18 +53,22 @@ public class AuthService {
         }
         // RequestContextHolder에서 request 객체 구하기
         HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        Member member = memberSignUpRequest.toMember(passwordEncoder);
-        // 회원가입시 관리자 형태가 아닌 일반 권한으로 가입.
-        Member refreshMember = member.toBuilder().memberRole(RoleType.normal).build();
+        Member member = Member.builder()
+                .memberName(memberSignUpRequest.getMemberName()).email(memberSignUpRequest.getEmail())
+                .password(passwordEncoder.encode(memberSignUpRequest.getSocial().name().equals(SocialType.normal.name()) ? memberSignUpRequest.getPassword() : socialPassword))
+                .nickName(memberSignUpRequest.getNickName()).phone(memberSignUpRequest.getPhone()).address(memberSignUpRequest.getAddress()).social(memberSignUpRequest.getSocial())
+                .company(memberSignUpRequest.getCompany()).job(memberSignUpRequest.getJob()).stack(memberSignUpRequest.getStack())
+                .memberRole(RoleType.normal)
+                .build();
         try{
-            if(refreshMember.getMemberName() == null || refreshMember.getNickName() == null || refreshMember.getEmail() == null
-                || refreshMember.getPassword() == null || refreshMember.getPhone() == null || refreshMember.getAddress() == null
-                || refreshMember.getSocial() == null || refreshMember.getJob() == null || refreshMember.getCompany() == null || refreshMember.getStack() == null){
+            if(member.getMemberName() == null || member.getNickName() == null || member.getEmail() == null
+                || member.getPassword() == null || member.getPhone() == null || member.getAddress() == null
+                || member.getSocial() == null || member.getJob() == null || member.getCompany() == null || member.getStack() == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             } else {
-                memberRepository.save(refreshMember);
-                memberLogRepository.save(MemberLog.builder().logAgent(request.getHeader("user-agent")).logEmail(refreshMember.getEmail())
-                        .logIp(getIp(request)).logSignUpDate(LocalDateTime.now()).memberId(refreshMember.getMemberId()).build());
+                memberRepository.save(member);
+                memberLogRepository.save(MemberLog.builder().logAgent(request.getHeader("user-agent")).logEmail(member.getEmail())
+                        .logIp(getIp(request)).logSignUpDate(LocalDateTime.now()).memberId(member.getMemberId()).build());
             }
         } catch (NotNullException e) {
             throw new NotNullException(ErrorCode.NULL_ERROR);
@@ -79,12 +88,10 @@ public class AuthService {
             // 3. 인증 정보를 기반으로 JWT 토큰 생성
             JwtTokenDto tokenDto = jwtProvider.generateTokenDto(authentication);
             // 4. RefreshToken 저장
-            RefreshToken refreshToken = RefreshToken.builder()
+            RefreshToken.builder()
                     .key(authentication.getName())
                     .value(tokenDto.getRefreshToken())
                     .build();
-            // member RefreshToken 갱신.
-            memberRepository.updateRefreshTokenBymemberId(refreshToken.getValue(),memberDetails.getMemberId());
             // memberLoginLog save
             memberLogRepository.save(MemberLog.builder().logLoginDate(LocalDateTime.now())
                     .logEmail(memberLoginRequest.getEmail())
@@ -99,7 +106,7 @@ public class AuthService {
         }
     }
 
-    public static String getIp(HttpServletRequest request) {
+    private String getIp(HttpServletRequest request) {
         String ip = request.getHeader("X-Forwarded-For");
         if (ip == null) {
             ip = request.getHeader("Proxy-Client-IP");

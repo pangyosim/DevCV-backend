@@ -65,8 +65,6 @@ public class Member extends BaseTimeEntity {
     @Column(name = "stack", nullable = false)
     private List<String> stack;
 
-    @Column(name = "refreshToken")
-    private String refreshToken;
 }
 
 
