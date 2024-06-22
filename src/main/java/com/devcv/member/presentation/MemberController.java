@@ -48,13 +48,17 @@ public class MemberController {
     private final MemberLogRepository memberLogRepository;
     @Value("${keys.social_password}")
     private String socialPassword;
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String AUTHORIZATION_REFRESH_HEADER = "RefreshToken";
+    public static final String BEARER_PREFIX = "Bearer ";
 
     //----------- login start -----------
     @PostMapping("/login")
     public ResponseEntity<MemberLoginResponse> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest) {
         MemberLoginResponse resultResponse = authService.login(memberLoginRequest);
         HttpHeaders header = new HttpHeaders();
-        header.add("Authorization","Bearer " + resultResponse.getAccessToken());
+        header.add(AUTHORIZATION_HEADER,BEARER_PREFIX + resultResponse.getAccessToken());
+        header.add(AUTHORIZATION_REFRESH_HEADER,BEARER_PREFIX+ resultResponse.getRefreshToken());
         return ResponseEntity.ok().headers(header).body(resultResponse);
     }
     //----------- login end -----------
@@ -230,7 +234,6 @@ public class MemberController {
             e.fillInStackTrace();
             throw new NotNullException(ErrorCode.NULL_ERROR);
         }
-
         try {
             // memberId로 Member 찾기
             Member findMemberBymemberId = memberService.findMemberBymemberId(memberId);
@@ -238,10 +241,15 @@ public class MemberController {
                 if(!findMemberBymemberId.getSocial().name().equals(memberModiAllRequest.getSocial().name())){
                     throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
                 }
+                // 수정할 이메일이 이미 존재할 떄 (가입한 아이디 제외)
+                Member findMemberBymemberEmail = memberService.findMemberByEmail(memberModiAllRequest.getEmail());
+                if(findMemberBymemberEmail != null && !findMemberBymemberId.getEmail().equals(findMemberBymemberEmail.getEmail())){
+                    throw new DuplicationException(ErrorCode.DUPLICATE_ERROR);
+                }
                 if( memberModiAllRequest.getSocial().name().equals(SocialType.normal.name())) {
                     HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
                     int resultUpdateMember = memberService.updateMemberBymemberId(memberModiAllRequest.getMemberName(), memberModiAllRequest.getEmail(),
-                            passwordEncoder.encode(memberModiAllRequest.getPassword()),
+                            passwordEncoder.encode(memberModiAllRequest.getSocial().name().equals(SocialType.normal.name()) ? memberModiAllRequest.getPassword() : socialPassword),
                             memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
                             memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
                             String.join(",", memberModiAllRequest.getStack()), memberId);
@@ -275,6 +283,9 @@ public class MemberController {
         } catch (SocialDataException e) {
             e.fillInStackTrace();
             throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
+        } catch (DuplicationException e){
+            e.fillInStackTrace();
+            throw new DuplicationException(ErrorCode.DUPLICATE_ERROR);
         }
     }
     //----------- modi member end -----------

@@ -1,6 +1,9 @@
 package com.devcv.auth.filter;
 
 import com.devcv.auth.jwt.JwtProvider;
+import com.devcv.auth.jwt.JwtTokenDto;
+import com.devcv.common.exception.ErrorCode;
+import com.devcv.common.exception.UnAuthorizedException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -20,8 +23,6 @@ import java.io.IOException;
 @Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String BEARER_PREFIX = "Bearer ";
 
     private final JwtProvider jwtProvider;
 
@@ -29,23 +30,35 @@ public class JwtFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request, @NonNull HttpServletResponse response, @NonNull FilterChain filterChain) throws IOException, ServletException {
         // 1. Request Header 에서 토큰 추출.
-        String jwt = resolveToken(request);
-        // 2. validateToken 으로 토큰 유효성 검사
-        // 정상 : Authentication SecurityContext에 저장.
-        if (StringUtils.hasText(jwt) && jwtProvider.validateToken(jwt)) {
-            Authentication authentication = jwtProvider.getAuthentication(jwt);
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        String accessToken = jwtProvider.resolveAccessToken(request);
+        String refreshToken = jwtProvider.resolveRefreshToken(request);
+        // 2. AccessToken 유/무 판별.
+        if (StringUtils.hasText(accessToken)) {
+            if(jwtProvider.validateToken(accessToken)){
+                // SpringContextHolder에 등록.
+                this.setAuthentication(accessToken);
+            // refreshToken 유/무 판별 -> 유효성 검사
+            } else if (!jwtProvider.validateToken(accessToken) && StringUtils.hasText(refreshToken)){
+                // refreshToken 유효성검사.
+                if(jwtProvider.validateToken(refreshToken)){
+                    // 검사완료되면 accessToken 재발급 jwtProvider.refreshTokenDto
+                    String email = String.valueOf(jwtProvider.parseClaims(refreshToken).get("email"));
+                    JwtTokenDto jwtTokenDto = jwtProvider.refreshTokenDto(email,refreshToken);
+                    response.setHeader("Authorization","Bearer "+jwtTokenDto.getAccessToken());
+                    response.setHeader("RefreshToken", "Bearer "+refreshToken);
+                    this.setAuthentication(jwtTokenDto.getAccessToken());
+                } else {
+                    throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
+                }
+            }
         }
+        // 2. validateToken 으로 토큰 유효성 검사
+        // 정상 : Authentication SecurityContext에 저장. setAuthentication
         filterChain.doFilter(request, response);
     }
 
-    // Request Header 에서 토큰 추출.
-    private String resolveToken(HttpServletRequest request) {
-        String bearerToken = request.getHeader(AUTHORIZATION_HEADER);
-        if (StringUtils.hasText(bearerToken) && bearerToken.startsWith(BEARER_PREFIX)) {
-            return bearerToken.split(" ")[1].trim();
-        }
-        return null;
+    private void setAuthentication(String accessToken) {
+        Authentication authentication = jwtProvider.getAuthentication(accessToken);
+        SecurityContextHolder.getContext().setAuthentication(authentication);
     }
-
 }

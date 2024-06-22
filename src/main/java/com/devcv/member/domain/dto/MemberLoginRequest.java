@@ -14,8 +14,4 @@ import java.util.Collections;
 public class MemberLoginRequest {
     private String email;
     private String password;
-    public UsernamePasswordAuthenticationToken toAuthentication() {
-        return UsernamePasswordAuthenticationToken.authenticated(this.email,this.password,
-                Collections.singleton(new SimpleGrantedAuthority("ROLE_USER")));
-    }
 }

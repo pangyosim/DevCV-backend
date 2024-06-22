@@ -20,6 +20,9 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final AuthService authService;
+    public static final String AUTHORIZATION_HEADER = "Authorization";
+    public static final String AUTHORIZATION_REFRESH_HEADER = "RefreshToken";
+    public static final String BEARER_PREFIX = "Bearer ";
 
     //----------- login start -----------
     @PostMapping("/login")
@@ -27,7 +30,8 @@ public class AdminController {
         try {
             MemberLoginResponse resultResponse = authService.login(memberLoginRequest);
             HttpHeaders header = new HttpHeaders();
-            header.add("Authorization","Bearer " + resultResponse.getAccessToken());
+            header.add(AUTHORIZATION_HEADER,BEARER_PREFIX + resultResponse.getAccessToken());
+            header.add(AUTHORIZATION_REFRESH_HEADER,BEARER_PREFIX+ resultResponse.getRefreshToken());
             return ResponseEntity.ok().headers(header).body(resultResponse);
         } catch (JwtInvalidSignException e) {
             throw new JwtInvalidSignException(ErrorCode.JWT_INVALID_SIGN_ERROR);

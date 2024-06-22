@@ -12,12 +12,14 @@ public class MemberLoginResponse {
     private String memberName;
     private String email;
     private String accessToken;
+    private String refreshToken;
 
     public static MemberLoginResponse from(JwtTokenDto jwtTokenDto, Authentication authentication){
         MemberDetails memberDetails = (MemberDetails) authentication.getPrincipal();
         return new MemberLoginResponse(
                 memberDetails.getMember().getMemberName(), // memberName
                 memberDetails.getMember().getEmail(), // email
-                jwtTokenDto.getAccessToken());
+                jwtTokenDto.getAccessToken(),
+                jwtTokenDto.getRefreshToken());
     }
 }
