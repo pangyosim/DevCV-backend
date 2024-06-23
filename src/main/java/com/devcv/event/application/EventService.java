@@ -1,7 +1,7 @@
 package com.devcv.event.application;
 
 import com.devcv.common.exception.ErrorCode;
-import com.devcv.common.exception.TestErrorException;
+import com.devcv.common.exception.NotFoundException;
 import com.devcv.event.domain.Event;
 import com.devcv.event.domain.dto.EventListResponse;
 import com.devcv.event.domain.dto.EventRequest;
@@ -25,7 +25,7 @@ public class EventService {
 
     public Event findByEventId(Long eventId) {
         return eventRepository.findById(eventId)
-                .orElseThrow(() -> new TestErrorException(ErrorCode.TEST_ERROR));
+                .orElseThrow(() -> new NotFoundException(ErrorCode.EVENT_NOT_FOUND));
     }
 
     public EventResponse getEventResponse(Long eventId) {
