@@ -14,7 +14,7 @@ import com.devcv.member.exception.AuthLoginException;
 import com.devcv.member.exception.DuplicationException;
 import com.devcv.member.exception.NotNullException;
 import com.devcv.member.exception.NotSignUpException;
-import com.devcv.review.exception.OrderNotFoundException;
+import com.devcv.order.exception.OrderNotFoundException;
 import com.devcv.review.exception.AlreadyExistsException;
 import com.devcv.review.exception.ReviewNotFoundException;
 import lombok.extern.slf4j.Slf4j;
