@@ -86,5 +86,7 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     @Query("UPDATE Resume r set r.delFlag = :flag where r.resumeId = :resumeId")
     void updateToDelete(Long resumeId, boolean flag);
 
-
+    @Modifying
+    @Query("UPDATE Resume r set r.status = :status where r.resumeId = :resumeId")
+    int updateByresumeId(Long resumeId, ResumeStatus status);
 }

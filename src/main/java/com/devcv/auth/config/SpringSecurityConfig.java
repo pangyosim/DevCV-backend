@@ -7,6 +7,7 @@ import com.devcv.auth.filter.JwtFilter;
 import com.devcv.auth.jwt.JwtProvider;
 import com.devcv.member.domain.enumtype.RoleType;
 import lombok.RequiredArgsConstructor;
+import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -29,8 +30,6 @@ public class SpringSecurityConfig {
     private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
     private final JwtAccessDeniedHandler jwtAccessDeniedHandler;
-    private final MemberDetailsService memberDetailsService;
-    private final AuthenticationManagerBuilder authenticationManagerBuilder;
 
     @Bean
     public PasswordEncoder passwordEncoder() {

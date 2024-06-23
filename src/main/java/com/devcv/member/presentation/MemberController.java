@@ -261,10 +261,13 @@ public class MemberController {
                         throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);
                     }
                 } else {
+                    HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
                     int resultUpdateSocialMember = memberService.updateSocialMemberBymemberId(memberModiAllRequest.getMemberName(),
                             memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
                             memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
                             String.join(",", memberModiAllRequest.getStack()), memberId);
+                    memberLogRepository.save(MemberLog.builder().memberId(findMemberBymemberId.getMemberId()).logIp(getIp(request))
+                            .logEmail(findMemberBymemberId.getEmail()).logAgent(request.getHeader("user-agent")).logUpdateDate(LocalDateTime.now()).build());
                     if (resultUpdateSocialMember == 1) { // 소셜 멤버 수정성공.
                         return ResponseEntity.ok().build();
                     } else {
