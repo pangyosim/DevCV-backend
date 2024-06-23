@@ -10,6 +10,8 @@ public enum ErrorCode {
     INVALID_FILE_EXTENTION("유효하지 않은 파일 확장자입니다."),
     EMPTY_VALUE_ERROR("필수 입력 값이 비어있습니다."),
     INSUFFICIENT_POINT("보유 포인트가 부족합니다."),
+    NOT_ONGOING_EVENT("이벤트 진행 기간이 아닙니다."),
+    ALREADY_ATTENDED_EVENT("이미 참석한 이벤트입니다."),
 
     //401
     UNAUTHORIZED_ERROR("자격증명에 실패하였습니다."),

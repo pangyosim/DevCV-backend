@@ -37,4 +37,10 @@ public class Event extends BaseTimeEntity {
     public static Event of(String name, LocalDateTime startDate, LocalDateTime endDate) {
         return new Event(name, startDate, endDate);
     }
+
+    public Boolean isOngoing() {
+        LocalDateTime currentDate = LocalDateTime.now();
+        return (currentDate.isEqual(startDate) || currentDate.isAfter(startDate)) &&
+                (currentDate.isEqual(endDate) || currentDate.isBefore(endDate));
+    }
 }
