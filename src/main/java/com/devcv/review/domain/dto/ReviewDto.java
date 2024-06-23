@@ -1,5 +1,6 @@
 package com.devcv.review.domain.dto;
 
+import com.devcv.review.domain.Review;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -7,6 +8,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Data
 @Builder
@@ -20,7 +22,7 @@ public class ReviewDto {
 
     private Long memberId;
 
-    private String orderId; // orderid
+    private String orderId;
 
     private int grade;
 
@@ -31,6 +33,25 @@ public class ReviewDto {
     private String reviewerNickname;
     private String sellerNickname;
 
-    private List<CommentDto> comments;
+    private List<CommentDto> commentDtoList;
+
+    public static ReviewDto from(Review review) {
+        return ReviewDto.builder()
+                .reviewId(review.getReviewId())
+                .resumeId(review.getResume().getResumeId())
+                .memberId(review.getMember().getMemberId())
+                .orderId(review.getOrder().getOrderId())
+                .reviewerNickname(review.getMember().getNickName())
+                .sellerNickname(review.getResume().getMember().getNickName())
+                .grade(review.getGrade())
+                .text(review.getText())
+                .createdDate(review.getCreatedDate())
+                .updatedDate(review.getUpdatedDate())
+                .commentDtoList(review.getCommentList().stream()
+                        .map(CommentDto::from)
+                        .collect(Collectors.toList()))
+                .build();
+    }
+
 
 }

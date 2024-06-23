@@ -32,10 +32,11 @@ public enum ErrorCode {
     RESUME_NOT_FOUND("이력서를 찾을 수 없습니다."),
     MEMBER_NOT_FOUND("회원 정보를 찾을 수 없습니다."),
     ORDER_NOT_FOUND("주문 정보를 찾을 수 없습니다"),
+    REVIEW_NOT_FOUND("댓글을 찾을 수 없습니다"),
     RESUME_NOT_EXIST("삭제된 이력서입니다"),
     //409
     CONFLICT_ERROR("요청 충돌 에러"),
-    REVIEW_ALREADY_EXISTS("이미 이력서에 대한 구매후기를 작성했습니다."),
+    ALREADY_EXISTS("이미 댓글을 작성했습니다."),
 
     //500
     IO_EXCEPTION_ON_IMAGE_UPLOAD("이미지 업로드 중 IO 예외가 발생했습니다."),

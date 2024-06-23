@@ -5,51 +5,62 @@ import com.devcv.member.domain.Member;
 import com.devcv.resume.domain.Resume;
 import com.devcv.order.domain.Order;
 import com.devcv.review.domain.Review;
+import com.devcv.review.domain.dto.CommentDto;
 import com.devcv.review.domain.dto.PaginatedReviewResponse;
 import com.devcv.review.domain.dto.ReviewDto;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 
-@Transactional
+@Service
 public interface ReviewService {
 
-    // 이력서의 모든 리뷰 조회
+    // 이력서의 모든 구매후기 조회
     PaginatedReviewResponse getListOfResume(Long resumeId, int page, int  size);
 
-    // 이력서 리뷰 등록
+    // 이력서 구매후기 등록
     Review register(Long resumeId, Long memberId, ReviewDto resumeReviewDto);
 
-//    // 이력서 리뷰 수정
-//    void modify(ReviewDto resumeReviewDto);
+    // 이력서 구매후기 수정
+    Review modifyReview(Long memberId, Long resumeId, Long reviewId, ReviewDto reviewDto);
 
-    default Review dtoToEntity(ReviewDto resumeReviewDto) {
+    // 이력서 구매후기 삭제
+    void deleteReview(Long resumeId, Long memberId, Long reviewId);
+
+    default Review dtoToEntity(ReviewDto resumeReviewDto, Resume resume, Member member) {
 
         Review resumeReview = Review.builder()
                 .reviewId(resumeReviewDto.getReviewId())
-                .resume(Resume.builder().resumeId(resumeReviewDto.getResumeId()).build())
-                .member(Member.builder().memberId(resumeReviewDto.getMemberId()).build())
+                .resume(resume)
+                .member(member)
                 .order(Order.builder().orderId(resumeReviewDto.getOrderId()).build())
                 .grade(resumeReviewDto.getGrade())
                 .text(resumeReviewDto.getText())
+                .reviewerNickname(member.getNickName())
+                .sellerNickname(resume.getMember().getNickName())
                 .build();
 
         return resumeReview;
     }
 
     default ReviewDto entityToDto(Review resumeReview) {
-        String orderId = (resumeReview.getOrder() != null) ? resumeReview.getOrder().getOrderId() : null;
 
         ReviewDto resumeReviewDto = ReviewDto.builder()
                 .reviewId(resumeReview.getReviewId())
                 .resumeId(resumeReview.getResume().getResumeId())
                 .memberId(resumeReview.getMember().getMemberId())
-                .orderId(orderId) // order id
+                .orderId(resumeReview.getOrder().getOrderId())
                 .reviewerNickname(resumeReview.getMember().getNickName())
                 .sellerNickname(resumeReview.getResume().getMember().getNickName())
                 .grade(resumeReview.getGrade())
                 .text(resumeReview.getText())
                 .createdDate(resumeReview.getCreatedDate())
                 .updatedDate(resumeReview.getUpdatedDate())
+                .commentDtoList(resumeReview.getCommentList() != null ? resumeReview.getCommentList().stream()
+                        .map(CommentDto::from)
+                        .collect(Collectors.toList()) : new ArrayList<>())
                 .build();
 
         return resumeReviewDto;

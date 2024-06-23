@@ -22,4 +22,7 @@ public class PaginatedReviewResponse {
     private int startPage;
     private int endPage;
 
+    private long totalReviews;
+    private Double averageRating;
+
 }

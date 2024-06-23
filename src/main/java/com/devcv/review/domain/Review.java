@@ -15,7 +15,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-@ToString(exclude = {"resume", "member", "order"})
+@ToString(exclude = {"resume", "member", "order", "commentList"})
 public class Review extends BaseTimeEntity {
 
     @Id
@@ -40,6 +40,23 @@ public class Review extends BaseTimeEntity {
 
     // 댓글 리스트
     @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Comment> comments;
+    private List<Comment> commentList;
+
+    public void addComment(Comment comment) {
+        commentList.add(comment);
+        comment.setReview(this);
+    }
+
+    public void removeComment(Comment comment) {
+        commentList.remove(comment);
+        comment.setReview(null);
+    }
+
+    // 수정 관련 메서드
+    public void changeGrade(int grade) {
+        this.grade=grade;
+    }
+
+    public void changeText(String text) {this.text = text;}
 
 }

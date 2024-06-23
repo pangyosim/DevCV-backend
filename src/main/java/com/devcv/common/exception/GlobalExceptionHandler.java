@@ -15,7 +15,8 @@ import com.devcv.member.exception.DuplicationException;
 import com.devcv.member.exception.NotNullException;
 import com.devcv.member.exception.NotSignUpException;
 import com.devcv.review.exception.OrderNotFoundException;
-import com.devcv.review.exception.ReviewAlreadyExistsException;
+import com.devcv.review.exception.AlreadyExistsException;
+import com.devcv.review.exception.ReviewNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
@@ -149,6 +150,13 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.from(ErrorCode.ORDER_NOT_FOUND));
     }
 
+    @ExceptionHandler(ReviewNotFoundException.class)
+    public ResponseEntity<ErrorResponse> handle(ReviewNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.from(ErrorCode.REVIEW_NOT_FOUND));
+    }
+
     @ExceptionHandler(ResumeNotExistException.class)
     public ResponseEntity<ErrorResponse> handle(ResumeNotExistException e) {
         log.error(e.getMessage());
@@ -168,11 +176,11 @@ public class GlobalExceptionHandler {
 
 
     // 409 start
-    @ExceptionHandler(ReviewAlreadyExistsException.class)
-    public ResponseEntity<ErrorResponse> handle(ReviewAlreadyExistsException e) {
+    @ExceptionHandler(AlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handle(AlreadyExistsException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ErrorResponse.from(ErrorCode.REVIEW_ALREADY_EXISTS));
+                .body(ErrorResponse.from(ErrorCode.ALREADY_EXISTS));
     }
     // 409 end
 

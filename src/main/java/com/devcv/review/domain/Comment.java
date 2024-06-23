@@ -11,6 +11,7 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
+@Setter
 @ToString(exclude = {"review", "member"})
 public class Comment extends BaseTimeEntity {
 
@@ -19,14 +20,13 @@ public class Comment extends BaseTimeEntity {
     private Long commentId;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "review_id")
     private Review review;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "member_id")
     private Member member;
 
     private String text;
 
-    private String commenterNickname;
+    private String sellerNickname;
+
 }
