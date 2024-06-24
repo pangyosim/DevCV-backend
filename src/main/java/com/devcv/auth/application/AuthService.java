@@ -58,7 +58,7 @@ public class AuthService {
                 .password(passwordEncoder.encode(memberSignUpRequest.getSocial().name().equals(SocialType.normal.name()) ? memberSignUpRequest.getPassword() : socialPassword))
                 .nickName(memberSignUpRequest.getNickName()).phone(memberSignUpRequest.getPhone()).address(memberSignUpRequest.getAddress()).social(memberSignUpRequest.getSocial())
                 .company(memberSignUpRequest.getCompany()).job(memberSignUpRequest.getJob()).stack(memberSignUpRequest.getStack())
-                .memberRole(RoleType.admin)
+                .memberRole(RoleType.normal)
                 .build();
         try{
             if(member.getMemberName() == null || member.getNickName() == null || member.getEmail() == null

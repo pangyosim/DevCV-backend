@@ -171,8 +171,8 @@ public class MemberController {
 
     //----------- modi member start -----------
     // 비밀번호 변경 modipw
-    @PutMapping("/{memberId}/{password}")
-    public ResponseEntity<String> modiPassword(@PathVariable Long memberId, @PathVariable String password){
+    @PutMapping("/{member-id}/{password}")
+    public ResponseEntity<String> modiPassword(@PathVariable("member-id") Long memberId, @PathVariable String password){
         // NULL CHECK
         try {
             if(password == null || memberId == null){
@@ -211,8 +211,8 @@ public class MemberController {
         }
     }
     // 회원정보 단건 조회/수정
-    @PostMapping("{memberId}")
-    public ResponseEntity<MemberMypageResponse> getMember(@PathVariable Long memberId) {
+    @PostMapping("{member-id}")
+    public ResponseEntity<MemberMypageResponse> getMember(@PathVariable("member-id") Long memberId) {
         try {
             return ResponseEntity.ok().body(MemberMypageResponse.from(memberService.findMemberBymemberId(memberId)));
         } catch (NotSignUpException e){
@@ -220,8 +220,8 @@ public class MemberController {
             throw new NotSignUpException(ErrorCode.MEMBER_NOT_FOUND);
         }
     }
-    @PutMapping("/{memberId}")
-    public ResponseEntity<String> modiMember(@RequestBody MemberModiAllRequest memberModiAllRequest, @PathVariable Long memberId) {
+    @PutMapping("/{member-id}")
+    public ResponseEntity<String> modiMember(@RequestBody MemberModiAllRequest memberModiAllRequest, @PathVariable("member-id") Long memberId) {
         // NULL CHECK
         try {
             if(memberModiAllRequest.getJob() == null || memberModiAllRequest.getAddress() == null || memberModiAllRequest.getStack() == null
