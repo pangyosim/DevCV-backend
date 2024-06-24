@@ -1,6 +1,7 @@
 package com.devcv.admin.presentation;
 
 import com.devcv.admin.application.AdminService;
+import com.devcv.admin.dto.AdminResumeList;
 import com.devcv.auth.application.AuthService;
 import com.devcv.auth.exception.JwtInvalidSignException;
 import com.devcv.common.exception.ErrorCode;
@@ -50,6 +51,12 @@ public class AdminController {
     public ResponseEntity<?> adminUpdateResumeStatus(@PathVariable Long resumeId,@PathVariable ResumeStatus status) {
         resumeService.updateStatus(resumeId, status);
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/resumes")
+    public ResponseEntity<AdminResumeList> getAdminResumes(@RequestParam("status") String status) {
+        AdminResumeList adminResumeList = adminService.getResumesByStatus(status);
+        return ResponseEntity.ok(adminResumeList);
     }
 
     @PostMapping("/events")
