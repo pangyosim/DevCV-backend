@@ -5,6 +5,7 @@ import com.amazonaws.services.s3.model.ObjectMetadata;
 import com.amazonaws.services.s3.model.PutObjectRequest;
 import com.amazonaws.util.IOUtils;
 import com.devcv.common.exception.ErrorCode;
+import com.devcv.resume.exception.FileNameLengthExceededException;
 import com.devcv.resume.exception.S3Exception;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,11 +31,17 @@ public class S3Uploader {
     @Value("${spring.cloud.aws.s3.bucket}")
     private String bucketName;
 
+    // 최대 파일 제목 길이, 50자
+    private static final int MAX_FILE_NAME_LENGTH = 50;
+
     //외부 호출 가능 메서드
     public String upload(MultipartFile image) {
         //입력받은 이미지 파일이 빈 파일인지 검증
         if(image.isEmpty() || Objects.isNull(image.getOriginalFilename())){
             throw new S3Exception(ErrorCode.EMPTY_FILE_EXCEPTION);
+        }
+        if (image.getOriginalFilename().length() > MAX_FILE_NAME_LENGTH) {
+            throw new FileNameLengthExceededException(ErrorCode.FILE_NAME_LENGTH_EXCEEDED);
         }
         //uploadImage 호출
         return this.uploadImage(image);
