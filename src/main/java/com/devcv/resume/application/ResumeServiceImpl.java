@@ -345,4 +345,9 @@ public class ResumeServiceImpl implements ResumeService {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
         }
     }
+
+    @Override
+    public int updateStatus(Long resumeId, ResumeStatus resumeStatus) {
+        return resumeRepository.updateByresumeId(resumeId,resumeStatus);
+    }
 }

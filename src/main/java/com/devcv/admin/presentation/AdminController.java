@@ -6,6 +6,8 @@ import com.devcv.auth.exception.JwtInvalidSignException;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.member.domain.dto.MemberLoginRequest;
 import com.devcv.member.domain.dto.MemberLoginResponse;
+import com.devcv.resume.application.ResumeService;
+import com.devcv.resume.domain.enumtype.ResumeStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 public class AdminController {
 
     private final AuthService authService;
+    private final ResumeService resumeService;
     public static final String AUTHORIZATION_HEADER = "Authorization";
     public static final String AUTHORIZATION_REFRESH_HEADER = "RefreshToken";
     public static final String BEARER_PREFIX = "Bearer ";
@@ -39,26 +42,9 @@ public class AdminController {
     }
     //----------- login end -----------
 
-    @GetMapping("/main")
-    public ResponseEntity<?> adminMain() {
-        MemberDetails memberDetails = (MemberDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        System.out.println("/admin/main API RESPONSE");
-        return null;
-    }
-
-    @GetMapping("/resumes/{resumeId}")
-    public ResponseEntity<?> adminGetResume(@PathVariable Long resumeId, @AuthenticationPrincipal MemberDetails memberDetails) {
-        System.out.println("/admin/resumes/{resumeId} MemberDetails : " + memberDetails.getMember().getMemberId());
-        System.out.println("/admin/resumes/{resumeId} API RESPONSE");
-        System.out.println("/admin/resumes/{resumeId} resumeId : " + resumeId);
-        return null;
-    }
-
-    @PutMapping("/resumes/{resumeId}/status")
-    public ResponseEntity<?> adminResumeStatusUpdate(@PathVariable Long resumeId, @AuthenticationPrincipal UserDetails userDetails) {
-        System.out.println("/admin/{resumeId}/status UserDetails : " + userDetails.getUsername());
-        System.out.println("/admin/{resumeId}/status API RESPONSE");
-        System.out.println("/admin/{resumeId}/status resumeId : " + resumeId);
-        return null;
+    @PutMapping("/resumes/{resumeId}/{status}")
+    public ResponseEntity<?> adminUpdateResumeStatus(@PathVariable Long resumeId,@PathVariable ResumeStatus status) {
+        resumeService.updateStatus(resumeId, status);
+        return ResponseEntity.ok().build();
     }
 }

@@ -33,17 +33,7 @@ public class MemberService {
 
     private final MemberRepository memberRepository;
     public Member findMemberByEmail(String email) {
-        try {
-            Member findMember = memberRepository.findMemberByEmail(email);
-            if(findMember == null){
-                throw new NotSignUpException(ErrorCode.MEMBER_NOT_FOUND);
-            } else {
-                return findMember;
-            }
-        } catch (NotSignUpException e){
-            e.fillInStackTrace();
-            throw new NotSignUpException(ErrorCode.MEMBER_NOT_FOUND);
-        }
+       return memberRepository.findMemberByEmail(email);
     }
     public Member findMemberBymemberId(Long memberId) {
         try {
