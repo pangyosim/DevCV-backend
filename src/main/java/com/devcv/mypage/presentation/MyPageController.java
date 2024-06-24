@@ -25,7 +25,7 @@ public class MyPageController {
     private final MemberService memberService;
     private final PointService pointService;
     @GetMapping("/{member-id}")
-    public ResponseEntity<MyPageResponse> getMyPage(@PathVariable Long memberId){
+    public ResponseEntity<MyPageResponse> getMyPage(@PathVariable("member-id") Long memberId){
         Member findMember = memberService.findMemberBymemberId(memberId);
         OrderListResponse orderListResponse = orderService.getOrderListByMember(findMember);
         ResumeListResponse resumeListResponse = resumeService.findResumesByMemberId(memberId);
