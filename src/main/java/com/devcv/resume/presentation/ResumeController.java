@@ -26,17 +26,16 @@ import java.util.Map;
 @RestController
 @RequiredArgsConstructor
 @Slf4j
-@RequestMapping("/resumes")
 public class ResumeController {
 
     private final ResumeService resumeService;
 
     //------------이력서 목록 조회 요청 start---------------
-    @GetMapping()
+    @GetMapping("/resumes")
     public ResponseEntity<PaginatedResumeResponse> getResumesByConditions(
             @RequestParam("page") int page, @RequestParam("size") int size,
-            @RequestParam(value = "stackType", required = false) StackType stackType,
-            @RequestParam(value = "companyType", required = false) CompanyType companyType) {
+            @RequestParam(value = "stack-type", required = false) StackType stackType,
+            @RequestParam(value = "company-type", required = false) CompanyType companyType) {
 
         try {
             PaginatedResumeResponse response = resumeService.findResumes(stackType, companyType, page, size);
@@ -49,7 +48,7 @@ public class ResumeController {
 
 
     //------------이력서 상세 조회 요청 start--------------
-    @GetMapping("/{resume-id}")
+    @GetMapping("resumes/{resume-id}")
     public ResponseEntity<ResumeDto> getResumeDetail(@PathVariable("resume-id") Long resumeId) {
         try {
             ResumeDto resumeDetail = resumeService.getResumeDetail(resumeId);
@@ -63,7 +62,7 @@ public class ResumeController {
 
 
     // -------이력서 승인대기 요청 start-------------
-    @PostMapping()
+    @PostMapping("/resumes")
     public ResponseEntity<ResumeDto> registerResume(
             @AuthenticationPrincipal UserDetails userDetails,
             @RequestPart("resume") ResumeRequest resumeRequest,
@@ -84,7 +83,7 @@ public class ResumeController {
 
 
     //----------이력서 판매 상세 내역 페이지 호출 start---------
-    @GetMapping("/myresume/{resume-id}")
+    @GetMapping("/members/{member-id}/resumes/{resume-id}")
     public ResponseEntity<?> getResumeForEdit(
             @AuthenticationPrincipal UserDetails userDetails, @PathVariable("resume-id") Long resumeId) {
         if(userDetails == null) {
@@ -104,7 +103,7 @@ public class ResumeController {
 
 
     //----------이력서 판매 등록 요청 start----------------
-    @PutMapping("/myresume/{resume-id}/status")
+    @PutMapping("/members/{member-id}/resumes/{resume-id}/status")
     public ResponseEntity<?> completeResumeRegistration(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("resume-id") Long resumeId) {
@@ -120,7 +119,7 @@ public class ResumeController {
 
 
     // ----------이력서 수정 등록 요청 start----------------
-    @PutMapping("/{resume-id}")
+    @PutMapping("/members/{member-id}/resumes/{resume-id}")
     public ResponseEntity<ResumeDto> modifyResume(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable ("resume-id") Long resumeId,
@@ -141,7 +140,7 @@ public class ResumeController {
 
 
     // ----------이력서 삭제 등록 요청 start----------------
-    @DeleteMapping("/{resume-id}")
+    @DeleteMapping("/members/{member-id}/resumes/{resume-id}")
     public  Map<String, Object> removeResume(
             @AuthenticationPrincipal UserDetails userDetails,
             @PathVariable("resume-id") Long resumeId) {

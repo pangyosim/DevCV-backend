@@ -6,10 +6,7 @@ import com.devcv.auth.exception.JwtInvalidSignException;
 import com.devcv.auth.exception.JwtUnsupportedException;
 import com.devcv.common.exception.dto.ErrorResponse;
 import com.devcv.member.exception.*;
-import com.devcv.resume.exception.MemberNotFoundException;
-import com.devcv.resume.exception.ResumeNotExistException;
-import com.devcv.resume.exception.ResumeNotFoundException;
-import com.devcv.resume.exception.S3Exception;
+import com.devcv.resume.exception.*;
 import com.devcv.member.exception.AuthLoginException;
 import com.devcv.member.exception.DuplicationException;
 import com.devcv.member.exception.NotNullException;
@@ -24,6 +21,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MultipartException;
 
 
 @Slf4j
@@ -43,6 +41,13 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.from(ErrorCode.TEST_ERROR));
+    }
+
+    @ExceptionHandler(ResumeStatusException.class)
+    public ResponseEntity<ErrorResponse> handle(ResumeStatusException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(ErrorResponse.from(ErrorCode.RESUME_NOT_APPROVAL));
     }
     // 500 end
 
@@ -190,6 +195,21 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(e));
     }
+
+    @ExceptionHandler(MultipartException.class)
+    public ResponseEntity<ErrorResponse> handle(MultipartException e) {
+        log.error(e.getMessage());
+        return  ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.from(ErrorCode.FILE_SIZE_LIMIT_EXCEEDED));
+    }
+
+    @ExceptionHandler(FileNameLengthExceededException.class)
+    public ResponseEntity<ErrorResponse> handle(FileNameLengthExceededException e) {
+        log.error(e.getMessage());
+        return  ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ErrorResponse.from(ErrorCode.FILE_NAME_LENGTH_EXCEEDED));
+    }
+
     // 400 end
 
 
