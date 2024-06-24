@@ -1,5 +1,6 @@
 package com.devcv.event.presentation;
 
+import com.devcv.auth.filter.SecurityUtil;
 import com.devcv.event.application.AttendanceEventService;
 import com.devcv.event.domain.AttendanceEvent;
 import com.devcv.event.domain.dto.AttendanceListResponse;
@@ -12,7 +13,7 @@ import java.net.URI;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/events/attendance")
+@RequestMapping("/attendance")
 public class AttendanceController {
 
     private final AttendanceEventService attendanceEventService;
@@ -24,8 +25,9 @@ public class AttendanceController {
     }
 
     @GetMapping
-    public ResponseEntity<Object> getAttendanceList(@RequestBody AttendanceRequest request) { //임시 dto
-        AttendanceListResponse response = attendanceEventService.getAttendanceListResponse(request);
+    public ResponseEntity<AttendanceListResponse> getAttendanceList(@RequestParam("event-id") Long eventId) {
+        Long currentMemberId = SecurityUtil.getCurrentmemberId();
+        AttendanceListResponse response = attendanceEventService.getAttendanceListResponse(currentMemberId, eventId);
         return ResponseEntity.ok(response);
     }
 }

@@ -10,6 +10,8 @@ public enum ErrorCode {
     INVALID_FILE_EXTENTION("유효하지 않은 파일 확장자입니다."),
     EMPTY_VALUE_ERROR("필수 입력 값이 비어있습니다."),
     INSUFFICIENT_POINT("보유 포인트가 부족합니다."),
+    NOT_ONGOING_EVENT("이벤트 진행 기간이 아닙니다."),
+    ALREADY_ATTENDED_EVENT("이미 참석한 이벤트입니다."),
 
     //401
     UNAUTHORIZED_ERROR("자격증명에 실패하였습니다."),
@@ -36,6 +38,8 @@ public enum ErrorCode {
     ORDER_NOT_FOUND("주문 정보를 찾을 수 없습니다"),
     REVIEW_NOT_FOUND("댓글을 찾을 수 없습니다"),
     RESUME_NOT_EXIST("삭제된 이력서입니다"),
+    EVENT_NOT_FOUND("이벤트를 찾을 수 없습니다."),
+
     //409
     CONFLICT_ERROR("요청 충돌 에러"),
     ALREADY_EXISTS("이미 댓글을 작성했습니다."),

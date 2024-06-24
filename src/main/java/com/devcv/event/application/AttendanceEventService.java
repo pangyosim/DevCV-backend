@@ -1,5 +1,6 @@
 package com.devcv.event.application;
 
+import com.devcv.common.exception.BadRequestException;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.common.exception.TestErrorException;
 import com.devcv.event.domain.AttendanceEvent;
@@ -31,20 +32,26 @@ public class AttendanceEventService {
 
     @Transactional
     public AttendanceEvent checkAttendance(AttendanceRequest request) {
-
         Event event = eventService.findByEventId(request.eventId());
         Member member = memberService.findMemberBymemberId(request.memberId());
 
-
         checkExist(member, event);
+        checkCurrentDate(event);
         savePoint(member, event);
+
         return record(member, event);
     }
 
     private void checkExist(Member member, Event event) {
         LocalDate today = LocalDate.now();
         if (attendanceEventRepository.existsByMemberAndEventAndDate(member, event, today)) {
-            throw new TestErrorException(ErrorCode.TEST_ERROR);
+            throw new BadRequestException(ErrorCode.ALREADY_ATTENDED_EVENT);
+        }
+    }
+
+    private void checkCurrentDate(Event event) {
+        if (!event.isOngoing()) {
+            throw new BadRequestException(ErrorCode.NOT_ONGOING_EVENT);
         }
     }
 
@@ -57,11 +64,9 @@ public class AttendanceEventService {
         pointService.savePoint(member, ATTENDANCE_POINT, event.getName());
     }
 
-    @Transactional
-    public AttendanceListResponse getAttendanceListResponse(AttendanceRequest request) {
-        Member member = memberService.findMemberBymemberId(request.memberId());
-
-        Event event = eventService.findByEventId(request.eventId());
+    public AttendanceListResponse getAttendanceListResponse(Long memberId, Long eventId) {
+        Member member = memberService.findMemberBymemberId(memberId);
+        Event event = eventService.findByEventId(eventId);
 
         LocalDate startDate = LocalDate.from(event.getStartDate());
         LocalDate endDate = LocalDate.from(event.getEndDate());
