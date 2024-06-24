@@ -7,10 +7,7 @@ import com.devcv.member.repository.MemberRepository;
 import com.devcv.resume.domain.Category;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.ResumeImage;
-import com.devcv.resume.domain.dto.CategoryDto;
-import com.devcv.resume.domain.dto.PaginatedResumeResponse;
-import com.devcv.resume.domain.dto.ResumeDto;
-import com.devcv.resume.domain.dto.ResumeRequest;
+import com.devcv.resume.domain.dto.*;
 import com.devcv.resume.domain.enumtype.CompanyType;
 import com.devcv.resume.domain.enumtype.ResumeStatus;
 import com.devcv.resume.domain.enumtype.StackType;
@@ -111,6 +108,17 @@ public class ResumeServiceImpl implements ResumeService {
         Long reviewCount = (Long) result.get(0)[2];
 
         return entityToDto(resume, averageGrade, reviewCount);
+    }
+
+    // 회원별 이력서 조회
+
+    @Override
+    public ResumeListResponse findResumesByMemberId(Long memberId) {
+        List<ResumeResponse> resumeList = resumeRepository.findByMember(memberId).
+                stream()
+                .map(ResumeResponse::from)
+                .collect(Collectors.toList());;
+        return ResumeListResponse.of(memberId,resumeList.size(),resumeList);
     }
 
     // 이력서 등록(승인대기)

@@ -33,7 +33,6 @@ public class GlobalExceptionHandler {
     // 500 start
     @ExceptionHandler(InternalServerException.class)
     public ResponseEntity<ErrorResponse> handle(InternalServerException e) {
-        System.out.println("dd");
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.from(ErrorCode.INTERNAL_SERVER_ERROR));
@@ -41,7 +40,6 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TestErrorException.class)
     public ResponseEntity<ErrorResponse> handle(TestErrorException e) {
-        System.out.println("dd");
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(ErrorResponse.from(ErrorCode.TEST_ERROR));
@@ -117,6 +115,14 @@ public class GlobalExceptionHandler {
     }
     // 401 end
 
+    // 403
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ErrorResponse> handle(ForbiddenException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body(ErrorResponse.from(e));
+    }
+    // 403
+
     // 404 start
     @ExceptionHandler(NotNullException.class)
     public ResponseEntity<ErrorResponse> handle(NotNullException e) {
@@ -171,6 +177,12 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                 .body(ErrorResponse.from(ErrorCode.EMPTY_VALUE_ERROR));
+    }
+
+    @ExceptionHandler(BadRequestException.class)
+    public ResponseEntity<ErrorResponse> handle(BadRequestException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ErrorResponse.from(e));
     }
     // 400 end
 

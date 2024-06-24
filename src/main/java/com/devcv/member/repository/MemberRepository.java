@@ -1,6 +1,7 @@
 package com.devcv.member.repository;
 
 import com.devcv.member.domain.Member;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
@@ -14,7 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 *   @Modifying( clearAutomatically= true) : 영속성 컨텍스트 자동 clear.
 */
 @Transactional
-public interface MemberRepository extends CrudRepository<Member, Long> {
+public interface MemberRepository extends JpaRepository<Member, Long> {
 
     @Query(value = "SELECT * FROM tb_member WHERE email=:email", nativeQuery = true)
     Member findMemberByEmail(@Param("email") String email);
@@ -28,10 +29,6 @@ public interface MemberRepository extends CrudRepository<Member, Long> {
     @Modifying(clearAutomatically = true)
     @Query(value = "UPDATE tb_member SET password=:password WHERE member_id=:memberId", nativeQuery = true)
     int updatePasswordBymemberId(@Param("password") String password, @Param("memberId") Long memberId);
-
-    @Modifying(clearAutomatically = true)
-    @Query(value = "UPDATE tb_member SET refresh_token=:refreshToken WHERE member_id=:memberId", nativeQuery = true)
-    int updateRefreshTokenBymemberId(@Param("refreshToken") String refreshToken, @Param("memberId") Long memberId);
 
     @Modifying(clearAutomatically = true)
     @Query(value = "UPDATE tb_member SET member_name=:memberName, email=:email, password=:password, nickname=:nickname," +

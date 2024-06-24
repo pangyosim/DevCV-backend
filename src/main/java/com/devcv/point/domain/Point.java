@@ -2,6 +2,7 @@ package com.devcv.point.domain;
 
 import com.devcv.member.domain.Member;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotNull;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -10,26 +11,28 @@ import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Table(name = "point")
+@Table(name = "tb_point")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Point {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(unique = true)
     private Long id;
 
-    @ManyToOne
-    @JoinColumn(name = "member_memberId")
+    @NotNull
+    @ManyToOne(fetch = FetchType.LAZY)
     private Member member;
 
     @Column
+    @NotNull
     private Long amount;
 
+    @NotNull
     @Column
     @Enumerated(value = EnumType.STRING)
     private TransactionType transactionType;
 
+    @NotNull
     @Column
     private String description;
 

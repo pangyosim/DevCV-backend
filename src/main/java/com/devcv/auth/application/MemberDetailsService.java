@@ -31,8 +31,7 @@ public class MemberDetailsService implements UserDetailsService {
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             } else {
                 List<GrantedAuthority> authorities = new ArrayList<>();
-                authorities.add(new SimpleGrantedAuthority(findMember.getMemberRole().name()+" "
-                        +findMember.getSocial().name()+" "+findMember.getMemberName()+" "+findMember.getMemberId()));
+                authorities.add(new SimpleGrantedAuthority("ROLE_"+findMember.getMemberRole().name()));
                 return new MemberDetails(findMember, authorities);
             }
         } catch (NotSignUpException e){

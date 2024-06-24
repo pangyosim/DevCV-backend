@@ -9,6 +9,7 @@ public enum ErrorCode {
     NO_FILE_EXTENTION("파일 확장자가 없습니다."),
     INVALID_FILE_EXTENTION("유효하지 않은 파일 확장자입니다."),
     EMPTY_VALUE_ERROR("필수 입력 값이 비어있습니다."),
+    INSUFFICIENT_POINT("보유 포인트가 부족합니다."),
 
     //401
     UNAUTHORIZED_ERROR("자격증명에 실패하였습니다."),
@@ -25,6 +26,7 @@ public enum ErrorCode {
     JWTILLEGALARG_ERROR("JWT 토큰에 권한 정보가 없습니다."),
 
     //403
+    MEMBER_MISMATCH_EXCEPTION("접근 권한이 없습니다."),
 
     //404
     NOT_FOUND_ERROR("페이지를 찾을 수 없습니다."),

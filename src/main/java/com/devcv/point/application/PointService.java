@@ -2,6 +2,7 @@ package com.devcv.point.application;
 
 import com.devcv.member.domain.Member;
 import com.devcv.point.domain.Point;
+import com.devcv.point.dto.PointResponse;
 import com.devcv.point.repository.PointRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,10 @@ public class PointService {
     public Long getMyPoint(Long memberId) {
         Long point = pointRepository.findTotalPointsBymemberId(memberId);
         return Objects.requireNonNullElse(point, 0L);
+    }
+
+    public PointResponse getPointResponse(Long memberId) {
+        return PointResponse.of(memberId, getMyPoint(memberId));
     }
 
     public Point savePoint(Member member, Long amount, String description) {
