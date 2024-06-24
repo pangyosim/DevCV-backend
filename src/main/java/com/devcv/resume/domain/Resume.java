@@ -31,7 +31,7 @@ public class Resume extends BaseTimeEntity{
     private String title;
     @Column(nullable = false)
     private String content;
-    @Column(nullable = false)
+    @Column(nullable = false, length = 1024)
     private String resumeFilePath;
     @Column(nullable = false)
     private boolean delFlag;
