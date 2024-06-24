@@ -10,6 +10,7 @@ import com.devcv.event.domain.dto.EventRequest;
 import com.devcv.member.domain.dto.MemberLoginRequest;
 import com.devcv.member.domain.dto.MemberLoginResponse;
 import com.devcv.resume.application.ResumeService;
+import com.devcv.resume.domain.dto.ResumeResponse;
 import com.devcv.resume.domain.enumtype.ResumeStatus;
 import lombok.AllArgsConstructor;
 import org.springframework.http.HttpHeaders;
@@ -57,6 +58,12 @@ public class AdminController {
     public ResponseEntity<AdminResumeList> getAdminResumes(@RequestParam("status") String status) {
         AdminResumeList adminResumeList = adminService.getResumesByStatus(status);
         return ResponseEntity.ok(adminResumeList);
+    }
+
+    @GetMapping("/resumes/{resume-id}")
+    public ResponseEntity<ResumeResponse> getAdminResumes(@PathVariable("resume-id") Long resumeId) {
+        ResumeResponse resumeResponse = adminService.getResume(resumeId);
+        return ResponseEntity.ok(resumeResponse);
     }
 
     @PostMapping("/events")
