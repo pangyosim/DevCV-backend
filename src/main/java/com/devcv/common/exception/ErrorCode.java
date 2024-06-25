@@ -12,6 +12,8 @@ public enum ErrorCode {
     INSUFFICIENT_POINT("보유 포인트가 부족합니다."),
     NOT_ONGOING_EVENT("이벤트 진행 기간이 아닙니다."),
     ALREADY_ATTENDED_EVENT("이미 참석한 이벤트입니다."),
+    FILE_SIZE_LIMIT_EXCEEDED("파일 크기 제한(20MB)을 초과했습니다."),
+    FILE_NAME_LENGTH_EXCEEDED("파일 이름 길이 제한(50자)을 초과했습니다."),
 
     //401
     UNAUTHORIZED_ERROR("자격증명에 실패하였습니다."),
@@ -48,7 +50,7 @@ public enum ErrorCode {
     IO_EXCEPTION_ON_IMAGE_UPLOAD("이미지 업로드 중 IO 예외가 발생했습니다."),
     PUT_OBJECT_EXCEPTION("S3에 객체를 저장하는 중 예외가 발생했습니다."),
     INTERNAL_SERVER_ERROR("서버 내부에 문제가 발생했습니다."),
-    UNAUTHORIZED_TO_COMPLETE_REGISTRATION("이력서 등록 완료 권한이 없습니다."),
+    RESUME_NOT_APPROVAL("이력서가 승인대기 상태입니다"),
     TEST_ERROR("테스트용 에러입니다."),
     ;
 

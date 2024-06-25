@@ -11,10 +11,7 @@ import com.devcv.resume.domain.dto.*;
 import com.devcv.resume.domain.enumtype.CompanyType;
 import com.devcv.resume.domain.enumtype.ResumeStatus;
 import com.devcv.resume.domain.enumtype.StackType;
-import com.devcv.resume.exception.HttpMessageNotReadableException;
-import com.devcv.resume.exception.MemberNotFoundException;
-import com.devcv.resume.exception.ResumeNotExistException;
-import com.devcv.resume.exception.ResumeNotFoundException;
+import com.devcv.resume.exception.*;
 import com.devcv.resume.infrastructure.S3Uploader;
 import com.devcv.resume.repository.CategoryRepository;
 import com.devcv.resume.repository.ResumeRepository;
@@ -44,6 +41,9 @@ public class ResumeServiceImpl implements ResumeService {
     private final CategoryRepository categoryRepository;
     private final MemberRepository memberRepository;
     private final S3Uploader s3Uploader;
+
+    // 최대 이미지 파일 크기, 20MB
+    private static final long MAX_IMAGE_SIZE = 20 * 1024 * 1024;
 
 
     // 이력서 목록 조회
@@ -212,6 +212,9 @@ public class ResumeServiceImpl implements ResumeService {
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
+            if (resume.getStatus() == ResumeStatus.승인대기) {
+                throw new ResumeStatusException(ErrorCode.RESUME_NOT_APPROVAL);
+            }
             if (resume.getStatus() == ResumeStatus.삭제) {
                 throw new ResumeNotExistException(ErrorCode.RESUME_NOT_EXIST);
             }

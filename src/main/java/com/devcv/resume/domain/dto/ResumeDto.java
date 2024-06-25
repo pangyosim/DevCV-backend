@@ -26,6 +26,7 @@ public class ResumeDto {
     private CategoryDto category;
     private Long memberId;
     private String sellerNickname;
+    private String sellerEmail;
 
     // 평균 별점, 구매후기 개수 필드 추가
     private Double averageGrade;
@@ -44,6 +45,7 @@ public class ResumeDto {
                 CategoryDto.from(resume.getCategory()),
                 resume.getMember().getMemberId(),
                 resume.getMember().getNickName(),
+                resume.getMember().getEmail(),
                 null,
                 null
         );
@@ -60,6 +62,7 @@ public class ResumeDto {
                 .stack(resume.getStack())
                 .memberId(resume.getMember().getMemberId())
                 .sellerNickname(resume.getMember().getNickName())
+                .sellerEmail(resume.getMember().getEmail())
                 .imageList(resume.getImageList())
                 .category(CategoryDto.from(resume.getCategory()))
                 .build();

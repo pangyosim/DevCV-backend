@@ -1,5 +1,6 @@
 package com.devcv.resume.domain;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Embeddable;
 import lombok.*;
 
@@ -12,6 +13,7 @@ import lombok.*;
 public class ResumeImage {
 
     // S3URL
+    @Column(nullable = false, length = 1024)
     private String resumeImgPath;
     // 썸네일 이미지 번호 설정
     private int ord;
