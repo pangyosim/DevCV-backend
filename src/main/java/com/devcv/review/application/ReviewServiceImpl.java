@@ -25,11 +25,14 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -47,8 +50,21 @@ public class ReviewServiceImpl implements  ReviewService{
     // 구매후기 조회
     @Transactional
     @Override
-    public PaginatedReviewResponse getListOfResume(Long resumeId, int page, int size) {
-        Pageable pageable = PageRequest.of(page-1, size);
+    public PaginatedReviewResponse getListOfResume(Long resumeId, int page, int size, String sort) {
+        Pageable pageable;
+
+        // 평점 높은순, 평점 낮은순, default 조회
+        switch (sort) {
+            case "r-desc":
+                pageable = PageRequest.of(page-1, size, Sort.by("grade").descending());
+                break;
+            case "r-asc":
+                pageable = PageRequest.of(page-1, size, Sort.by("grade").ascending());
+                break;
+            default:
+                pageable = PageRequest.of(page-1, size, Sort.by("createdDate").descending());
+                break;
+        }
 
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
@@ -60,10 +76,17 @@ public class ReviewServiceImpl implements  ReviewService{
 
         // 전체 리뷰 개수와 평균 별점 조회
         long totalReviews = reviewRepository.countByResumeId(resumeId);
-        Double averageRating = reviewRepository.calculateAverageGrade(resumeId);
-        if (averageRating == null) {
-            averageRating = 0.0;
+        int averageRating = reviewRepository.calculateAverageGrade(resumeId);
+
+        // 각 점수별 구매후기 개수 계산
+        Long[] ratingCounts = new Long[5];
+        Map<Integer, Long> numOfRating = reviewRepository.findByResume(resume, pageable).stream()
+                .collect(Collectors.groupingBy(Review::getGrade, Collectors.counting()));
+
+        for (int i = 0; i < 5; i++) {
+            ratingCounts[i] = numOfRating.getOrDefault(i + 1, 0L);
         }
+
 
         List<ReviewDto> reviewDtos = reviewPage.getContent().stream().map(this::entityToDto).toList();
         return new PaginatedReviewResponse(
@@ -76,7 +99,8 @@ public class ReviewServiceImpl implements  ReviewService{
                 Math.max(1, reviewPage.getNumber() - 2),  // startPage
                 Math.min(reviewPage.getTotalPages(), reviewPage.getNumber() + 2), // endPage
                 totalReviews,
-                averageRating
+                averageRating,
+                ratingCounts
         );
 
 

@@ -30,10 +30,11 @@ public class ReviewController {
     @GetMapping("/{resume-id}/reviews")
     public ResponseEntity<PaginatedReviewResponse> getList(
             @RequestParam("page") int page, @RequestParam("size") int size,
+            @RequestParam(value = "sort", defaultValue = "d-desc") String sort,
             @PathVariable("resume-id") Long resumeId) {
 
         try {
-            PaginatedReviewResponse response = reviewService.getListOfResume(resumeId, page, size);
+            PaginatedReviewResponse response = reviewService.getListOfResume(resumeId, page, size, sort);
             return ResponseEntity.ok(response);
         } catch (InternalServerException e) {
             throw new InternalServerException(ErrorCode.INTERNAL_SERVER_ERROR);

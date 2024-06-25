@@ -18,8 +18,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Long countByResumeId(Long resumeId);
 
     // 평균 별점 조회
-    @Query("SELECT AVG(r.grade) FROM Review r WHERE r.resume.resumeId = :resumeId")
-    Double calculateAverageGrade(Long resumeId);
+    @Query("SELECT COALESCE(AVG(r.grade), 0) FROM Review r WHERE r.resume.resumeId = :resumeId")
+    int calculateAverageGrade(Long resumeId);
 
     // 특정 이력서 모든 리뷰 확인
     @EntityGraph(attributePaths = {"member", "order"}, type=EntityGraph.EntityGraphType.FETCH)

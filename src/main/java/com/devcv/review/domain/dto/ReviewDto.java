@@ -21,6 +21,7 @@ public class ReviewDto {
     private Long resumeId;
 
     private Long memberId;
+    private String reviewerNickname;
 
     private String orderId;
 
@@ -30,8 +31,8 @@ public class ReviewDto {
 
     private LocalDateTime createdDate, updatedDate;
 
-    private String reviewerNickname;
     private String sellerNickname;
+    private String sellerEmail;
 
     private List<CommentDto> commentDtoList;
 
@@ -43,6 +44,7 @@ public class ReviewDto {
                 .orderId(review.getOrder().getOrderId())
                 .reviewerNickname(review.getMember().getNickName())
                 .sellerNickname(review.getResume().getMember().getNickName())
+                .sellerEmail(review.getResume().getMember().getEmail())
                 .grade(review.getGrade())
                 .text(review.getText())
                 .createdDate(review.getCreatedDate())
