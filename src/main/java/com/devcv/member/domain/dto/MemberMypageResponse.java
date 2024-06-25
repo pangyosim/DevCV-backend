@@ -16,6 +16,7 @@ public class MemberMypageResponse {
         private Long memberId;
         private String email;
         private String memberName;
+        private String nickName;
         private String phone;
         private CompanyType company;
         private JobType job;
@@ -26,6 +27,7 @@ public class MemberMypageResponse {
                 return MemberMypageResponse.builder()
                         .memberId(member.getMemberId())
                         .memberName(member.getMemberName())
+                        .nickName(member.getNickName())
                         .phone(member.getPhone())
                         .stack(member.getStack())
                         .job(member.getJob())

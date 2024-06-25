@@ -65,18 +65,18 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
 
     //----------------등록완료 default인 메서드 start-----------------
     default Page<Object[]> findApprovedResumes(Pageable pageable) {
-        return findByStatus(ResumeStatus.등록완료, pageable);
+        return findByStatus(ResumeStatus.regcompleted, pageable);
     }
     default Page<Object[]> findApprovedResumesByStackTypeAndCompanyType(StackType stackType, CompanyType companyType, Pageable pageable) {
-        return findByCategory_StackTypeAndCategory_CompanyTypeAndStatus(stackType, companyType, ResumeStatus.등록완료, pageable);
+        return findByCategory_StackTypeAndCategory_CompanyTypeAndStatus(stackType, companyType, ResumeStatus.regcompleted, pageable);
     }
 
     default Page<Object[]> findApprovedResumesByStackType(StackType stackType, Pageable pageable) {
-        return findByCategory_StackTypeAndStatus(stackType, ResumeStatus.등록완료, pageable);
+        return findByCategory_StackTypeAndStatus(stackType, ResumeStatus.regcompleted, pageable);
     }
 
     default Page<Object[]> findApprovedResumesByCompanyType(CompanyType companyType, Pageable pageable) {
-        return findByCategory_CompanyTypeAndStatus(companyType, ResumeStatus.등록완료, pageable);
+        return findByCategory_CompanyTypeAndStatus(companyType, ResumeStatus.regcompleted, pageable);
     }
 
     //----------------판매승인이 default인 메서드 end-----------------

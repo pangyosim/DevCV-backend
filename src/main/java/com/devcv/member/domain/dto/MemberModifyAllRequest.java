@@ -4,12 +4,16 @@ import com.devcv.member.domain.enumtype.CompanyType;
 import com.devcv.member.domain.enumtype.JobType;
 import com.devcv.member.domain.enumtype.RoleType;
 import com.devcv.member.domain.enumtype.SocialType;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
-public class MemberModiAllRequest {
+@AllArgsConstructor
+@Builder(toBuilder = true)
+public class MemberModifyAllRequest {
     private Long memberId;
     private String memberName;
     private String nickName;

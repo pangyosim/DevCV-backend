@@ -57,7 +57,6 @@ public class MemberService {
     public int updateMemberBymemberId(String memberName, String email, String password, String nickname, String phone, String address,
                                       String company, String job, String stack, Long memberId) {
         return memberRepository.updateMemberBymemberId(memberName,email,password,nickname,phone,address,company,job,stack,memberId);}
-
     public int updateSocialMemberBymemberId(String memberName, String nickname, String phone, String address,
                                             String company, String job, String stack, Long memberId){
         return memberRepository.updateSocialMemberBymemberId(memberName,nickname,phone,address,company,job,stack,memberId);

@@ -6,7 +6,7 @@ import com.devcv.auth.filter.JwtFilter;
 import com.devcv.auth.jwt.JwtProvider;
 import com.devcv.member.domain.enumtype.RoleType;
 import lombok.RequiredArgsConstructor;
-//import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
+// import org.springframework.boot.autoconfigure.security.servlet.PathRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -60,7 +60,7 @@ public class SpringSecurityConfig {
                 .and()
                 .authorizeHttpRequests()
                 .requestMatchers("/members/login","/members/signup","/members/find-id","/members/cert-email","/members/duplication-email",
-                        "/members/find-pw/email","/members/find-pw","/members/{member-id}/{password}","/admin/login",
+                        "/members/find-pw/email","/members/find-pw","/members/{member-id}/password","/admin/login",
                          "/members/kakao-login","/members/google-login","/resumes","/resumes/{resume-id}", "/resumes/{resume-id}/reviews").permitAll()
 //                .requestMatchers(PathRequest.toH2Console()).permitAll()
                 .requestMatchers("/admin/**").hasRole(RoleType.admin.name()) // 관리자 페이지

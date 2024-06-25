@@ -52,7 +52,7 @@ public class ReviewServiceImpl implements  ReviewService{
 
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
-        if (resume.getStatus() != ResumeStatus.등록완료) {
+        if (resume.getStatus() != ResumeStatus.regcompleted) {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
         }
 
@@ -96,7 +96,7 @@ public class ReviewServiceImpl implements  ReviewService{
         //  잘못된 접근 예외처리
         Resume resume = resumeRepository.findById(resumeId)
                 .orElseThrow(() -> new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND));
-        if (resume.getStatus() != ResumeStatus.등록완료) {
+        if (resume.getStatus() != ResumeStatus.regcompleted) {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
         }
         Member member = memberRepository.findById(memberId)

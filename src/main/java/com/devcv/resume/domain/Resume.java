@@ -39,7 +39,7 @@ public class Resume extends BaseTimeEntity{
     // 관리자 승인 상태 = 승인대기 default
     @Builder.Default
     @Enumerated(EnumType.STRING)
-    private ResumeStatus status = ResumeStatus.승인대기;
+    private ResumeStatus status = ResumeStatus.pending;
 
     // 기술스택
     @Convert(converter = ListStringConverter.class)

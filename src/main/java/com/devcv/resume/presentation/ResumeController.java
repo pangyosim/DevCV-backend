@@ -93,7 +93,7 @@ public class ResumeController {
         ResumeDto resumeDetail = resumeService.getRegisterResumeDetail(memberId, resumeId);
 
         // 삭제한 이력서 호출 시 접근 예외처리
-        if (resumeDetail.getStatus() == ResumeStatus.삭제) {
+        if (resumeDetail.getStatus() == ResumeStatus.deleted) {
             throw new ResumeNotExistException(ErrorCode.RESUME_NOT_EXIST);
         }
 
