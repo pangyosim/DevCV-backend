@@ -1,7 +1,6 @@
 package com.devcv.admin.presentation;
 
 import com.devcv.admin.application.AdminService;
-import com.devcv.admin.dto.AdminResumeList;
 import com.devcv.auth.application.AuthService;
 import com.devcv.auth.exception.JwtInvalidSignException;
 import com.devcv.common.exception.ErrorCode;
@@ -10,9 +9,13 @@ import com.devcv.event.domain.dto.EventRequest;
 import com.devcv.member.domain.dto.MemberLoginRequest;
 import com.devcv.member.domain.dto.MemberLoginResponse;
 import com.devcv.resume.application.ResumeService;
+import com.devcv.resume.domain.dto.PaginatedResumeResponse;
 import com.devcv.resume.domain.dto.ResumeResponse;
 import com.devcv.resume.domain.enumtype.ResumeStatus;
 import lombok.AllArgsConstructor;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -55,9 +58,12 @@ public class AdminController {
     }
 
     @GetMapping("/resumes")
-    public ResponseEntity<AdminResumeList> getAdminResumes(@RequestParam("status") String status) {
-        AdminResumeList adminResumeList = adminService.getResumesByStatus(status);
-        return ResponseEntity.ok(adminResumeList);
+    public ResponseEntity<PaginatedResumeResponse> getAdminResumes(@RequestParam("status") String status,
+                                                                   @RequestParam(name = "page", defaultValue = "0") int page,
+                                                                   @RequestParam(name = "size", defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size, Sort.by("createdDate").ascending());
+        PaginatedResumeResponse response = adminService.getResumesByStatus(status, pageable);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/resumes/{resume-id}")
