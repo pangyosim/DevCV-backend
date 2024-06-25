@@ -14,6 +14,8 @@ public enum ErrorCode {
     ALREADY_ATTENDED_EVENT("이미 참석한 이벤트입니다."),
     FILE_SIZE_LIMIT_EXCEEDED("파일 크기 제한(20MB)을 초과했습니다."),
     FILE_NAME_LENGTH_EXCEEDED("파일 이름 길이 제한(50자)을 초과했습니다."),
+    RESUME_STATUS_EXCEPTION("올바르지 않은 이력서 상태입니다."),
+    ORDER_INFO_MISMATCH_EXCEPTION("주문 정보가 일치하지 않습니다."),
 
     //401
     UNAUTHORIZED_ERROR("자격증명에 실패하였습니다."),
@@ -45,6 +47,7 @@ public enum ErrorCode {
     //409
     CONFLICT_ERROR("요청 충돌 에러"),
     ALREADY_EXISTS("이미 댓글을 작성했습니다."),
+    ALREADY_EXISTS_ORDER("구매 내역이 존재합니다."),
 
     //500
     IO_EXCEPTION_ON_IMAGE_UPLOAD("이미지 업로드 중 IO 예외가 발생했습니다."),

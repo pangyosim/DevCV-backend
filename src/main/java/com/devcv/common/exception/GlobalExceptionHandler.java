@@ -218,7 +218,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handle(AlreadyExistsException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.CONFLICT)
-                .body(ErrorResponse.from(ErrorCode.ALREADY_EXISTS));
+                .body(ErrorResponse.from(e));
     }
     // 409 end
 
