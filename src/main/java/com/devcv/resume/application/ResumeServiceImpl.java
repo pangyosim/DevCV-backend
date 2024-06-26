@@ -222,7 +222,7 @@ public class ResumeServiceImpl implements ResumeService {
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
-            if (resume.getStatus() == ResumeStatus.pending) {
+            if (resume.getStatus() == ResumeStatus.pending || resume.getStatus() == ResumeStatus.modified) {
                 throw new ResumeStatusException(ErrorCode.RESUME_NOT_APPROVAL);
             }
             if (resume.getStatus() == ResumeStatus.deleted) {
@@ -270,7 +270,7 @@ public class ResumeServiceImpl implements ResumeService {
             resume.changeContent(resumeDto.getContent());
             resume.changePrice(resumeDto.getPrice());
             resume.changeStack(resumeDto.getStack());
-            resume.setStatus(ResumeStatus.pending);
+            resume.setStatus(ResumeStatus.modified);
 
 
             // 현재 상태를 로그로 저장
@@ -361,11 +361,5 @@ public class ResumeServiceImpl implements ResumeService {
         } else {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
         }
-    }
-
-    @Override
-    public int updateStatus(Long resumeId, ResumeStatus resumeStatus) {
-        saveResumeLog(findByResumeId(resumeId), resumeStatus);
-        return resumeRepository.updateByresumeId(resumeId,resumeStatus);
     }
 }
