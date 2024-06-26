@@ -59,7 +59,7 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     // 상세 이력서 조회
     @Query("SELECT r, AVG(COALESCE(rv.grade, 0)), COUNT(rv) " +
             "FROM Resume r LEFT JOIN Review rv ON rv.resume = r " +
-            "WHERE r.resumeId = :resumeId AND r.status = '등록완료' " +
+            "WHERE r.resumeId = :resumeId AND r.status = 'regCompleted' " +
             "GROUP BY r")
     List<Object[]> findByIdAndStatus(Long resumeId);
 

@@ -66,7 +66,7 @@ public class S3Uploader {
         }
         // filename을 받아서 파일 확장자가 jpg, jpeg, png, gif, pdf, hwp, docx 중에 속하는지 검증한다.
         String extension = filename.substring(lastDotIndex + 1).toLowerCase();
-        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "pdf", "hwp", "docx");
+        List<String> allowedExtensionList = Arrays.asList("jpg", "jpeg", "png", "gif", "pdf", "hwp", "docx", "heic", "webp");
 
         if (!allowedExtensionList.contains(extension)) {
             throw new S3Exception(ErrorCode.INVALID_FILE_EXTENTION);
