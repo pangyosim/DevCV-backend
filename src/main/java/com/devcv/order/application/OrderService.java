@@ -75,7 +75,7 @@ public class OrderService {
     }
 
     private void checkResumeStatus(Resume resume) {
-        if (!resume.getStatus().equals(ResumeStatus.판매승인)) {
+        if (!resume.getStatus().equals(ResumeStatus.approved)) {
             throw new BadRequestException(ErrorCode.RESUME_STATUS_EXCEPTION);
         }
     }
