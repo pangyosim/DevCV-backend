@@ -16,6 +16,7 @@ public enum ErrorCode {
     FILE_NAME_LENGTH_EXCEEDED("파일 이름 길이 제한(50자)을 초과했습니다."),
     RESUME_STATUS_EXCEPTION("올바르지 않은 이력서 상태입니다."),
     ORDER_INFO_MISMATCH_EXCEPTION("주문 정보가 일치하지 않습니다."),
+    INVALID_ENUM_EXCEPTION("올바르지 않은 enum 입니다."),
 
     //401
     UNAUTHORIZED_ERROR("자격증명에 실패하였습니다."),

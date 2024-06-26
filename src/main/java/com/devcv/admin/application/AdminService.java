@@ -23,7 +23,8 @@ public class AdminService {
     private final AdminResumeRepository adminResumeRepository;
 
     public Event createEvent(EventRequest eventRequest) {
-        Event event = Event.of(eventRequest.name(), eventRequest.startDate(), eventRequest.endDate());
+        Event event = Event.of(eventRequest.name(), eventRequest.eventCategory(), eventRequest.startDate()
+                , eventRequest.endDate());
         return eventRepository.save(event);
     }
 
