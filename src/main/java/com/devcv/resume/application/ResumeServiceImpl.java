@@ -7,6 +7,7 @@ import com.devcv.member.repository.MemberRepository;
 import com.devcv.resume.domain.Category;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.ResumeImage;
+import com.devcv.resume.domain.ResumeLog;
 import com.devcv.resume.domain.dto.*;
 import com.devcv.resume.domain.enumtype.CompanyType;
 import com.devcv.resume.domain.enumtype.ResumeStatus;
@@ -14,6 +15,7 @@ import com.devcv.resume.domain.enumtype.StackType;
 import com.devcv.resume.exception.*;
 import com.devcv.resume.infrastructure.S3Uploader;
 import com.devcv.resume.repository.CategoryRepository;
+import com.devcv.resume.repository.ResumeLogRepository;
 import com.devcv.resume.repository.ResumeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +26,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -39,11 +42,18 @@ public class ResumeServiceImpl implements ResumeService {
 
     private final ResumeRepository resumeRepository;
     private final CategoryRepository categoryRepository;
+    private final ResumeLogRepository resumeLogRepository;
     private final MemberRepository memberRepository;
     private final S3Uploader s3Uploader;
 
-    // 최대 이미지 파일 크기, 20MB
-    private static final long MAX_IMAGE_SIZE = 20 * 1024 * 1024;
+    private void saveResumeLog(Resume resume, ResumeStatus status) {
+        ResumeLog history = ResumeLog.builder()
+                .resumeId(resume.getResumeId())
+                .title(resume.getTitle())
+                .status(status)
+                .build();
+        resumeLogRepository.save(history);
+    }
 
 
     // 이력서 목록 조회
@@ -72,7 +82,7 @@ public class ResumeServiceImpl implements ResumeService {
                     Resume resume = (Resume) objects[0];
                     Double averageGrade = (Double) objects[1];
                     Long reviewCount = (Long) objects[2];
-                    return ResumeDto.entityToDto(resume, averageGrade, reviewCount);
+                    return ResumeDto.entityToDto(resume, averageGrade, reviewCount, false);
                 })
                 .collect(Collectors.toList());
 
@@ -107,7 +117,7 @@ public class ResumeServiceImpl implements ResumeService {
         Double averageGrade = (Double) result.get(0)[1];
         Long reviewCount = (Long) result.get(0)[2];
 
-        return entityToDto(resume, averageGrade, reviewCount);
+        return entityToDto(resume, averageGrade, reviewCount, false);
     }
 
     // 회원별 이력서 조회
@@ -183,8 +193,8 @@ public class ResumeServiceImpl implements ResumeService {
         }
 
          //상태 설정
-         resume.setStatus(ResumeStatus.승인대기);
-
+         resume.setStatus(ResumeStatus.pending);
+         saveResumeLog(resume, ResumeStatus.pending);
 
         return resumeRepository.save(resume);
 
@@ -212,13 +222,14 @@ public class ResumeServiceImpl implements ResumeService {
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
-            if (resume.getStatus() == ResumeStatus.승인대기) {
+            if (resume.getStatus() == ResumeStatus.pending) {
                 throw new ResumeStatusException(ErrorCode.RESUME_NOT_APPROVAL);
             }
-            if (resume.getStatus() == ResumeStatus.삭제) {
+            if (resume.getStatus() == ResumeStatus.deleted) {
                 throw new ResumeNotExistException(ErrorCode.RESUME_NOT_EXIST);
             }
-            resume.setStatus(ResumeStatus.등록완료);
+            resume.setStatus(ResumeStatus.regcompleted);
+            saveResumeLog(resume, ResumeStatus.regcompleted);
             return resumeRepository.save(resume);
         } else {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
@@ -247,7 +258,7 @@ public class ResumeServiceImpl implements ResumeService {
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
 
-            if (resume.getStatus() == ResumeStatus.삭제) {
+            if (resume.getStatus() == ResumeStatus.deleted) {
                 throw new ResumeNotExistException(ErrorCode.RESUME_NOT_EXIST);
             }
 
@@ -255,13 +266,15 @@ public class ResumeServiceImpl implements ResumeService {
                     resumeDto.getStack() == null || resumeDto.getCategory() == null) {
                 throw new HttpMessageNotReadableException(ErrorCode.EMPTY_VALUE_ERROR);
             }
-
             resume.changeTitle(resumeDto.getTitle());
             resume.changeContent(resumeDto.getContent());
             resume.changePrice(resumeDto.getPrice());
             resume.changeStack(resumeDto.getStack());
-            resume.setStatus(ResumeStatus.승인대기);
+            resume.setStatus(ResumeStatus.pending);
 
+
+            // 현재 상태를 로그로 저장
+            saveResumeLog(resume, resume.getStatus());
 
             // Category 저장
             CategoryDto categoryDto = resumeDto.getCategory();
@@ -336,13 +349,14 @@ public class ResumeServiceImpl implements ResumeService {
 
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
-            resume.setStatus(ResumeStatus.삭제);
+            resume.setStatus(ResumeStatus.deleted);
             if (!resume.getMember().getMemberId().equals(memberId)) {
                 log.info("MemberId: " + resume.getMember().getMemberId());
                 throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
             }
              //추후 관리자 쪽에서 delFlag 수정
             resumeRepository.updateToDelete(resumeId, true);
+            saveResumeLog(resume, ResumeStatus.deleted);
             return resumeRepository.save(resume);
         } else {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
@@ -351,6 +365,7 @@ public class ResumeServiceImpl implements ResumeService {
 
     @Override
     public int updateStatus(Long resumeId, ResumeStatus resumeStatus) {
+        saveResumeLog(findByResumeId(resumeId), resumeStatus);
         return resumeRepository.updateByresumeId(resumeId,resumeStatus);
     }
 }

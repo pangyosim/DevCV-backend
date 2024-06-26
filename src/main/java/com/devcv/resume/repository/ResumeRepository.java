@@ -59,24 +59,24 @@ public interface ResumeRepository extends JpaRepository<Resume, Long> {
     // 상세 이력서 조회
     @Query("SELECT r, AVG(COALESCE(rv.grade, 0)), COUNT(rv) " +
             "FROM Resume r LEFT JOIN Review rv ON rv.resume = r " +
-            "WHERE r.resumeId = :resumeId AND r.status = '등록완료' " +
+            "WHERE r.resumeId = :resumeId AND r.status = 'regCompleted' " +
             "GROUP BY r")
     List<Object[]> findByIdAndStatus(Long resumeId);
 
     //----------------등록완료 default인 메서드 start-----------------
     default Page<Object[]> findApprovedResumes(Pageable pageable) {
-        return findByStatus(ResumeStatus.등록완료, pageable);
+        return findByStatus(ResumeStatus.regcompleted, pageable);
     }
     default Page<Object[]> findApprovedResumesByStackTypeAndCompanyType(StackType stackType, CompanyType companyType, Pageable pageable) {
-        return findByCategory_StackTypeAndCategory_CompanyTypeAndStatus(stackType, companyType, ResumeStatus.등록완료, pageable);
+        return findByCategory_StackTypeAndCategory_CompanyTypeAndStatus(stackType, companyType, ResumeStatus.regcompleted, pageable);
     }
 
     default Page<Object[]> findApprovedResumesByStackType(StackType stackType, Pageable pageable) {
-        return findByCategory_StackTypeAndStatus(stackType, ResumeStatus.등록완료, pageable);
+        return findByCategory_StackTypeAndStatus(stackType, ResumeStatus.regcompleted, pageable);
     }
 
     default Page<Object[]> findApprovedResumesByCompanyType(CompanyType companyType, Pageable pageable) {
-        return findByCategory_CompanyTypeAndStatus(companyType, ResumeStatus.등록완료, pageable);
+        return findByCategory_CompanyTypeAndStatus(companyType, ResumeStatus.regcompleted, pageable);
     }
 
     //----------------판매승인이 default인 메서드 end-----------------

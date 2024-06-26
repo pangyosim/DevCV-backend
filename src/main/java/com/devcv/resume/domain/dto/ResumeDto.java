@@ -4,6 +4,7 @@ package com.devcv.resume.domain.dto;
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.ResumeImage;
 import com.devcv.resume.domain.enumtype.ResumeStatus;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.*;
 
 import java.util.List;
@@ -19,6 +20,7 @@ public class ResumeDto {
     private int price;
     private String title;
     private String content;
+    @JsonInclude(JsonInclude.Include.NON_NULL)
     private String resumeFilePath;
     private ResumeStatus status;
     private List<String> stack;
@@ -29,7 +31,7 @@ public class ResumeDto {
     private String sellerEmail;
 
     // 평균 별점, 구매후기 개수 필드 추가
-    private Double averageGrade;
+    private int averageGrade;
     private Long reviewCount;
 
     public static ResumeDto from(Resume resume) {
@@ -46,18 +48,18 @@ public class ResumeDto {
                 resume.getMember().getMemberId(),
                 resume.getMember().getNickName(),
                 resume.getMember().getEmail(),
-                null,
+                0,
                 null
         );
     }
 
-    public static ResumeDto entityToDto(Resume resume, Double averageGrade, Long reviewCount) {
+    public static ResumeDto entityToDto(Resume resume, Double averageGrade, Long reviewCount, boolean includeFilePath) {
         ResumeDto resumeDto = ResumeDto.builder()
                 .resumeId(resume.getResumeId())
                 .price(resume.getPrice())
                 .title(resume.getTitle())
                 .content(resume.getContent())
-                .resumeFilePath(resume.getResumeFilePath())
+                .resumeFilePath(includeFilePath ? resume.getResumeFilePath() : null)
                 .status(resume.getStatus())
                 .stack(resume.getStack())
                 .memberId(resume.getMember().getMemberId())
@@ -65,9 +67,9 @@ public class ResumeDto {
                 .sellerEmail(resume.getMember().getEmail())
                 .imageList(resume.getImageList())
                 .category(CategoryDto.from(resume.getCategory()))
+                .averageGrade(averageGrade != null ? averageGrade.intValue() : 0)
                 .build();
 
-        resumeDto.setAverageGrade(averageGrade);
         resumeDto.setReviewCount(reviewCount);
 
         return resumeDto;
