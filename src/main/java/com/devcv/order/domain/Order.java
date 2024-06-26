@@ -2,54 +2,68 @@ package com.devcv.order.domain;
 
 import com.devcv.common.domain.BaseTimeEntity;
 import com.devcv.member.domain.Member;
-import com.devcv.resume.domain.Resume;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.List;
 
 @Entity
 @Getter
 @Table(name = "tb_order")
 @Builder(toBuilder = true)
-@AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Order extends BaseTimeEntity {
 
     @Id
-    @Column(unique = true)
-    private String orderId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long orderId;
 
-    @ManyToOne
+    @Column(unique = true, nullable = false)
+    private String orderNumber;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "member_id", nullable = false)
     private Member member;
 
-    @OneToOne
-    private Resume resume;
-
     @Column
-    private int totalAmount;
+    private Long totalPrice;
 
-    @Column
-    private String sellerName;
+    @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderResume> orderResumeList;
 
-    @Column
-    @Enumerated(value = EnumType.STRING)
-    private PayType payType;
-
-    @Column
+    @Column(nullable = false)
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
 
-    public Order(Member member, Resume resume) {
-        this.orderId = OrderNumberGenerator.generateOrderNumber();
+//    public Order(Member member) {
+//        this.orderId = null;
+//        this.orderNumber = OrderNumberGenerator.generateOrderNumber();
+//        this.member = member;
+//        this.totalPrice = 0L;
+//        this.orderStatus = OrderStatus.PENDING;
+//    }
+
+    public Order(Long orderId, String orderNumber, Member member, Long totalPrice, List<OrderResume> orderResumeList,
+                 OrderStatus orderStatus) {
+        this.orderId = orderId;
+        this.orderNumber = orderNumber;
         this.member = member;
-        this.resume = resume;
-        this.totalAmount = resume.getPrice();
-        this.sellerName = resume.getMember().getMemberName();
-        this.payType = PayType.POINT;
-        this.orderStatus = OrderStatus.CREATED;
+        this.totalPrice = totalPrice;
+        this.orderResumeList = orderResumeList;
+        this.orderStatus = orderStatus;
     }
 
-    public static Order of(Member member, Resume resume) {
-        // 검증?
-        return new Order(member, resume);
+    public void updateOrderResumeList(List<OrderResume> orderResumeList) {
+        this.orderResumeList = orderResumeList;
+        this.totalPrice = calculateTotalPrice(orderResumeList);
+    }
+
+    public static Order init(Member member) {
+        return new Order(null, OrderNumberGenerator.generateOrderNumber(), member, 0L,
+                null, OrderStatus.PENDING);
+    }
+
+    private Long calculateTotalPrice(List<OrderResume> resumeList) {
+        return resumeList.stream().mapToLong(OrderResume::getPrice).sum();
     }
 }

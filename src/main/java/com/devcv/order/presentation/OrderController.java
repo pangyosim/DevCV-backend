@@ -6,10 +6,7 @@ import com.devcv.member.application.MemberService;
 import com.devcv.member.domain.Member;
 import com.devcv.order.application.OrderService;
 import com.devcv.order.domain.Order;
-import com.devcv.order.domain.dto.OrderListResponse;
-import com.devcv.order.domain.dto.OrderRequest;
-import com.devcv.order.domain.dto.OrderResponse;
-import com.devcv.order.domain.dto.OrderSheet;
+import com.devcv.order.domain.dto.*;
 import com.devcv.resume.application.ResumeService;
 import com.devcv.resume.domain.Resume;
 import lombok.RequiredArgsConstructor;
@@ -38,19 +35,18 @@ public class OrderController {
 
     @PostMapping("/orders")
     public ResponseEntity<Void> createOrder(@AuthenticationPrincipal UserDetails userDetails,
-                                            @RequestBody OrderRequest orderRequest) {
+                                            @RequestBody CartOrderRequest cartOrderRequest) {
         Member member = extractMember(userDetails);
-        Resume resume = resumeService.findByResumeId(orderRequest.resumeId());
-
-        Order order = orderService.createOrder(member, resume, orderRequest);
-        return ResponseEntity.created(URI.create(order.getOrderId())).build();
+        Order order = orderService.createOrder(member, cartOrderRequest);
+        return ResponseEntity.created(URI.create(String.valueOf(order.getOrderId()))).build();
     }
 
     @GetMapping("/orders/{order-id}")
     public ResponseEntity<OrderResponse> getOrderResponse(@AuthenticationPrincipal UserDetails userDetails,
-                                                          @PathVariable("order-id") String orderId) {
+                                                          @PathVariable("order-id") Long orderId) {
         Member member = extractMember(userDetails);
-        return ResponseEntity.ok().body(OrderResponse.from(orderService.getOrderByIdAndMember(orderId, member)));
+        OrderResponse response = orderService.getOrderResponse(orderId, member);
+        return ResponseEntity.ok().body(response);
     }
 
     @GetMapping("/members/{member-id}/orders")
