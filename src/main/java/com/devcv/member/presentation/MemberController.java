@@ -1,6 +1,8 @@
 package com.devcv.member.presentation;
 
 import com.devcv.auth.application.AuthService;
+import com.devcv.auth.jwt.JwtProvider;
+import com.devcv.auth.jwt.JwtTokenDto;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.common.exception.InternalServerException;
 import com.devcv.common.exception.UnAuthorizedException;
@@ -46,6 +48,7 @@ public class MemberController {
     private final MailService mailService;
     private final AuthService authService;
     private final MemberLogRepository memberLogRepository;
+    private final JwtProvider jwtProvider;
     @Value("${keys.social_password}")
     private String socialPassword;
     public static final String AUTHORIZATION_HEADER = "Authorization";
@@ -55,7 +58,10 @@ public class MemberController {
     //----------- login start -----------
     @PostMapping("/login")
     public ResponseEntity<MemberLoginResponse> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest) {
-        MemberLoginResponse resultResponse = authService.login(memberLoginRequest);
+        // JWT 복호화
+        MemberLoginRequest memberLoginRequestAuth = memberLoginRequest.toBuilder()
+                .password(String.valueOf(jwtProvider.parseClaims(memberLoginRequest.getPassword()).get("password"))).build();
+        MemberLoginResponse resultResponse = authService.login(memberLoginRequestAuth);
         HttpHeaders header = new HttpHeaders();
         header.add(AUTHORIZATION_HEADER,BEARER_PREFIX + resultResponse.getAccessToken());
         header.add(AUTHORIZATION_REFRESH_HEADER,BEARER_PREFIX+ resultResponse.getRefreshToken());
@@ -66,7 +72,10 @@ public class MemberController {
     //----------- signup start -----------
     @PostMapping("/signup")
     public ResponseEntity<String> signup(@RequestBody MemberSignUpRequest memberSignUpRequest) {
-        authService.signup(memberSignUpRequest);
+        // JWT 복호화
+        MemberSignUpRequest memberSignUpRequestAuth = memberSignUpRequest.toBuilder()
+                .password(String.valueOf(jwtProvider.parseClaims(memberSignUpRequest.getPassword()).get("password"))).build();
+        authService.signup(memberSignUpRequestAuth);
         return ResponseEntity.ok().build();
     }
     //----------- mail start -----------
@@ -169,13 +178,13 @@ public class MemberController {
     }
     //----------- find ID/PW end -----------
 
-    //----------- modi member start -----------
-    // 비밀번호 변경 modipw
-    @PutMapping("/{member-id}/{password}")
-    public ResponseEntity<String> modiPassword(@PathVariable("member-id") Long memberId, @PathVariable String password){
+    //----------- modify member start -----------
+    // 회원 단건 비밀번호 변경
+    @PatchMapping("/{member-id}/password")
+    public ResponseEntity<String> modiPassword(@PathVariable("member-id") Long memberId, @RequestBody MemberModifyPasswordRequest memberModifyPasswordRequest){
         // NULL CHECK
         try {
-            if(password == null || memberId == null){
+            if(memberModifyPasswordRequest.getPassword() == null || memberId == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
         } catch (Exception e) {
@@ -190,7 +199,10 @@ public class MemberController {
                     throw new SocialMemberUpdateException(ErrorCode.SOCIAL_UPDATE_ERROR);
                 }
                 HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-                int resultUpdatePassword = memberService.updatePasswordBymemberId(passwordEncoder.encode(password)
+                // JWT 복호화
+                MemberModifyPasswordRequest memberModifyPasswordRequestAuth = memberModifyPasswordRequest.toBuilder()
+                        .password(String.valueOf(jwtProvider.parseClaims(memberModifyPasswordRequest.getPassword()).get("password"))).build();
+                int resultUpdatePassword = memberService.updatePasswordBymemberId(passwordEncoder.encode(memberModifyPasswordRequestAuth.getPassword())
                         ,memberId);
                 memberLogRepository.save(MemberLog.builder().memberId(findMemberBymemberId.getMemberId()).logIp(getIp(request))
                         .logEmail(findMemberBymemberId.getEmail()).logAgent(request.getHeader("user-agent")).logUpdateDate(LocalDateTime.now()).build());
@@ -211,7 +223,7 @@ public class MemberController {
         }
     }
     // 회원정보 단건 조회/수정
-    @PostMapping("{member-id}")
+    @GetMapping("{member-id}")
     public ResponseEntity<MemberMypageResponse> getMember(@PathVariable("member-id") Long memberId) {
         try {
             return ResponseEntity.ok().body(MemberMypageResponse.from(memberService.findMemberBymemberId(memberId)));
@@ -221,13 +233,13 @@ public class MemberController {
         }
     }
     @PutMapping("/{member-id}")
-    public ResponseEntity<String> modiMember(@RequestBody MemberModiAllRequest memberModiAllRequest, @PathVariable("member-id") Long memberId) {
+    public ResponseEntity<String> modiMember(@RequestBody MemberModifyAllRequest memberModifyAllRequest, @PathVariable("member-id") Long memberId) {
         // NULL CHECK
         try {
-            if(memberModiAllRequest.getJob() == null || memberModiAllRequest.getAddress() == null || memberModiAllRequest.getStack() == null
-                    || memberModiAllRequest.getEmail() == null || memberModiAllRequest.getMemberName() == null || memberModiAllRequest.getSocial() == null
-                    || memberModiAllRequest.getCompany() == null || memberModiAllRequest.getPhone() == null || memberId == null
-                    || memberModiAllRequest.getNickName() == null || memberModiAllRequest.getPassword() == null){
+            if(memberModifyAllRequest.getJob() == null || memberModifyAllRequest.getAddress() == null || memberModifyAllRequest.getStack() == null
+                    || memberModifyAllRequest.getEmail() == null || memberModifyAllRequest.getMemberName() == null || memberModifyAllRequest.getSocial() == null
+                    || memberModifyAllRequest.getCompany() == null || memberModifyAllRequest.getPhone() == null || memberId == null
+                    || memberModifyAllRequest.getNickName() == null || memberModifyAllRequest.getPassword() == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
         } catch (NotNullException e){
@@ -238,21 +250,26 @@ public class MemberController {
             // memberId로 Member 찾기
             Member findMemberBymemberId = memberService.findMemberBymemberId(memberId);
             if(findMemberBymemberId != null){
-                if(!findMemberBymemberId.getSocial().name().equals(memberModiAllRequest.getSocial().name())){
+                if(!findMemberBymemberId.getSocial().name().equals(memberModifyAllRequest.getSocial().name())){
                     throw new SocialDataException(ErrorCode.SOCIAL_ERROR);
                 }
                 // 수정할 이메일이 이미 존재할 떄 (가입한 아이디 제외)
-                Member findMemberBymemberEmail = memberService.findMemberByEmail(memberModiAllRequest.getEmail());
+                Member findMemberBymemberEmail = memberService.findMemberByEmail(memberModifyAllRequest.getEmail());
                 if(findMemberBymemberEmail != null && !findMemberBymemberId.getEmail().equals(findMemberBymemberEmail.getEmail())){
                     throw new DuplicationException(ErrorCode.DUPLICATE_ERROR);
                 }
-                if( memberModiAllRequest.getSocial().name().equals(SocialType.normal.name())) {
+                if( memberModifyAllRequest.getSocial().name().equals(SocialType.normal.name())) {
                     HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-                    int resultUpdateMember = memberService.updateMemberBymemberId(memberModiAllRequest.getMemberName(), memberModiAllRequest.getEmail(),
-                            passwordEncoder.encode(memberModiAllRequest.getSocial().name().equals(SocialType.normal.name()) ? memberModiAllRequest.getPassword() : socialPassword),
-                            memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
-                            memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
-                            String.join(",", memberModiAllRequest.getStack()), memberId);
+                    // JWT 복호화
+                    MemberModifyAllRequest memberModifyAllRequestAuth = memberModifyAllRequest.toBuilder()
+                            .password(String.valueOf(jwtProvider.parseClaims(memberModifyAllRequest.getPassword()).get("password"))).build();
+                    // 일반 회원 수정
+                    // 수정 가능 : 이름, 비밀번호, 닉네임, 핸드폰, 주소, 기업, 직업, 스택
+                    int resultUpdateMember = memberService.updateMemberBymemberId(memberModifyAllRequestAuth.getMemberName(), memberModifyAllRequestAuth.getEmail(),
+                            passwordEncoder.encode(memberModifyAllRequestAuth.getSocial().name().equals(SocialType.normal.name()) ? memberModifyAllRequestAuth.getPassword() : socialPassword),
+                            memberModifyAllRequestAuth.getNickName(), memberModifyAllRequestAuth.getPhone(), memberModifyAllRequestAuth.getAddress(),
+                            memberModifyAllRequestAuth.getCompany().name(), memberModifyAllRequestAuth.getJob().name(),
+                            String.join(",", memberModifyAllRequestAuth.getStack()), memberId);
                     memberLogRepository.save(MemberLog.builder().memberId(findMemberBymemberId.getMemberId()).logIp(getIp(request))
                             .logEmail(findMemberBymemberId.getEmail()).logAgent(request.getHeader("user-agent")).logUpdateDate(LocalDateTime.now()).build());
                     if (resultUpdateMember == 1) { // 일반 멤버 수정성공.
@@ -262,10 +279,13 @@ public class MemberController {
                     }
                 } else {
                     HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-                    int resultUpdateSocialMember = memberService.updateSocialMemberBymemberId(memberModiAllRequest.getMemberName(),
-                            memberModiAllRequest.getNickName(), memberModiAllRequest.getPhone(), memberModiAllRequest.getAddress(),
-                            memberModiAllRequest.getCompany().name(), memberModiAllRequest.getJob().name(),
-                            String.join(",", memberModiAllRequest.getStack()), memberId);
+                    // 소셜 회원 수정
+                    // 수정 가능 : 이름, 닉네임, 핸드폰, 주소, 기업, 직업, 스택
+                    // 수정 불가 : 이메일, 비밀번호
+                    int resultUpdateSocialMember = memberService.updateSocialMemberBymemberId(memberModifyAllRequest.getMemberName(),
+                            memberModifyAllRequest.getNickName(), memberModifyAllRequest.getPhone(), memberModifyAllRequest.getAddress(),
+                            memberModifyAllRequest.getCompany().name(), memberModifyAllRequest.getJob().name(),
+                            String.join(",", memberModifyAllRequest.getStack()), memberId);
                     memberLogRepository.save(MemberLog.builder().memberId(findMemberBymemberId.getMemberId()).logIp(getIp(request))
                             .logEmail(findMemberBymemberId.getEmail()).logAgent(request.getHeader("user-agent")).logUpdateDate(LocalDateTime.now()).build());
                     if (resultUpdateSocialMember == 1) { // 소셜 멤버 수정성공.
@@ -332,6 +352,7 @@ public class MemberController {
             MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
             HttpHeaders header = new HttpHeaders();
             header.add("Authorization","Bearer " + memberLoginResponse.getAccessToken());
+            header.add("RefreshToken","Bearer " + memberLoginResponse.getRefreshToken());
             return ResponseEntity.ok().headers(header).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
@@ -374,10 +395,12 @@ public class MemberController {
                 throw new SocialLoginException(ErrorCode.SOCIAL_LOGIN_ERROR);
             }
             // 로그인 진행.
-            MemberLoginRequest memberLoginRequest = MemberLoginRequest.builder().email(googleProfile.getEmail()).password(socialPassword).build();
+            MemberLoginRequest memberLoginRequest = MemberLoginRequest.builder()
+                    .email(googleProfile.getEmail()).password(socialPassword).build();
             MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
             HttpHeaders header = new HttpHeaders();
             header.add("Authorization","Bearer " + memberLoginResponse.getAccessToken());
+            header.add("RefreshToken","Bearer " + memberLoginResponse.getRefreshToken());
             return ResponseEntity.ok().headers(header).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
@@ -411,5 +434,10 @@ public class MemberController {
         return ip;
     }
     //----------- GetClientIP end -----------
+
+    @GetMapping("/refresh-token")
+    public ResponseEntity<String> refreshAccessToken(){
+        return ResponseEntity.ok().build();
+    }
 
 }

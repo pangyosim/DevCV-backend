@@ -183,7 +183,7 @@ public class ResumeServiceImpl implements ResumeService {
         }
 
          //상태 설정
-         resume.setStatus(ResumeStatus.승인대기);
+         resume.setStatus(ResumeStatus.pending);
 
 
         return resumeRepository.save(resume);
@@ -212,13 +212,13 @@ public class ResumeServiceImpl implements ResumeService {
         Optional<Resume> resumeOpt = resumeRepository.findByIdAndMemberId(resumeId, memberId);
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
-            if (resume.getStatus() == ResumeStatus.승인대기) {
+            if (resume.getStatus() == ResumeStatus.pending) {
                 throw new ResumeStatusException(ErrorCode.RESUME_NOT_APPROVAL);
             }
-            if (resume.getStatus() == ResumeStatus.삭제) {
+            if (resume.getStatus() == ResumeStatus.deleted) {
                 throw new ResumeNotExistException(ErrorCode.RESUME_NOT_EXIST);
             }
-            resume.setStatus(ResumeStatus.등록완료);
+            resume.setStatus(ResumeStatus.regcompleted);
             return resumeRepository.save(resume);
         } else {
             throw new ResumeNotFoundException(ErrorCode.RESUME_NOT_FOUND);
@@ -247,7 +247,7 @@ public class ResumeServiceImpl implements ResumeService {
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
 
-            if (resume.getStatus() == ResumeStatus.삭제) {
+            if (resume.getStatus() == ResumeStatus.deleted) {
                 throw new ResumeNotExistException(ErrorCode.RESUME_NOT_EXIST);
             }
 
@@ -260,7 +260,7 @@ public class ResumeServiceImpl implements ResumeService {
             resume.changeContent(resumeDto.getContent());
             resume.changePrice(resumeDto.getPrice());
             resume.changeStack(resumeDto.getStack());
-            resume.setStatus(ResumeStatus.승인대기);
+            resume.setStatus(ResumeStatus.pending);
 
 
             // Category 저장
@@ -336,7 +336,7 @@ public class ResumeServiceImpl implements ResumeService {
 
         if (resumeOpt.isPresent()) {
             Resume resume = resumeOpt.get();
-            resume.setStatus(ResumeStatus.삭제);
+            resume.setStatus(ResumeStatus.deleted);
             if (!resume.getMember().getMemberId().equals(memberId)) {
                 log.info("MemberId: " + resume.getMember().getMemberId());
                 throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);

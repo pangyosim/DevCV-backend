@@ -24,32 +24,11 @@ import java.net.URI;
 @AllArgsConstructor
 public class AdminController {
 
-    public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String AUTHORIZATION_REFRESH_HEADER = "RefreshToken";
-    public static final String BEARER_PREFIX = "Bearer ";
-
-    private final AuthService authService;
     private final ResumeService resumeService;
     private final AdminService adminService;
 
-
-    //----------- login start -----------
-    @PostMapping("/login")
-    public ResponseEntity<MemberLoginResponse> adminLogin(@RequestBody MemberLoginRequest memberLoginRequest) {
-        try {
-            MemberLoginResponse resultResponse = authService.login(memberLoginRequest);
-            HttpHeaders header = new HttpHeaders();
-            header.add(AUTHORIZATION_HEADER,BEARER_PREFIX + resultResponse.getAccessToken());
-            header.add(AUTHORIZATION_REFRESH_HEADER,BEARER_PREFIX+ resultResponse.getRefreshToken());
-            return ResponseEntity.ok().headers(header).body(resultResponse);
-        } catch (JwtInvalidSignException e) {
-            throw new JwtInvalidSignException(ErrorCode.JWT_INVALID_SIGN_ERROR);
-        }
-    }
-    //----------- login end -----------
-
-    @PutMapping("/resumes/{resumeId}/{status}")
-    public ResponseEntity<?> adminUpdateResumeStatus(@PathVariable Long resumeId,@PathVariable ResumeStatus status) {
+    @PatchMapping("/resumes/{resumeId}/{status}")
+    public ResponseEntity<String> adminUpdateResumeStatus(@PathVariable Long resumeId,@PathVariable ResumeStatus status) {
         resumeService.updateStatus(resumeId, status);
         return ResponseEntity.ok().build();
     }

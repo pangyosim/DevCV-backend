@@ -10,7 +10,7 @@ import java.util.Collections;
 
 @Getter
 @AllArgsConstructor
-@Builder
+@Builder(toBuilder = true)
 public class MemberLoginRequest {
     private String email;
     private String password;
