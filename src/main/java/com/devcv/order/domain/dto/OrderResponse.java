@@ -9,11 +9,11 @@ import java.time.LocalDateTime;
 
 public record OrderResponse(String orderId,
                             String resumeTitle,
-//                            String thumbnail,
                             int totalAmount,
                             OrderStatus orderStatus,
                             LocalDateTime createdDate,
-                            PayType payType) {
+                            PayType payType,
+                            String sellerName) {
 
     public static OrderResponse from(Order order) {
         return new OrderResponse(
@@ -22,6 +22,7 @@ public record OrderResponse(String orderId,
                 order.getTotalAmount(),
                 order.getOrderStatus(),
                 order.getCreatedDate(),
-                order.getPayType());
+                order.getPayType(),
+                order.getSellerName());
     }
 }

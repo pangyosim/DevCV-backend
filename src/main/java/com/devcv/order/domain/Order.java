@@ -28,6 +28,9 @@ public class Order extends BaseTimeEntity {
     private int totalAmount;
 
     @Column
+    private String sellerName;
+
+    @Column
     @Enumerated(value = EnumType.STRING)
     private PayType payType;
 
@@ -40,6 +43,7 @@ public class Order extends BaseTimeEntity {
         this.member = member;
         this.resume = resume;
         this.totalAmount = resume.getPrice();
+        this.sellerName = resume.getMember().getMemberName();
         this.payType = PayType.POINT;
         this.orderStatus = OrderStatus.CREATED;
     }
