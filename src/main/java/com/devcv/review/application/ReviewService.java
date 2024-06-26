@@ -18,7 +18,7 @@ import java.util.stream.Collectors;
 public interface ReviewService {
 
     // 이력서의 모든 구매후기 조회
-    PaginatedReviewResponse getListOfResume(Long resumeId, int page, int  size);
+    PaginatedReviewResponse getListOfResume(Long resumeId, int page, int  size, String sort);
 
     // 이력서 구매후기 등록
     Review register(Long resumeId, Long memberId, ReviewDto resumeReviewDto);
@@ -54,6 +54,7 @@ public interface ReviewService {
                 .orderId(resumeReview.getOrder().getOrderId())
                 .reviewerNickname(resumeReview.getMember().getNickName())
                 .sellerNickname(resumeReview.getResume().getMember().getNickName())
+                .sellerEmail(resumeReview.getResume().getMember().getEmail())
                 .grade(resumeReview.getGrade())
                 .text(resumeReview.getText())
                 .createdDate(resumeReview.getCreatedDate())
