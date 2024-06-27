@@ -9,6 +9,7 @@ import com.devcv.order.domain.Order;
 import com.devcv.order.domain.dto.*;
 import com.devcv.resume.application.ResumeService;
 import com.devcv.resume.domain.Resume;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -35,7 +36,7 @@ public class OrderController {
 
     @PostMapping("/orders")
     public ResponseEntity<Void> createOrder(@AuthenticationPrincipal UserDetails userDetails,
-                                            @RequestBody CartOrderRequest cartOrderRequest) {
+                                            @RequestBody @Valid CartOrderRequest cartOrderRequest) {
         Member member = extractMember(userDetails);
         Order order = orderService.createOrder(member, cartOrderRequest);
         return ResponseEntity.created(URI.create(String.valueOf(order.getOrderId()))).build();

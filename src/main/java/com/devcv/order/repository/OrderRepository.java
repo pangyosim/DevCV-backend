@@ -20,4 +20,7 @@ public interface OrderRepository extends JpaRepository<Order, String> {
     Optional<Order> findByMemberIdAndResumeId(@Param("memberId") Long memberId, @Param("resumeId") Long resumeId);
 
     List<Order> findOrderListByMember(Member member);
+
+    @Query("SELECT orderResume.resume.resumeId FROM OrderResume orderResume INNER JOIN orderResume.order o WHERE o.member.memberId = :memberId")
+    List<Long> getResumeIdsByMemberId(@Param("memberId") Long memberId);
 }

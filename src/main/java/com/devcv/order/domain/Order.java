@@ -35,14 +35,6 @@ public class Order extends BaseTimeEntity {
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
 
-//    public Order(Member member) {
-//        this.orderId = null;
-//        this.orderNumber = OrderNumberGenerator.generateOrderNumber();
-//        this.member = member;
-//        this.totalPrice = 0L;
-//        this.orderStatus = OrderStatus.PENDING;
-//    }
-
     public Order(Long orderId, String orderNumber, Member member, Long totalPrice, List<OrderResume> orderResumeList,
                  OrderStatus orderStatus) {
         this.orderId = orderId;

@@ -1,5 +1,7 @@
 package com.devcv.order.domain.dto;
 
-public record CartDto(Long resumeId, Long price) {
+import jakarta.validation.constraints.NotNull;
+
+public record CartDto(@NotNull Long resumeId, @NotNull Long price) {
 
 }

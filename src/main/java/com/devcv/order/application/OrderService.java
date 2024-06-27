@@ -1,7 +1,6 @@
 package com.devcv.order.application;
 
 import com.devcv.common.exception.ErrorCode;
-import com.devcv.common.exception.ForbiddenException;
 import com.devcv.common.exception.BadRequestException;
 import com.devcv.common.exception.NotFoundException;
 import com.devcv.member.domain.Member;
@@ -22,7 +21,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -43,19 +41,15 @@ public class OrderService {
 
     @Transactional
     public Order createOrder(Member member, CartOrderRequest cartOrderRequest) {
-//        compareMemberId(member, orderRequest.memberId());
-//        compareResumeInfo(resume, orderRequest);
-//        checkResumeStatus(resume);
-//        checkOrderExists(member, resume);
-//        preventSelfPurchase(member, resume);
 //        checkPoint(member, resume);
-
+        List<Long> existingResumeIdList = orderRepository.getResumeIdsByMemberId(member.getMemberId());
         Order order = orderRepository.save(Order.init(member));
 
         List<OrderResume> orderResumeList = new ArrayList<>();
         for (CartDto dto : cartOrderRequest.cartList()) {
             Resume resume = resumeRepository.findByResumeId(dto.resumeId())
                     .orElseThrow(() -> new NotFoundException(ErrorCode.RESUME_NOT_FOUND));
+            validateResume(resume, dto, existingResumeIdList);
             OrderResume orderResume = OrderResume.of(order, resume);
             orderResumeList.add(orderResume);
         }
@@ -66,17 +60,23 @@ public class OrderService {
         return order;
     }
 
-    private void compareMemberId(Member member, Long requestMemberId) {
-        if (!member.getMemberId().equals(requestMemberId)) {
-            throw new BadRequestException(ErrorCode.ORDER_INFO_MISMATCH_EXCEPTION);
+    private void validateResume(Resume resume, CartDto dto, List<Long> existingResumeIdList) {
+        checkResumeStatus(resume);
+        validateCartDtoWithOrigin(resume, dto);
+        checkDuplicate(resume, existingResumeIdList);
+    }
+
+    private void checkResumeStatus(Resume resume) {
+        if (!resume.getStatus().equals(ResumeStatus.approved)) {
+            throw new BadRequestException(ErrorCode.RESUME_STATUS_EXCEPTION);
         }
     }
 
-    private void compareResumeInfo(Resume origin, OrderRequest request) {
-        if (!origin.getResumeId().equals(request.resumeId())) {
+    private void validateCartDtoWithOrigin(Resume origin, CartDto dto) {
+        if (!origin.getResumeId().equals(dto.resumeId())) {
             throw new BadRequestException(ErrorCode.ORDER_INFO_MISMATCH_EXCEPTION);
         }
-        if (origin.getPrice() != request.price()) {
+        if (origin.getPrice() != dto.price()) {
             throw new BadRequestException(ErrorCode.ORDER_INFO_MISMATCH_EXCEPTION);
         }
     }
@@ -89,27 +89,11 @@ public class OrderService {
         }
     }
 
-    private void checkResumeStatus(Resume resume) {
-        if (!resume.getStatus().equals(ResumeStatus.approved)) {
-            throw new BadRequestException(ErrorCode.RESUME_STATUS_EXCEPTION);
-        }
-    }
-
-    private void checkOrderExists(Member member, Resume resume) {
-        Optional<Order> orderOptional = orderRepository.findByMemberIdAndResumeId(member.getMemberId(), resume.getResumeId());
-        if (orderOptional.isPresent()) {
+    private void checkDuplicate(Resume resume, List<Long> existingIds) {
+        if (existingIds.stream().anyMatch(existingId -> existingId.equals(resume.getResumeId()))){
             throw new AlreadyExistsException(ErrorCode.ALREADY_EXISTS_ORDER);
         }
     }
-
-    private void preventSelfPurchase(Member member, Resume resume) {
-        Long memberId = member.getMemberId();
-        Long resumeMemberId = resume.getMember().getMemberId();
-        if (memberId.equals(resumeMemberId)) {
-            throw new ForbiddenException(ErrorCode.MEMBER_MISMATCH_EXCEPTION);
-        }
-    }
-
 
     public OrderResponse getOrderResponse(Long orderId, Member member) {
         Order order = orderRepository.findOrderByOrderIdAndMember(orderId, member)
