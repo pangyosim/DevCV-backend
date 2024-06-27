@@ -42,11 +42,11 @@ public class OrderController {
         return ResponseEntity.created(URI.create(String.valueOf(order.getOrderId()))).build();
     }
 
-    @GetMapping("/orders/{order-id}")
+    @GetMapping("/orders/{order-number}")
     public ResponseEntity<OrderResponse> getOrderResponse(@AuthenticationPrincipal UserDetails userDetails,
-                                                          @PathVariable("order-id") Long orderId) {
+                                                          @PathVariable("order-number") String orderNumber) {
         Member member = extractMember(userDetails);
-        OrderResponse response = orderService.getOrderResponse(orderId, member);
+        OrderResponse response = orderService.findByOrderNumber(orderNumber, member);
         return ResponseEntity.ok().body(response);
     }
 

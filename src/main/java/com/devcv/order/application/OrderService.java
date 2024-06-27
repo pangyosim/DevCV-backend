@@ -112,20 +112,27 @@ public class OrderService {
         }
     }
 
-    public OrderResponse getOrderResponse(Long orderId, Member member) {
-        Order order = orderRepository.findOrderByOrderIdAndMember(orderId, member)
+    public OrderResponse findByOrderNumber(String orderNumber, Member member) {
+        Order order = orderRepository.findOrderByOrderNumberAndMember(orderNumber, member)
                 .orElseThrow(() -> new OrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
-        List<OrderResume> orderResumeList = orderResumeRepository.findAllByOrder_OrderId(orderId);
+        return getOrderResponse(order);
+    }
+
+    private OrderResponse getOrderResponse(Order order) {
+//        Order order = orderRepository.findOrderByOrderNumberAndMember(orderNumber, member)
+//                .orElseThrow(() -> new OrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
+        List<OrderResume> orderResumeList = orderResumeRepository.findAllByOrder_OrderId(order.getOrderId());
         return OrderResponse.of(order, orderResumeListToDto(orderResumeList));
     }
 
     private List<OrderResumeDto> orderResumeListToDto(List<OrderResume> orderResumeList) {
-        return orderResumeList.stream().map(OrderResume::getResume).map(OrderResumeDto::from).collect(Collectors.toList());
+        return orderResumeList.stream().map(OrderResume::getResume)
+                .map(OrderResumeDto::from).collect(Collectors.toList());
     }
 
     public OrderListResponse getOrderListByMember(Member member) {
         List<OrderResponse> orderList = orderRepository.findOrderListByMember(member).stream()
-                .map(order -> getOrderResponse(order.getOrderId(), member))
+                .map(this::getOrderResponse)
                 .collect(Collectors.toList());
         int count = orderList.size();
         return OrderListResponse.of(member.getMemberId(), count, orderList);

@@ -7,15 +7,15 @@ import java.time.LocalDateTime;
 import java.util.List;
 
 
-public record OrderResponse(Long orderId,
+public record OrderResponse(String orderNumber,
                             Long totalPrice,
                             OrderStatus orderStatus,
                             LocalDateTime createdDate,
-                            List<OrderResumeDto> orderResumeDtoList) {
+                            List<OrderResumeDto> orderList) {
 
     public static OrderResponse of(Order order, List<OrderResumeDto> orderResumeDtoList) {
         return new OrderResponse(
-                order.getOrderId(),
+                order.getOrderNumber(),
                 order.getTotalPrice(),
                 order.getOrderStatus(),
                 order.getCreatedDate(),

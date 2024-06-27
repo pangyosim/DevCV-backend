@@ -11,7 +11,7 @@ import java.util.Optional;
 
 public interface OrderRepository extends JpaRepository<Order, String> {
 
-    Optional<Order> findOrderByOrderIdAndMember(Long orderId, Member member);
+    Optional<Order> findOrderByOrderNumberAndMember(String orderNumber, Member member);
 
     // 주문id 조회
     @Query("SELECT o FROM Order o " +
