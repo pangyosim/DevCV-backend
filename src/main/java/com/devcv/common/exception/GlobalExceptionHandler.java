@@ -1,9 +1,6 @@
 package com.devcv.common.exception;
 
-import com.devcv.auth.exception.JwtExpiredException;
-import com.devcv.auth.exception.JwtIllegalArgumentException;
-import com.devcv.auth.exception.JwtInvalidSignException;
-import com.devcv.auth.exception.JwtUnsupportedException;
+import com.devcv.auth.exception.*;
 import com.devcv.common.exception.dto.ErrorResponse;
 import com.devcv.member.exception.*;
 import com.devcv.resume.exception.*;
@@ -118,6 +115,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.from(ErrorCode.SOCIAL_LOGIN_ERROR));
     }
+    @ExceptionHandler(JwtNotExpiredException.class)
+    public ResponseEntity<ErrorResponse> handle(JwtNotExpiredException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.JWT_NOT_EXPIRED_ERROR));
+    }
     // 401 end
 
     // 403
@@ -173,6 +176,12 @@ public class GlobalExceptionHandler {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ErrorResponse.from(ErrorCode.RESUME_NOT_EXIST));
+    }
+    @ExceptionHandler(JwtNotFoundRefreshTokenException.class)
+    public ResponseEntity<ErrorResponse> handle(JwtNotFoundRefreshTokenException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(ErrorResponse.from(ErrorCode.REFRESHTOKEN_NOT_FOUND));
     }
     // 404 end
 

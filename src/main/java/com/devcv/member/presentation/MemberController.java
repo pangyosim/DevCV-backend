@@ -1,6 +1,9 @@
 package com.devcv.member.presentation;
 
 import com.devcv.auth.application.AuthService;
+import com.devcv.auth.dto.RefreshTokenResponse;
+import com.devcv.auth.exception.JwtNotExpiredException;
+import com.devcv.auth.exception.JwtNotFoundRefreshTokenException;
 import com.devcv.auth.jwt.JwtProvider;
 import com.devcv.auth.jwt.JwtTokenDto;
 import com.devcv.common.exception.ErrorCode;
@@ -54,37 +57,48 @@ public class MemberController {
     @Value("${keys.social_password}")
     private String socialPassword;
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    // public static final String AUTHORIZATION_REFRESH_HEADER = "RefreshToken";
+    public static final String AUTHORIZATION_REFRESH_HEADER = "RefreshToken";
     public static final String BEARER_PREFIX = "Bearer ";
 
     //----------- login start -----------
     @PostMapping("/login")
-    public ResponseEntity<MemberLoginResponse> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest, HttpServletResponse response) {
+    public ResponseEntity<MemberLoginResponse> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest) {
         // JWT 복호화
         MemberLoginRequest memberLoginRequestAuth = memberLoginRequest.toBuilder()
                 .password(String.valueOf(jwtProvider.parseClaims(memberLoginRequest.getPassword()).get("password"))).build();
         MemberLoginResponse resultResponse = authService.login(memberLoginRequestAuth);
-        HttpHeaders header = new HttpHeaders();
-        header.add(AUTHORIZATION_HEADER,BEARER_PREFIX + resultResponse.getAccessToken());
         // header.add(AUTHORIZATION_REFRESH_HEADER,BEARER_PREFIX+ resultResponse.getRefreshToken());
         ResponseCookie responseCookie = ResponseCookie.from("RefreshToken",resultResponse.getRefreshToken())
                 .httpOnly(true)
                 .secure(true)
-                .path("/members/login")
-                .maxAge(60 * 60)
-                .domain("devcv.net")
+                .path("/")
+                .maxAge(3600000)
+                .sameSite("None")
                 .build();
-        return ResponseEntity.ok().headers(header).header(HttpHeaders.SET_COOKIE, String.valueOf(responseCookie)).body(resultResponse);
+        return ResponseEntity.ok().header(AUTHORIZATION_HEADER,BEARER_PREFIX + resultResponse.getAccessToken())
+                .header(HttpHeaders.SET_COOKIE, String.valueOf(responseCookie)).body(resultResponse);
     }
     //----------- login end -----------
 
     @PostMapping("/logout")
     public ResponseEntity<String> memberLogout(){
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        Cookie[] cookies = request.getCookies();
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if( authentication != null ) {
+        if( authentication != null && cookies != null) {
             SecurityContextHolder.clearContext();
+            for(Cookie cookie : cookies){
+                cookie.setMaxAge(0);
+            }
         }
-        return ResponseEntity.ok().build();
+        ResponseCookie responseCookie = ResponseCookie.from("RefreshToken", "")
+                .httpOnly(true)
+                .secure(true)
+                .path("/")
+                .maxAge(3600000)
+                .sameSite("None")
+                .build();
+        return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, String.valueOf(responseCookie)).build();
     }
 
     //----------- signup start -----------
@@ -251,7 +265,7 @@ public class MemberController {
         }
     }
     @PutMapping("/{member-id}")
-    public ResponseEntity<String> modiMember(@RequestBody MemberModifyAllRequest memberModifyAllRequest, @PathVariable("member-id") Long memberId) {
+    public ResponseEntity<String> modifyMember(@RequestBody MemberModifyAllRequest memberModifyAllRequest, @PathVariable("member-id") Long memberId) {
         // NULL CHECK
         try {
             if(memberModifyAllRequest.getJob() == null || memberModifyAllRequest.getAddress() == null || memberModifyAllRequest.getStack() == null
@@ -368,10 +382,14 @@ public class MemberController {
             // 로그인 진행
             MemberLoginRequest memberLoginRequest =MemberLoginRequest.builder().email(profile.getKakao_account().getEmail()).password(socialPassword).build();
             MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
-            HttpHeaders header = new HttpHeaders();
-            header.add("Authorization","Bearer " + memberLoginResponse.getAccessToken());
-            header.add("RefreshToken","Bearer " + memberLoginResponse.getRefreshToken());
-            return ResponseEntity.ok().headers(header).body(memberLoginResponse);
+            ResponseCookie responseCookie = ResponseCookie.from("RefreshToken", memberLoginResponse.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(3600000)
+                    .sameSite("None")
+                    .build();
+            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,String.valueOf(responseCookie)).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
                 put("email", profile.getKakao_account().getEmail());
@@ -416,10 +434,14 @@ public class MemberController {
             MemberLoginRequest memberLoginRequest = MemberLoginRequest.builder()
                     .email(googleProfile.getEmail()).password(socialPassword).build();
             MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
-            HttpHeaders header = new HttpHeaders();
-            header.add("Authorization","Bearer " + memberLoginResponse.getAccessToken());
-            header.add("RefreshToken","Bearer " + memberLoginResponse.getRefreshToken());
-            return ResponseEntity.ok().headers(header).body(memberLoginResponse);
+            ResponseCookie responseCookie = ResponseCookie.from("RefreshToken", memberLoginResponse.getRefreshToken())
+                    .httpOnly(true)
+                    .secure(true)
+                    .path("/")
+                    .maxAge(3600000)
+                    .sameSite("None")
+                    .build();
+            return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,String.valueOf(responseCookie)).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
             Map<String,Object> userInfo = new HashMap<>(){{
                 put("email",googleProfile.getEmail());
@@ -454,8 +476,34 @@ public class MemberController {
     //----------- GetClientIP end -----------
 
     @GetMapping("/refresh-token")
-    public ResponseEntity<String> refreshAccessToken(){
-        return ResponseEntity.ok().build();
+    public ResponseEntity<Map<String,Object>> refreshAccessToken(@CookieValue(value = "RefreshToken", required = false) String refreshToken){
+        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+        String accessToken = request.getHeader(AUTHORIZATION_HEADER).split(" ")[1];
+        if (StringUtils.hasText(refreshToken)) {
+            // refreshToken 유효성검사.
+            if(jwtProvider.validateToken(refreshToken) && !jwtProvider.validateToken(accessToken)){
+                // 검사완료되면 accessToken 재발급 jwtProvider.refreshTokenDto
+                String email = String.valueOf(jwtProvider.parseClaims(refreshToken).get("email"));
+                JwtTokenDto jwtTokenDto = jwtProvider.refreshTokenDto(email,refreshToken);
+                // RefreshToken Cookie에 담기.
+                ResponseCookie responseCookie = ResponseCookie.from(AUTHORIZATION_REFRESH_HEADER,refreshToken)
+                        .httpOnly(true)
+                        .secure(true)
+                        .path("/")
+                        .maxAge(3600000)
+                        .sameSite("None")
+                        .build();
+                // AccessToken body에 담아 응답.
+                Map<String,Object> accessTokenInfo = new HashMap<>(){{
+                    put("accessToken",jwtTokenDto.getAccessToken());
+                }};
+                return ResponseEntity.ok().header(AUTHORIZATION_HEADER,BEARER_PREFIX+jwtTokenDto.getAccessToken())
+                        .header(HttpHeaders.SET_COOKIE,responseCookie.toString()).body(accessTokenInfo);
+            } else {
+                throw new JwtNotExpiredException(ErrorCode.JWT_NOT_EXPIRED_ERROR);
+            }
+        } else {
+            throw new JwtNotFoundRefreshTokenException(ErrorCode.REFRESHTOKEN_NOT_FOUND);
+        }
     }
-
 }
