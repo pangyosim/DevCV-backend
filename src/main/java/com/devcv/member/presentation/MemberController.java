@@ -18,16 +18,18 @@ import com.devcv.member.exception.*;
 import com.devcv.member.repository.MemberLogRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
-import org.springframework.http.HttpEntity;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
+import org.springframework.http.*;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.util.MultiValueMap;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -52,22 +54,38 @@ public class MemberController {
     @Value("${keys.social_password}")
     private String socialPassword;
     public static final String AUTHORIZATION_HEADER = "Authorization";
-    public static final String AUTHORIZATION_REFRESH_HEADER = "RefreshToken";
+    // public static final String AUTHORIZATION_REFRESH_HEADER = "RefreshToken";
     public static final String BEARER_PREFIX = "Bearer ";
 
     //----------- login start -----------
     @PostMapping("/login")
-    public ResponseEntity<MemberLoginResponse> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest) {
+    public ResponseEntity<MemberLoginResponse> memberLogin(@RequestBody MemberLoginRequest memberLoginRequest, HttpServletResponse response) {
         // JWT 복호화
         MemberLoginRequest memberLoginRequestAuth = memberLoginRequest.toBuilder()
                 .password(String.valueOf(jwtProvider.parseClaims(memberLoginRequest.getPassword()).get("password"))).build();
         MemberLoginResponse resultResponse = authService.login(memberLoginRequestAuth);
         HttpHeaders header = new HttpHeaders();
         header.add(AUTHORIZATION_HEADER,BEARER_PREFIX + resultResponse.getAccessToken());
-        header.add(AUTHORIZATION_REFRESH_HEADER,BEARER_PREFIX+ resultResponse.getRefreshToken());
-        return ResponseEntity.ok().headers(header).body(resultResponse);
+        // header.add(AUTHORIZATION_REFRESH_HEADER,BEARER_PREFIX+ resultResponse.getRefreshToken());
+        ResponseCookie responseCookie = ResponseCookie.from("RefreshToken",resultResponse.getRefreshToken())
+                .httpOnly(true)
+                .secure(true)
+                .path("/members/login")
+                .maxAge(60 * 60)
+                .domain("devcv.net")
+                .build();
+        return ResponseEntity.ok().headers(header).header(HttpHeaders.SET_COOKIE, String.valueOf(responseCookie)).body(resultResponse);
     }
     //----------- login end -----------
+
+    @PostMapping("/logout")
+    public ResponseEntity<String> memberLogout(){
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        if( authentication != null ) {
+            SecurityContextHolder.clearContext();
+        }
+        return ResponseEntity.ok().build();
+    }
 
     //----------- signup start -----------
     @PostMapping("/signup")

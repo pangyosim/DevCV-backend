@@ -23,7 +23,6 @@ import org.springframework.web.filter.CorsFilter;
 @RequiredArgsConstructor
 public class SpringSecurityConfig {
 
-    private final JwtFilter jwtFilter;
     private final JwtProvider jwtProvider;
     private final CorsFilter corsFilter;
     private final JwtAuthenticationEntryPoint jwtAuthenticationEntryPoint;
@@ -40,7 +39,6 @@ public class SpringSecurityConfig {
         http.csrf().disable()
                 // CORS 설정
                 .addFilterBefore(corsFilter, CorsFilter.class)
-                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
                 // exception handling
                 .exceptionHandling()
                 .authenticationEntryPoint(jwtAuthenticationEntryPoint)

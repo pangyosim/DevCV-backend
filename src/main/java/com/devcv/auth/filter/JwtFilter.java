@@ -1,16 +1,20 @@
 package com.devcv.auth.filter;
 
+import com.devcv.auth.dto.RefreshTokenResponse;
 import com.devcv.auth.jwt.JwtProvider;
 import com.devcv.auth.jwt.JwtTokenDto;
 import com.devcv.common.exception.ErrorCode;
 import com.devcv.common.exception.UnAuthorizedException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.NonNull;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.ResponseCookie;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
@@ -20,7 +24,6 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 
 @Slf4j
-@Component
 @RequiredArgsConstructor
 public class JwtFilter extends OncePerRequestFilter {
 
@@ -44,8 +47,21 @@ public class JwtFilter extends OncePerRequestFilter {
                     // 검사완료되면 accessToken 재발급 jwtProvider.refreshTokenDto
                     String email = String.valueOf(jwtProvider.parseClaims(refreshToken).get("email"));
                     JwtTokenDto jwtTokenDto = jwtProvider.refreshTokenDto(email,refreshToken);
+                    response.setContentType("application/json");
+                    response.setCharacterEncoding("utf-8");
                     response.setHeader("Authorization","Bearer "+jwtTokenDto.getAccessToken());
-                    response.setHeader("RefreshToken", "Bearer "+refreshToken);
+                    Cookie refreshCookie = new Cookie("RefreshToken", refreshToken);
+                    refreshCookie.setPath("/members/refresh-token");
+                    refreshCookie.setHttpOnly(true);
+                    refreshCookie.setDomain("devcv.net");
+                    refreshCookie.setSecure(true);
+                    refreshCookie.setMaxAge(60*60);
+                    response.addCookie(refreshCookie);
+                    RefreshTokenResponse refreshTokenResponse = new RefreshTokenResponse();
+                    refreshTokenResponse.setAccessToken(jwtTokenDto.getAccessToken());
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    String resultResponse = objectMapper.writeValueAsString(refreshTokenResponse);
+                    response.getWriter().write(resultResponse);
                     this.setAuthentication(jwtTokenDto.getAccessToken());
                 } else {
                     throw new UnAuthorizedException(ErrorCode.UNAUTHORIZED_ERROR);
