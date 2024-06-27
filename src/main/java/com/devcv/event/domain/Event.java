@@ -22,20 +22,25 @@ public class Event extends BaseTimeEntity {
     private String name;
 
     @Column
+    @Enumerated(value = EnumType.STRING)
+    private EventCategory eventCategory;
+
+    @Column
     private LocalDateTime startDate;
 
     @Column
     private LocalDateTime endDate;
 
-    private Event(String name, LocalDateTime startDate, LocalDateTime endDate) {
+    private Event(String name, String eventCategory, LocalDateTime startDate, LocalDateTime endDate) {
         this.id = null;
         this.name = name;
+        this.eventCategory = EventCategory.strToEnum(eventCategory);
         this.startDate = startDate;
         this.endDate = endDate;
     }
 
-    public static Event of(String name, LocalDateTime startDate, LocalDateTime endDate) {
-        return new Event(name, startDate, endDate);
+    public static Event of(String name, String eventCategory, LocalDateTime startDate, LocalDateTime endDate) {
+        return new Event(name, eventCategory, startDate, endDate);
     }
 
     public Boolean isOngoing() {
