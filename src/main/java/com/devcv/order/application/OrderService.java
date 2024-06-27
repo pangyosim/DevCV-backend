@@ -41,7 +41,8 @@ public class OrderService {
 
     @Transactional
     public Order createOrder(Member member, CartOrderRequest cartOrderRequest) {
-//        checkPoint(member, resume);
+        validateTotalPrice(cartOrderRequest);
+        validateMyPoint(member, cartOrderRequest);
         List<Long> existingResumeIdList = orderRepository.getResumeIdsByMemberId(member.getMemberId());
         Order order = orderRepository.save(Order.init(member));
 
@@ -53,11 +54,27 @@ public class OrderService {
             OrderResume orderResume = OrderResume.of(order, resume);
             orderResumeList.add(orderResume);
         }
-
+        validateTotalPriceForDB(cartOrderRequest, orderResumeList);
         orderResumeRepository.saveAll(orderResumeList);
+        pointService.usePoint(member, cartOrderRequest.totalPrice(), DESCRIPTION + order.getOrderNumber());
         order.updateOrderResumeList(orderResumeList);
-//        pointService.usePoint(member, (long) resume.getPrice(),  DESCRIPTION + order.getOrderId());
         return order;
+    }
+
+    private void validateTotalPrice(CartOrderRequest cartOrderRequest) {
+        Long totalPrice = cartOrderRequest.totalPrice();
+        Long dtoPrice = cartOrderRequest.cartList().stream().mapToLong(CartDto::price).sum();
+        if (!totalPrice.equals(dtoPrice)) {
+            throw new BadRequestException(ErrorCode.ORDER_INFO_MISMATCH_EXCEPTION);
+        }
+    }
+
+    private void validateMyPoint(Member member, CartOrderRequest cartOrderRequest) {
+        Long totalPrice = cartOrderRequest.totalPrice();
+        Long myPoint = pointService.getMyPoint(member.getMemberId());
+        if (myPoint < totalPrice) {
+            throw new BadRequestException(ErrorCode.INSUFFICIENT_POINT);
+        }
     }
 
     private void validateResume(Resume resume, CartDto dto, List<Long> existingResumeIdList) {
@@ -81,17 +98,17 @@ public class OrderService {
         }
     }
 
-    private void checkPoint(Member member, Resume resume) {
-        Long memberPoint = pointService.getMyPoint(member.getMemberId());
-        Long resumePrice = (long) resume.getPrice();
-        if (memberPoint < resumePrice) {
-            throw new BadRequestException(ErrorCode.INSUFFICIENT_POINT);
-        }
-    }
-
     private void checkDuplicate(Resume resume, List<Long> existingIds) {
         if (existingIds.stream().anyMatch(existingId -> existingId.equals(resume.getResumeId()))){
             throw new AlreadyExistsException(ErrorCode.ALREADY_EXISTS_ORDER);
+        }
+    }
+
+    private void validateTotalPriceForDB(CartOrderRequest cartOrderRequest, List<OrderResume> orderResumeList) {
+        Long inputTotalPrice = cartOrderRequest.totalPrice();
+        Long dbTotalPrice = orderResumeList.stream().mapToLong(OrderResume::getPrice).sum();
+        if (!inputTotalPrice.equals(dbTotalPrice)) {
+            throw new BadRequestException(ErrorCode.ORDER_INFO_MISMATCH_EXCEPTION);
         }
     }
 

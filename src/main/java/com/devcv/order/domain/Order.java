@@ -35,24 +35,29 @@ public class Order extends BaseTimeEntity {
     @Enumerated(value = EnumType.STRING)
     private OrderStatus orderStatus;
 
+    @Column
+    private PayType payType;
+
     public Order(Long orderId, String orderNumber, Member member, Long totalPrice, List<OrderResume> orderResumeList,
-                 OrderStatus orderStatus) {
+                 OrderStatus orderStatus, PayType payType) {
         this.orderId = orderId;
         this.orderNumber = orderNumber;
         this.member = member;
         this.totalPrice = totalPrice;
         this.orderResumeList = orderResumeList;
         this.orderStatus = orderStatus;
+        this.payType = payType;
     }
 
     public void updateOrderResumeList(List<OrderResume> orderResumeList) {
         this.orderResumeList = orderResumeList;
         this.totalPrice = calculateTotalPrice(orderResumeList);
+        this.orderStatus = OrderStatus.COMPLETED;
     }
 
     public static Order init(Member member) {
         return new Order(null, OrderNumberGenerator.generateOrderNumber(), member, 0L,
-                null, OrderStatus.PENDING);
+                null, OrderStatus.PENDING, PayType.POINT);
     }
 
     private Long calculateTotalPrice(List<OrderResume> resumeList) {
