@@ -2,6 +2,7 @@ package com.devcv.common.exception;
 
 import com.devcv.auth.exception.*;
 import com.devcv.common.exception.dto.ErrorResponse;
+import com.devcv.common.exception.dto.ValidErrorResponse;
 import com.devcv.member.exception.*;
 import com.devcv.resume.exception.*;
 import com.devcv.member.exception.AuthLoginException;
@@ -16,6 +17,7 @@ import org.hibernate.PropertyValueException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MultipartException;
@@ -225,6 +227,12 @@ public class GlobalExceptionHandler {
                 .body(ErrorResponse.from(ErrorCode.FILE_NAME_LENGTH_EXCEEDED));
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    protected ResponseEntity<Object> handle(MethodArgumentNotValidException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(ValidErrorResponse.from(e));
+    }
     // 400 end
 
 
