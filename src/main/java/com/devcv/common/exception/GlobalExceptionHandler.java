@@ -121,6 +121,12 @@ public class GlobalExceptionHandler {
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                 .body(ErrorResponse.from(ErrorCode.JWT_NOT_EXPIRED_ERROR));
     }
+    @ExceptionHandler(NotMatchMemberIdException.class)
+    public ResponseEntity<ErrorResponse> handle(NotMatchMemberIdException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                .body(ErrorResponse.from(ErrorCode.MEMBERID_ERROR));
+    }
     // 401 end
 
     // 403

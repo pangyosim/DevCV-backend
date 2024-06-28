@@ -1,6 +1,7 @@
 package com.devcv.member.presentation;
 
 import com.devcv.auth.application.AuthService;
+import com.devcv.auth.details.MemberDetails;
 import com.devcv.auth.dto.RefreshTokenResponse;
 import com.devcv.auth.exception.JwtNotExpiredException;
 import com.devcv.auth.exception.JwtNotFoundRefreshTokenException;
@@ -42,6 +43,7 @@ import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 @RestController
 @RequestMapping("/members/*")
@@ -258,10 +260,18 @@ public class MemberController {
     @GetMapping("{member-id}")
     public ResponseEntity<MemberMypageResponse> getMember(@PathVariable("member-id") Long memberId) {
         try {
+            // 로그인한 사용자 memberId 확인
+            MemberDetails memberDetails = (MemberDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if(!Objects.equals(memberDetails.getMember().getMemberId(), memberId)){
+                throw new NotMatchMemberIdException(ErrorCode.MEMBERID_ERROR);
+            }
             return ResponseEntity.ok().body(MemberMypageResponse.from(memberService.findMemberBymemberId(memberId)));
         } catch (NotSignUpException e){
             e.fillInStackTrace();
             throw new NotSignUpException(ErrorCode.MEMBER_NOT_FOUND);
+        } catch (NotMatchMemberIdException e){
+            e.fillInStackTrace();
+            throw new NotMatchMemberIdException(ErrorCode.MEMBERID_ERROR);
         }
     }
     @PutMapping("/{member-id}")
@@ -279,6 +289,11 @@ public class MemberController {
             throw new NotNullException(ErrorCode.NULL_ERROR);
         }
         try {
+            // 로그인한 사용자 memberId 확인
+            MemberDetails memberDetails = (MemberDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if(!Objects.equals(memberDetails.getMember().getMemberId(), memberId)){
+                throw new NotMatchMemberIdException(ErrorCode.MEMBERID_ERROR);
+            }
             // memberId로 Member 찾기
             Member findMemberBymemberId = memberService.findMemberBymemberId(memberId);
             if(findMemberBymemberId != null){
@@ -341,6 +356,9 @@ public class MemberController {
         } catch (DuplicationException e){
             e.fillInStackTrace();
             throw new DuplicationException(ErrorCode.DUPLICATE_ERROR);
+        } catch (NotMatchMemberIdException e){
+            e.fillInStackTrace();
+            throw new NotMatchMemberIdException(ErrorCode.MEMBERID_ERROR);
         }
     }
     //----------- modi member end -----------
