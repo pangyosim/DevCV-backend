@@ -2,6 +2,7 @@ package com.devcv.resume.domain.dto;
 
 import com.devcv.resume.domain.Resume;
 import com.devcv.resume.domain.enumtype.CompanyType;
+import com.devcv.resume.domain.enumtype.ResumeStatus;
 import com.devcv.resume.domain.enumtype.StackType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -22,6 +23,7 @@ public class ResumeResponse {
     private CompanyType companyType;
     private LocalDateTime createdDate;
     private LocalDateTime updatedDate;
+    private ResumeStatus resumeStatus;
 
 
     public static ResumeResponse from(Resume resume) {
@@ -35,7 +37,8 @@ public class ResumeResponse {
                 resume.getCategory().getStackType(),
                 resume.getCategory().getCompanyType(),
                 resume.getCreatedDate(),
-                resume.getUpdatedDate()
+                resume.getUpdatedDate(),
+                resume.getStatus()
         );
     }
     private static String getThumbnailFromResume(Resume resume) {
