@@ -125,8 +125,8 @@ public class ReviewServiceImpl implements  ReviewService{
         }
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
-
-        String orderId = orderIdOpt.get().getOrderId();
+        Order order = orderIdOpt.get();
+        String orderId = order.getOrderId();
         resumeReviewDto.setResumeId(resumeId);
         resumeReviewDto.setMemberId(memberId);
         resumeReviewDto.setOrderId(orderId);
@@ -136,7 +136,7 @@ public class ReviewServiceImpl implements  ReviewService{
             throw new AlreadyExistsException(ErrorCode.ALREADY_EXISTS);
         }
 
-        Review resumeReview = dtoToEntity(resumeReviewDto, resume, member);
+        Review resumeReview = dtoToEntity(resumeReviewDto, resume, member, order);
 
         reviewRepository.save(resumeReview);
 

@@ -26,7 +26,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -120,17 +119,6 @@ public class ResumeServiceImpl implements ResumeService {
         return entityToDto(resume, averageGrade, reviewCount, false);
     }
 
-    // 회원별 이력서 조회
-
-    @Override
-    public ResumeListResponse findResumesByMemberId(Long memberId) {
-        List<ResumeResponse> resumeList = resumeRepository.findByMember(memberId).
-                stream()
-                .map(ResumeResponse::from)
-                .collect(Collectors.toList());;
-        return ResumeListResponse.of(memberId,resumeList.size(),resumeList);
-    }
-
     // 이력서 등록(승인대기)
     @Override
     public Resume register(ResumeRequest resumeRequest, MultipartFile resumeFile, List<MultipartFile> images, Long memberId) {
@@ -198,6 +186,16 @@ public class ResumeServiceImpl implements ResumeService {
 
         return resumeRepository.save(resume);
 
+    }
+
+    // 회원별 이력서 조회
+    @Override
+    public ResumeListResponse findResumesByMemberId(Long memberId) {
+        List<ResumeResponse> resumeList = resumeRepository.findByMember(memberId).
+                stream()
+                .map(ResumeResponse::from)
+                .collect(Collectors.toList());;
+        return ResumeListResponse.of(memberId,resumeList.size(),resumeList);
     }
 
     // 이력서 판매내역 상세조회
