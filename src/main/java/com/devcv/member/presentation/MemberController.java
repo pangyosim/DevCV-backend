@@ -227,6 +227,10 @@ public class MemberController {
         }
         // memberId로 찾은 멤버 패스워드 수정.
         try {
+            MemberDetails memberDetails = (MemberDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if(!Objects.equals(memberDetails.getMember().getMemberId(), memberId)){
+                throw new NotMatchMemberIdException(ErrorCode.MEMBERID_ERROR);
+            }
             Member findMemberBymemberId = memberService.findMemberBymemberId(memberId);
             if(findMemberBymemberId != null){
                 if(!findMemberBymemberId.getSocial().name().equals(SocialType.normal.name())){
@@ -254,6 +258,9 @@ public class MemberController {
         } catch (SocialMemberUpdateException e){
             e.fillInStackTrace();
             throw new SocialMemberUpdateException(ErrorCode.SOCIAL_UPDATE_ERROR);
+        } catch (NotMatchMemberIdException e){
+            e.fillInStackTrace();
+            throw new NotMatchMemberIdException(ErrorCode.MEMBERID_ERROR);
         }
     }
     // 회원정보 단건 조회/수정
