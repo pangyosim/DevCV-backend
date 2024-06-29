@@ -112,7 +112,7 @@ public class ReviewServiceImpl implements  ReviewService{
     public Review register(Long resumeId, Long memberId, ReviewDto resumeReviewDto) {
 
         // 주문여부 확인
-        Optional<Order> orderIdOpt = orderRepository. findByMember_MemberIdAndResume_ResumeId(memberId, resumeId);
+        Optional<Order> orderIdOpt = orderRepository.findByMemberIdAndResumeId(memberId, resumeId);
         if (orderIdOpt.isEmpty()) {
             throw new OrderNotFoundException(ErrorCode.ORDER_NOT_FOUND);
         }
@@ -126,7 +126,7 @@ public class ReviewServiceImpl implements  ReviewService{
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new MemberNotFoundException(ErrorCode.MEMBER_NOT_FOUND));
         Order order = orderIdOpt.get();
-        String orderId = order.getOrderId();
+        Long orderId = orderIdOpt.get().getOrderId();
         resumeReviewDto.setResumeId(resumeId);
         resumeReviewDto.setMemberId(memberId);
         resumeReviewDto.setOrderId(orderId);
