@@ -17,6 +17,7 @@ public enum ErrorCode {
     RESUME_STATUS_EXCEPTION("올바르지 않은 이력서 상태입니다."),
     ORDER_INFO_MISMATCH_EXCEPTION("주문 정보가 일치하지 않습니다."),
     INVALID_ENUM_EXCEPTION("올바르지 않은 enum 입니다."),
+    INVALID_INPUT_VALUE("입력값이 올바르지 않습니다."),
 
     //401
     UNAUTHORIZED_ERROR("자격증명에 실패하였습니다."),
