@@ -22,12 +22,9 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
     public void commence(HttpServletRequest request, HttpServletResponse response, AuthenticationException authException) throws IOException {
         String exception = String.valueOf(request.getAttribute("exception"));
 
-        if(exception == null) {
-            log.error(ErrorCode.JWT_EXPIRED_ERROR.getMessage());
-            sendResponse(response, ErrorCode.JWT_EXPIRED_ERROR);
-        }
+
         //잘못된 타입의 토큰인 경우
-        else if(exception.equals(ErrorCode.JWT_INVALID_SIGN_ERROR.getMessage())) {
+        if(exception.equals(ErrorCode.JWT_INVALID_SIGN_ERROR.getMessage())) {
             log.error(ErrorCode.JWT_INVALID_SIGN_ERROR.getMessage());
             sendResponse(response, ErrorCode.JWT_INVALID_SIGN_ERROR);
         }
@@ -36,9 +33,15 @@ public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
             log.error(ErrorCode.JWT_UNSUPPORTED_ERROR.getMessage());
             sendResponse(response, ErrorCode.JWT_UNSUPPORTED_ERROR);
         }
+        // refreshToken이 없는 경우
+        else if(exception.equals(ErrorCode.REFRESHTOKEN_NOT_FOUND.getMessage())){
+            log.error(ErrorCode.REFRESHTOKEN_NOT_FOUND.getMessage());
+            sendResponse(response, ErrorCode.REFRESHTOKEN_NOT_FOUND);
+        }
+        // 이외 서버 내부 문제 에러.
         else {
-            log.error(ErrorCode.JWT_EXPIRED_ERROR.getMessage());
-            sendResponse(response, ErrorCode.JWT_EXPIRED_ERROR);
+            log.error(ErrorCode.INTERNAL_SERVER_ERROR.getMessage());
+            sendResponse(response, ErrorCode.INTERNAL_SERVER_ERROR);
         }
     }
     private void sendResponse(HttpServletResponse response, ErrorCode exceptionCode) throws IOException {
