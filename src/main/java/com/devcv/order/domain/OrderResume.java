@@ -32,13 +32,6 @@ public class OrderResume {
         this.price = price;
     }
 
-    //    public OrderResume(Order order, Resume resume, Long price) {
-//        this.orderResumeId = null;
-//        this.order = order;
-//        this.resume = resume;
-//        this.price = price;
-//    }
-
     public static OrderResume of(Order order, Resume resume) {
         return new OrderResume(null, order, resume, (long) resume.getPrice());
     }

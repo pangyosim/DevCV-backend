@@ -11,7 +11,7 @@ public record OrderResponse(String orderNumber,
                             Long totalPrice,
                             OrderStatus orderStatus,
                             LocalDateTime createdDate,
-                            List<OrderResumeDto> orderList) {
+                            List<OrderResumeDto> resumeList) {
 
     public static OrderResponse of(Order order, List<OrderResumeDto> orderResumeDtoList) {
         return new OrderResponse(

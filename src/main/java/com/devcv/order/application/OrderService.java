@@ -119,8 +119,6 @@ public class OrderService {
     }
 
     private OrderResponse getOrderResponse(Order order) {
-//        Order order = orderRepository.findOrderByOrderNumberAndMember(orderNumber, member)
-//                .orElseThrow(() -> new OrderNotFoundException(ErrorCode.ORDER_NOT_FOUND));
         List<OrderResume> orderResumeList = orderResumeRepository.findAllByOrder_OrderId(order.getOrderId());
         return OrderResponse.of(order, orderResumeListToDto(orderResumeList));
     }
