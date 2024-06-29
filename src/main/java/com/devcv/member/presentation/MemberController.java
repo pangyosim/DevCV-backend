@@ -2,7 +2,6 @@ package com.devcv.member.presentation;
 
 import com.devcv.auth.application.AuthService;
 import com.devcv.auth.details.MemberDetails;
-import com.devcv.auth.dto.RefreshTokenResponse;
 import com.devcv.auth.exception.JwtNotExpiredException;
 import com.devcv.auth.exception.JwtNotFoundRefreshTokenException;
 import com.devcv.auth.jwt.JwtProvider;
@@ -24,7 +23,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.PropertySource;
@@ -41,9 +39,7 @@ import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 
 @RestController
 @RequestMapping("/members/*")
@@ -74,7 +70,7 @@ public class MemberController {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(3600000)
+                .maxAge(60*60*24*7)
                 .sameSite("None")
                 .build();
         return ResponseEntity.ok().header(AUTHORIZATION_HEADER,BEARER_PREFIX + resultResponse.getAccessToken())
@@ -97,7 +93,7 @@ public class MemberController {
                 .httpOnly(true)
                 .secure(true)
                 .path("/")
-                .maxAge(3600000)
+                .maxAge(60*60*24*7)
                 .sameSite("None")
                 .build();
         return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE, String.valueOf(responseCookie)).build();
@@ -146,13 +142,21 @@ public class MemberController {
 
     //----------- find ID/PW start -----------
     @PostMapping("/find-id")
-    public ResponseEntity<MemberFindIdReponse> findId(@RequestBody MemberFindIdRequest memberFindIdRequest) {
+    public ResponseEntity<MemberFindOfPhoneReponse> findId(@RequestBody MemberFindOfPhoneRequest memberFindOfPhoneRequest) {
         // 아이디 찾기
         try{
-            Member findIdMember = memberService.findMemberBymemberNameAndPhone(memberFindIdRequest.getMemberName(),memberFindIdRequest.getPhone());
+            List<Member> findIdMemberList = memberService.findMemberBymemberNameAndPhone(memberFindOfPhoneRequest.getMemberName(), memberFindOfPhoneRequest.getPhone());
             // 이름&핸드폰번호로 가입되어 있는 멤버가 있는지 확인.
-            if(findIdMember!= null){
-                return ResponseEntity.ok().body(MemberFindIdReponse.from(findIdMember));
+            if(!findIdMemberList.isEmpty()){
+                List<Map<String,Object>> responseList = new ArrayList<>();
+                for (Member findMember: findIdMemberList){
+                    responseList.add(new HashMap<>(){{
+                        put("email",findMember.getEmail());
+                        put("social",findMember.getSocial());
+                    }});
+                }
+                System.out.println(responseList);
+                return ResponseEntity.ok().body(MemberFindOfPhoneReponse.from(responseList));
             } else { // 가입되어있지 않다면 Exception 발생.
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
@@ -186,10 +190,10 @@ public class MemberController {
         }
     }
     @PostMapping("/find-pw")
-    public ResponseEntity<MemberFindPwResponse> findPwPhone(@RequestBody MemberFindPwPhoneRequest memberFindPwPhoneRequest) {
+    public ResponseEntity<MemberFindOfPhoneReponse> findPwPhone(@RequestBody MemberFindOfPhoneRequest memberFindOfPhoneRequest) {
         // NULL CHECK
         try{
-            if(memberFindPwPhoneRequest.getMemberName() == null || memberFindPwPhoneRequest.getPhone() == null){
+            if(memberFindOfPhoneRequest.getMemberName() == null || memberFindOfPhoneRequest.getPhone() == null){
                 throw new NotNullException(ErrorCode.NULL_ERROR);
             }
         } catch (NotNullException e){
@@ -198,10 +202,16 @@ public class MemberController {
 
         // 아이디 찾기
         try{
-            Member findIdMember = memberService.findMemberBymemberNameAndPhone(memberFindPwPhoneRequest.getMemberName(),memberFindPwPhoneRequest.getPhone());
+            List<Member> findIdMemberList = memberService.findMemberBymemberNameAndPhone(memberFindOfPhoneRequest.getMemberName(),memberFindOfPhoneRequest.getPhone());
             // 이름&핸드폰번호로 가입되어 있는 멤버가 있는지 확인.
-            if(findIdMember!= null){
-                return ResponseEntity.ok().body(new MemberFindPwResponse(findIdMember.getMemberId()));
+            if(!findIdMemberList.isEmpty()){
+                List<Map<String,Object>> responseList = new ArrayList<>();
+                for(Member findMember : findIdMemberList){
+                    responseList.add(new HashMap<>(){{
+                        put("memberId", findMember.getMemberId());
+                    }});
+                }
+                return ResponseEntity.ok().body(new MemberFindOfPhoneReponse(responseList));
             } else { // 가입되어있지 않다면 Exception 발생.
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
             }
@@ -411,7 +421,7 @@ public class MemberController {
                     .httpOnly(true)
                     .secure(true)
                     .path("/")
-                    .maxAge(3600000)
+                    .maxAge(60*60*24*7)
                     .sameSite("None")
                     .build();
             return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,String.valueOf(responseCookie)).body(memberLoginResponse);
@@ -463,7 +473,7 @@ public class MemberController {
                     .httpOnly(true)
                     .secure(true)
                     .path("/")
-                    .maxAge(3600000)
+                    .maxAge(60*60*24*7)
                     .sameSite("None")
                     .build();
             return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,String.valueOf(responseCookie)).body(memberLoginResponse);
@@ -501,34 +511,43 @@ public class MemberController {
     //----------- GetClientIP end -----------
 
     @GetMapping("/refresh-token")
-    public ResponseEntity<Map<String,Object>> refreshAccessToken(@CookieValue(value = "RefreshToken", required = false) String refreshToken){
-        HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
-        String accessToken = request.getHeader(AUTHORIZATION_HEADER).split(" ")[1];
-        if (StringUtils.hasText(refreshToken)) {
-            // refreshToken 유효성검사.
-            if(jwtProvider.validateToken(refreshToken) && !jwtProvider.validateToken(accessToken)){
-                // 검사완료되면 accessToken 재발급 jwtProvider.refreshTokenDto
-                String email = String.valueOf(jwtProvider.parseClaims(refreshToken).get("email"));
-                JwtTokenDto jwtTokenDto = jwtProvider.refreshTokenDto(email,refreshToken);
-                // RefreshToken Cookie에 담기.
-                ResponseCookie responseCookie = ResponseCookie.from(AUTHORIZATION_REFRESH_HEADER,refreshToken)
-                        .httpOnly(true)
-                        .secure(true)
-                        .path("/")
-                        .maxAge(3600000)
-                        .sameSite("None")
-                        .build();
-                // AccessToken body에 담아 응답.
-                Map<String,Object> accessTokenInfo = new HashMap<>(){{
-                    put("accessToken",jwtTokenDto.getAccessToken());
-                }};
-                return ResponseEntity.ok().header(AUTHORIZATION_HEADER,BEARER_PREFIX+jwtTokenDto.getAccessToken())
-                        .header(HttpHeaders.SET_COOKIE,responseCookie.toString()).body(accessTokenInfo);
+    @CrossOrigin
+    public ResponseEntity<Map<String,Object>> refreshAccessToken(@CookieValue(value = "RefreshToken", required = false) Cookie refreshTokenCookie) {
+        try {
+            HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+            String accessToken = request.getHeader(AUTHORIZATION_HEADER).split(" ")[1];
+            if (StringUtils.hasText(refreshTokenCookie.getValue())) {
+                // refreshToken 유효성검사.
+                if (jwtProvider.validateToken(refreshTokenCookie.getValue()) && !jwtProvider.validateToken(accessToken)) {
+                    // 검사완료되면 accessToken 재발급 jwtProvider.refreshTokenDto
+                    String email = String.valueOf(jwtProvider.parseClaims(refreshTokenCookie.getValue()).get("email"));
+                    JwtTokenDto jwtTokenDto = jwtProvider.refreshTokenDto(email, refreshTokenCookie.getValue());
+                    // RefreshToken Cookie에 담기.
+                    ResponseCookie responseCookie = ResponseCookie.from(AUTHORIZATION_REFRESH_HEADER, refreshTokenCookie.getValue())
+                            .httpOnly(true)
+                            .secure(true)
+                            .path("/")
+                            .maxAge(60*60*24*7)
+                            .sameSite("None")
+                            .build();
+                    // AccessToken body에 담아 응답.
+                    Map<String, Object> accessTokenInfo = new HashMap<>() {{
+                        put("accessToken", jwtTokenDto.getAccessToken());
+                    }};
+                    return ResponseEntity.ok().header(AUTHORIZATION_HEADER, BEARER_PREFIX + jwtTokenDto.getAccessToken())
+                            .header(HttpHeaders.SET_COOKIE, responseCookie.toString()).body(accessTokenInfo);
+                } else {
+                    throw new JwtNotExpiredException(ErrorCode.JWT_NOT_EXPIRED_ERROR);
+                }
             } else {
-                throw new JwtNotExpiredException(ErrorCode.JWT_NOT_EXPIRED_ERROR);
+                throw new JwtNotFoundRefreshTokenException(ErrorCode.REFRESHTOKEN_NOT_FOUND);
             }
-        } else {
+        } catch (NullPointerException | JwtNotFoundRefreshTokenException e){
+            e.fillInStackTrace();
             throw new JwtNotFoundRefreshTokenException(ErrorCode.REFRESHTOKEN_NOT_FOUND);
+        } catch (JwtNotExpiredException e){
+            e.fillInStackTrace();
+            throw new JwtNotExpiredException(ErrorCode.JWT_NOT_EXPIRED_ERROR);
         }
     }
 }
