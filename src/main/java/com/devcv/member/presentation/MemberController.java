@@ -511,7 +511,7 @@ public class MemberController {
     //----------- GetClientIP end -----------
 
     @GetMapping("/refresh-token")
-    @CrossOrigin
+    @CrossOrigin(origins = "*",allowedHeaders = "*")
     public ResponseEntity<Map<String,Object>> refreshAccessToken(@CookieValue(value = "RefreshToken", required = false) Cookie refreshTokenCookie) {
         try {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
