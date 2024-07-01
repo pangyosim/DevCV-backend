@@ -21,6 +21,10 @@ import com.devcv.member.exception.*;
 import com.devcv.member.repository.MemberLogRepository;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
@@ -52,6 +56,8 @@ public class MemberController {
     private final AuthService authService;
     private final MemberLogRepository memberLogRepository;
     private final JwtProvider jwtProvider;
+    @Value("${keys.jwtkey}")
+    private String jwtkey;
     @Value("${keys.social_password}")
     private String socialPassword;
     public static final String AUTHORIZATION_HEADER = "Authorization";
@@ -155,7 +161,6 @@ public class MemberController {
                         put("social",findMember.getSocial());
                     }});
                 }
-                System.out.println(responseList);
                 return ResponseEntity.ok().body(MemberFindOfPhoneReponse.from(responseList));
             } else { // 가입되어있지 않다면 Exception 발생.
                 throw new NotSignUpException(ErrorCode.FIND_ID_ERROR);
@@ -426,9 +431,18 @@ public class MemberController {
                     .build();
             return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,String.valueOf(responseCookie)).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
+            long now = (new Date()).getTime();
             Map<String,Object> userInfo = new HashMap<>(){{
-                put("email", profile.getKakao_account().getEmail());
-                put("social", SocialType.kakao.name());
+                put("nickName",profile.getProperties().getNickname());
+                put("email",profile.getKakao_account().getEmail());
+                put("social",SocialType.kakao.name());
+                put("accessToken", Jwts.builder()
+                        .claim("nickName",profile.getProperties().getNickname())
+                        .claim("email",profile.getKakao_account().getEmail())
+                        .claim("social",SocialType.kakao.name())
+                        .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtkey)), SignatureAlgorithm.HS512)
+                        .setExpiration(new Date(now + 1000 * 60 * 3)) // 3분
+                        .compact());
             }};
             return ResponseEntity.ok().body(userInfo);
         }
@@ -478,9 +492,18 @@ public class MemberController {
                     .build();
             return ResponseEntity.ok().header(HttpHeaders.SET_COOKIE,String.valueOf(responseCookie)).body(memberLoginResponse);
         } else { // 가입되어있지 않는 이메일이면 회원가입페이지로 이메일 정보 넘김.
+            long now = (new Date()).getTime();
             Map<String,Object> userInfo = new HashMap<>(){{
+                put("nickName",googleProfile.getName());
                 put("email",googleProfile.getEmail());
                 put("social",SocialType.google.name());
+                put("accessToken", Jwts.builder()
+                        .claim("nickName",googleProfile.getName())
+                        .claim("email",googleProfile.getEmail())
+                        .claim("social",SocialType.google.name())
+                        .signWith(Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtkey)), SignatureAlgorithm.HS512)
+                        .setExpiration(new Date(now + 1000 * 60 * 3)) // 3분
+                        .compact());
             }};
             return ResponseEntity.ok().body(userInfo);
         }
