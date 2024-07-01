@@ -60,7 +60,7 @@ ext {
 	snippetsDir = file('build/generated-snippets')
 }
 
-tasks.named('test') {
+test {
 	useJUnitPlatform()
 	outputs.dir snippetsDir
 }
