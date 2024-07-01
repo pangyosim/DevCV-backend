@@ -84,7 +84,7 @@ public class OrderService {
     }
 
     private void checkResumeStatus(Resume resume) {
-        if (!resume.getStatus().equals(ResumeStatus.approved)) {
+        if (!resume.getStatus().equals(ResumeStatus.regcompleted)) {
             throw new BadRequestException(ErrorCode.RESUME_STATUS_EXCEPTION);
         }
     }
