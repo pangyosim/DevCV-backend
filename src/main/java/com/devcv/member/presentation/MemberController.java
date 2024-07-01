@@ -68,7 +68,7 @@ public class MemberController {
         // header.add(AUTHORIZATION_REFRESH_HEADER,BEARER_PREFIX+ resultResponse.getRefreshToken());
         ResponseCookie responseCookie = ResponseCookie.from("RefreshToken",resultResponse.getRefreshToken())
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/")
                 .maxAge(60*60*24*7)
                 .sameSite("None")
@@ -91,7 +91,7 @@ public class MemberController {
         }
         ResponseCookie responseCookie = ResponseCookie.from("RefreshToken", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/")
                 .maxAge(60*60*24*7)
                 .sameSite("None")
@@ -419,7 +419,7 @@ public class MemberController {
             MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
             ResponseCookie responseCookie = ResponseCookie.from("RefreshToken", memberLoginResponse.getRefreshToken())
                     .httpOnly(true)
-                    .secure(true)
+                    .secure(false)
                     .path("/")
                     .maxAge(60*60*24*7)
                     .sameSite("None")
@@ -471,7 +471,7 @@ public class MemberController {
             MemberLoginResponse memberLoginResponse = authService.login(memberLoginRequest);
             ResponseCookie responseCookie = ResponseCookie.from("RefreshToken", memberLoginResponse.getRefreshToken())
                     .httpOnly(true)
-                    .secure(true)
+                    .secure(false)
                     .path("/")
                     .maxAge(60*60*24*7)
                     .sameSite("None")
@@ -511,7 +511,7 @@ public class MemberController {
     //----------- GetClientIP end -----------
 
     @GetMapping("/refresh-token")
-    @CrossOrigin
+    @CrossOrigin(origins = "*", allowedHeaders = "*")
     public ResponseEntity<Map<String,Object>> refreshAccessToken(@CookieValue(value = "RefreshToken", required = false) Cookie refreshTokenCookie) {
         try {
             HttpServletRequest request = ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
@@ -525,8 +525,9 @@ public class MemberController {
                     // RefreshToken Cookie에 담기.
                     ResponseCookie responseCookie = ResponseCookie.from(AUTHORIZATION_REFRESH_HEADER, refreshTokenCookie.getValue())
                             .httpOnly(true)
-                            .secure(true)
+                            .secure(false)
                             .path("/")
+                            .domain("ec2-100-26-178-217.compute-1.amazonaws.com")
                             .maxAge(60*60*24*7)
                             .sameSite("None")
                             .build();
