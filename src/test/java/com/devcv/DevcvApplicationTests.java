@@ -3,7 +3,7 @@ package com.devcv;
 import org.junit.jupiter.api.Test;
 
 
-//@SpringBootTest
+@SpringBootTest
 class DevcvApplicationTests {
 
     @Test
